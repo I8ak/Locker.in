@@ -1,4 +1,4 @@
-package com.example.lockerin.ui.theme
+package com.example.lockerin.presentation.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
