@@ -8,8 +8,7 @@ data class Rental(
     val userID: String = "",
     val lockerID: String = "",
     val startDate: Date? = null,
-    val endDate: Date? = null,
-    val duration: Int = 0
+    val endDate: Date? = null
 ){
-    constructor() : this("", "", "", null, null, 0)
+    constructor() : this("", "", "", null, null)
 }

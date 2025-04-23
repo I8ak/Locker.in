@@ -1,5 +1,5 @@
 [versions]
-agp = "8.9.0"
+agp = "8.9.1"
 firebaseFirestore = "25.1.3"
 koinAndroid = "3.5.3"
 koinAndroidxCompose = "3.5.3"

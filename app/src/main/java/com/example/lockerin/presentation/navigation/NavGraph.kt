@@ -3,17 +3,21 @@ package com.example.lockerin.presentation.navigation
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.lockerin.presentation.ui.screens.DetailsScreen
 import com.example.lockerin.presentation.ui.screens.HomeScreen
 import com.example.lockerin.presentation.ui.screens.LoginScreen
+import com.example.lockerin.presentation.ui.screens.PaymentScreen
 import com.example.lockerin.presentation.ui.screens.RegisterScreen
 import com.example.lockerin.presentation.ui.screens.ReserveScreen
 import com.example.lockerin.presentation.ui.screens.SplashScreen
+import com.example.lockerin.presentation.ui.screens.StatusPayScreen
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -45,6 +49,51 @@ fun NavGraph(
         ) { backStackEntry ->
             val city = backStackEntry.arguments?.getString("city")!!
             ReserveScreen(navController, city)
+        }
+        composable(
+            route = Screen.Details.route,
+            arguments = listOf(
+                navArgument("lockerID") { type = NavType.StringType },
+                navArgument("startDate") { type = NavType.StringType },
+                navArgument("endDate") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val lockerID = backStackEntry.arguments?.getString("lockerID")!!
+            val startDate = backStackEntry.arguments?.getString("startDate")!!
+            val endDate = backStackEntry.arguments?.getString("endDate")!!
+            val totalPrice = backStackEntry.arguments?.getString("totalPrice")!!
+            DetailsScreen( lockerID, startDate, endDate,totalPrice,
+                navController = navController
+            )
+        }
+        composable(
+            route = Screen.Payment.route,
+            arguments = listOf(
+                navArgument("userID") { type = NavType.StringType },
+                navArgument("lockerID") { type = NavType.StringType },
+                navArgument("startDate") { type = NavType.StringType },
+                navArgument("endDate") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val userID = backStackEntry.arguments?.getString("userID")!!
+            val lockerID = backStackEntry.arguments?.getString("lockerID")!!
+            val startDate = backStackEntry.arguments?.getString("startDate")!!
+            val endDate = backStackEntry.arguments?.getString("endDate")!!
+            val totalPrice = backStackEntry.arguments?.getString("totalPrice")!!
+            PaymentScreen( userID,lockerID, startDate, endDate,totalPrice,
+                navController = navController
+            )
+        }
+        composable(
+            route = Screen.StatusPay.route,
+            arguments = listOf(
+                navArgument("cardID") { type = NavType.StringType },
+                navArgument("paymentID") { type = NavType.StringType },
+            )
+        ) { backStackEntry ->
+            val userID = backStackEntry.arguments?.getString("cardID")!!
+            val lockerID = backStackEntry.arguments?.getString("paymentID")!!
+            StatusPayScreen( userID,lockerID, navController = navController)
         }
     }
 }

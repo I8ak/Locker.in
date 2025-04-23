@@ -142,10 +142,6 @@ fun Reservas() {
     }
 }
 
-@Composable
-fun Ciudades() {
-
-}
 
 @Composable
 fun CiudadCard(nombre: String, cantidad: Int, imagen: Int,navController: NavHostController) {

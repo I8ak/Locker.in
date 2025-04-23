@@ -44,9 +44,9 @@ class LockersViewModel:ViewModel() {
             location = "Location 4",
             city = "Barcelona",
             status = false,
-            size = "Extra Large",
-            dimension = "5x5x5",
-            pricePerHour = 15.0,
+            size = "Large",
+            dimension = "4x4x4",
+            pricePerHour = 10.0,
         ),
         Locker(
             lockerID = "locker5",
@@ -59,22 +59,22 @@ class LockersViewModel:ViewModel() {
         ),
         Locker(
             lockerID = "locker6",
-            location = "Location 4",
+            location = "Location 2",
             city = "Madrid",
             status = false,
-            size = "Extra Large",
-            dimension = "5x5x5",
-            pricePerHour = 15.0,
+            size = "Large",
+            dimension = "4x4x4",
+            pricePerHour = 10.0,
         )
     ))
-    fun setLockerId(id: String){
-        val filtered = _lockers.value.filter { it.lockerID == id }
-        _lockers.value = filtered
-    }
-    fun setLockerLocation(location: String){
-        val filtered = _lockers.value.filter { it.location == location }
-        _lockers.value = filtered
-    }
+//    fun setLockerId(id: String){
+//        val filtered = _lockers.value.filter { it.lockerID == id }
+//        _lockers.value = filtered
+//    }
+//    fun setLockerLocation(location: String){
+//        val filtered = _lockers.value.filter { it.location == location }
+//        _lockers.value = filtered
+//    }
 
     val lockers: StateFlow<List<Locker>> = _lockers
 
@@ -84,13 +84,17 @@ class LockersViewModel:ViewModel() {
         }
     }
 
+    fun getLockerById(lockerId: String): Locker? {
+        return lockers.value.find { it.lockerID == lockerId }
+    }
 
-    // Get only available lockers
-    val availableLockers: StateFlow<List<Locker>> =
-        _lockers.map { lockers -> lockers.filter { it.status } }
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
 
-    // Function to reserve a locker
+//    // Get only available lockers
+//    val availableLockers: StateFlow<List<Locker>> =
+//        _lockers.map { lockers -> lockers.filter { it.status } }
+//            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
+//
+//    // Function to reserve a locker
     fun reserveLocker(lockerId: String) {
         _lockers.update { lockers ->
             lockers.map { locker ->
@@ -102,17 +106,17 @@ class LockersViewModel:ViewModel() {
             }
         }
     }
-
-    // Function to free a locker
-    fun freeLocker(lockerId: String) {
-        _lockers.update { lockers ->
-            lockers.map { locker ->
-                if (locker.lockerID == lockerId) {
-                    locker.copy(status = true) // Mark as available
-                } else {
-                    locker
-                }
-            }
-        }
-    }
+//
+//    // Function to free a locker
+//    fun freeLocker(lockerId: String) {
+//        _lockers.update { lockers ->
+//            lockers.map { locker ->
+//                if (locker.lockerID == lockerId) {
+//                    locker.copy(status = true) // Mark as available
+//                } else {
+//                    locker
+//                }
+//            }
+//        }
+//    }
 }

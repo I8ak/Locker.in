@@ -12,4 +12,5 @@ val OnSecondary = Color(0xFF5B3A2A)      // #5B3A2A
 val OnBackground = Color(0xFF3E2723)    // #3E2723
 val OnSurface = Color(0xFF4E342E)       // #4E342E
 val BeigeClaro = Color(0xFFF0EADC)
+val myGreenColor = Color(0xFF34C759)
 
