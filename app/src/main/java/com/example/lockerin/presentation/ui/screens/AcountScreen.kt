@@ -58,7 +58,7 @@ import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
 @Composable
 fun AcountScreen(
     userID: String,
-    navController: NavHostController= rememberNavController(),
+    navController: NavHostController,
     userViewModel: UsersViewModel= viewModel()
 ){
     val user=userViewModel.getUserById(userID)
@@ -136,7 +136,7 @@ fun AcountScreen(
                 Spacer(modifier = Modifier.padding(8.dp))
                 DeleteAcount(userID,navController)
                 Spacer(modifier = Modifier.padding(8.dp))
-                Cards(userID)
+                Cards(userID,navController)
 
 
             }
@@ -151,8 +151,6 @@ fun ChangePass(userID: String) {
     var newPassw by remember { mutableStateOf("") }
     var confirmPass by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
-    var confirmPasswordVisible by remember { mutableStateOf(false) }
-    var confirmFieldFocused by remember { mutableStateOf(false) }
     var passwordsMatch by remember { mutableStateOf(true) } // Estado para verificar si las contraseñas coinciden
     var showDialog by remember { mutableStateOf(false) } // Estado para mostrar el diálogo
     var texto by remember { mutableStateOf("Contraseña cambiada") }
@@ -462,7 +460,8 @@ fun PasswordChangeConfirmationDialog(
 }
 
 @Composable
-fun Cards(userID: String){
+fun Cards(userID: String,
+          navController: NavHostController){
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -483,7 +482,7 @@ fun Cards(userID: String){
             contentDescription = "Cards",
             tint = Color.Black,
             modifier = Modifier.clickable {
-
+                navController.navigate(Screen.Cards.createRoute(userID))
             }
         )
     }
@@ -492,5 +491,7 @@ fun Cards(userID: String){
 @Preview
 @Composable
 fun CountScreenPReview(){
-    AcountScreen("1")
+    AcountScreen("1",
+        navController = rememberNavController()
+    )
 }

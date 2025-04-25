@@ -24,6 +24,12 @@ sealed class Screen(val route: String) {
         fun createRoute(userID: String): String="lockers/acount/$userID"
     }
     object Configuration: Screen("configuration")
+    object Cards: Screen("lockers/cards/{userID}"){
+        fun createRoute(userID: String): String="lockers/cards/$userID"
+    }
+    object AddCard: Screen("lockers/addCard/{userID}"){
+        fun createRoute(userID: String): String="lockers/addCard/$userID"
+    }
 
 
 }

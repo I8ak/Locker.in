@@ -8,7 +8,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ContactSupport
@@ -47,6 +49,7 @@ fun ConfigurationScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(it)
+                    .verticalScroll(rememberScrollState())
                     .padding(16.dp)
             ) {
                 Spacer(modifier = Modifier.padding(8.dp))
@@ -72,6 +75,9 @@ fun PrivacitySecurity(){
             .padding(8.dp)
             .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp))
             .padding(16.dp)
+            .clickable {
+                isSelected = !isSelected
+            }
     ) {
         Row(
             modifier = Modifier
@@ -124,6 +130,9 @@ fun Help(){
             .padding(8.dp)
             .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp))
             .padding(16.dp)
+            .clickable {
+                isSelected = !isSelected
+            }
     ) {
         Row(
             modifier = Modifier
@@ -176,6 +185,9 @@ fun AboutUs(){
             .padding(8.dp)
             .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp))
             .padding(16.dp)
+            .clickable {
+                isSelected = !isSelected
+            }
     ) {
         Row(
             modifier = Modifier
@@ -228,6 +240,9 @@ fun ContactUs(){
             .padding(8.dp)
             .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp))
             .padding(16.dp)
+            .clickable {
+                isSelected = !isSelected
+            }
     ) {
         Row(
             modifier = Modifier
@@ -256,19 +271,29 @@ fun ContactUs(){
 
         if (isSelected) {
             Spacer(modifier = Modifier.padding(4.dp))
-            Text("Correo electrónico:", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color.Black)
-            Spacer(modifier = Modifier.padding(4.dp))
-            Text("soporte@locker-in.com", fontSize = 12.sp, color = Color.Black)
+
+            Row(modifier = Modifier.fillMaxWidth()) {
+                Text("Correo electrónico:", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color.Black)
+                Spacer(modifier = Modifier.padding(horizontal = 4.dp))
+                Text("soporte@locker-in.com", fontSize = 15.sp, color = Color.Black)
+            }
             Spacer(modifier = Modifier.padding(8.dp))
-            Text("Teléfono", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color.Black)
-            Spacer(modifier = Modifier.padding(4.dp))
-            Text("+34 654 321 987", fontSize = 12.sp, color = Color.Black)
+
+            Row(modifier = Modifier.fillMaxWidth()) {
+                Text("Teléfono:", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color.Black)
+                Spacer(modifier = Modifier.padding(horizontal = 4.dp))
+                Text("+34 654 321 987", fontSize = 15.sp, color = Color.Black)
+            }
             Spacer(modifier = Modifier.padding(8.dp))
-            Text("Dirección", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color.Black)
-            Spacer(modifier = Modifier.padding(4.dp))
-            Text("Calle del Viajero 42, 28001 Madrid, España", fontSize = 12.sp, color = Color.Black)
+
+            Row(modifier = Modifier.fillMaxWidth()) {
+                Text("Dirección:", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color.Black)
+                Spacer(modifier = Modifier.padding(horizontal = 4.dp))
+                Text("Calle del Viajero 42, 28001 Madrid, España", fontSize = 15.sp, color = Color.Black)
+            }
             Spacer(modifier = Modifier.padding(8.dp))
-            Text("Nuestro equipo de atención al cliente está disponible de lunes a domingo, de 9:00 a 21:00 (hora local). Te responderemos lo antes posible. ¡Gracias por confiar en Locker.in!", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color.Black)
+
+            Text("Nuestro equipo de atención al cliente está disponible de lunes a domingo, de 9:00 a 21:00 (hora local). \nTe responderemos lo antes posible. \n¡Gracias por confiar en Locker.in!", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color.Black)
         }
     }
 }

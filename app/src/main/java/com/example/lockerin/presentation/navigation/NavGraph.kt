@@ -9,6 +9,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.lockerin.presentation.ui.screens.AcountScreen
+import com.example.lockerin.presentation.ui.screens.AddCardScreen
+import com.example.lockerin.presentation.ui.screens.CardsScreen
 import com.example.lockerin.presentation.ui.screens.ConfigurationScreen
 import com.example.lockerin.presentation.ui.screens.DetailsScreen
 import com.example.lockerin.presentation.ui.screens.HomeScreen
@@ -102,10 +104,28 @@ fun NavGraph(
             )
         ) { backStackEntry ->
             val userID = backStackEntry.arguments?.getString("userID")!!
-            AcountScreen(userID)
+            AcountScreen(userID, navController)
         }
         composable(Screen.Configuration.route) {
             ConfigurationScreen(navController)
+        }
+        composable(
+            route = Screen.Cards.route,
+            arguments = listOf(
+                navArgument("userID") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val userID = backStackEntry.arguments?.getString("userID")!!
+            CardsScreen(userID,navController)
+        }
+        composable(
+            route = Screen.AddCard.route,
+            arguments = listOf(
+                navArgument("userID") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val userID = backStackEntry.arguments?.getString("userID")!!
+            AddCardScreen(userID,navController)
         }
     }
 }

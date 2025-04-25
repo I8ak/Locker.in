@@ -150,6 +150,7 @@ fun RegisterScreen(navController: NavHostController) {
                             focusedBorderColor = Color.Black,
                             unfocusedBorderColor = Color.Black
                         )
+
                     )
                     Spacer(modifier = Modifier.padding(5.dp))
 

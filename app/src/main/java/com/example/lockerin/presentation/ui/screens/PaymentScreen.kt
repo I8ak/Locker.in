@@ -151,7 +151,7 @@ fun PaymentScreen(
                         contentDescription = "AddCard",
                         tint = Color.Black,
                         modifier = Modifier.clickable {
-
+                            navController.navigate(Screen.AddCard.createRoute(userID))
                         }
                     )
                 }
