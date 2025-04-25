@@ -3,13 +3,13 @@ package com.example.lockerin.presentation.navigation
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavGraph
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.lockerin.presentation.ui.screens.AcountScreen
+import com.example.lockerin.presentation.ui.screens.ConfigurationScreen
 import com.example.lockerin.presentation.ui.screens.DetailsScreen
 import com.example.lockerin.presentation.ui.screens.HomeScreen
 import com.example.lockerin.presentation.ui.screens.LoginScreen
@@ -94,6 +94,18 @@ fun NavGraph(
             val userID = backStackEntry.arguments?.getString("cardID")!!
             val lockerID = backStackEntry.arguments?.getString("paymentID")!!
             StatusPayScreen( userID,lockerID, navController = navController)
+        }
+        composable(
+            route = Screen.Acount.route,
+            arguments = listOf(
+                navArgument("userID") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val userID = backStackEntry.arguments?.getString("userID")!!
+            AcountScreen(userID)
+        }
+        composable(Screen.Configuration.route) {
+            ConfigurationScreen(navController)
         }
     }
 }

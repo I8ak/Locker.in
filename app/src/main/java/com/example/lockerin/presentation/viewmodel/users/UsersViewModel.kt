@@ -1,6 +1,7 @@
 package com.example.lockerin.presentation.viewmodel.users
 
 import androidx.lifecycle.ViewModel
+import com.example.lockerin.domain.model.Locker
 import com.example.lockerin.domain.model.User
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -52,4 +53,7 @@ class UsersViewModel: ViewModel() {
         )
     )
     val users: StateFlow<List<User>> = _users
+    fun getUserById(userID: String): User? {
+        return users.value.find { it.id == userID }
+    }
 }

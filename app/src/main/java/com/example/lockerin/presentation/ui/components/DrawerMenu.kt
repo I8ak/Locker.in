@@ -126,12 +126,12 @@ fun DrawerMenu(
                     DrawerItem(
                         icon = { Icon(Icons.Default.Person, "Cuenta", tint = Color.Black) },
                         text = "Cuenta",
-                        onClick = { /* navController.navigate(...) */ }
+                        onClick = { navController.navigate(Screen.Acount.createRoute("1")) }
                     )
                     DrawerItem(
                         icon = { Icon(Icons.Default.Settings, "Configuración", tint = Color.Black) },
                         text = "Configuración",
-                        onClick = { /* navController.navigate(...) */ }
+                        onClick = {navController.navigate(Screen.Configuration.route) }
                     )
                 }
 
@@ -209,7 +209,6 @@ fun DrawerMenu(
 
                         },
                         actions = {
-                            // Espacio invisible para balancear el icono de navegación
                             Spacer(modifier = Modifier.width(48.dp))
                         }
                     )

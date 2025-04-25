@@ -61,7 +61,6 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(it)
-
             ) {
 
                     Reservas()
