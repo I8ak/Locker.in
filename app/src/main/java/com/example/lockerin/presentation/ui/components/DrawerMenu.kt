@@ -121,7 +121,7 @@ fun DrawerMenu(
                     DrawerItem(
                         icon = { Icon(Icons.Default.ViewCompactAlt, "Reservas", tint = Color.Black) },
                         text = "Reservas",
-                        onClick = { /* navController.navigate(...) */ }
+                        onClick = { navController.navigate(Screen.ResrvedLockers.route) }
                     )
                     DrawerItem(
                         icon = { Icon(Icons.Default.Person, "Cuenta", tint = Color.Black) },

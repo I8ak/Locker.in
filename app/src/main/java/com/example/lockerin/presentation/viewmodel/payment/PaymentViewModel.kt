@@ -8,11 +8,18 @@ import java.util.Date
 
 class PaymentViewModel: ViewModel(){
     private val _payment = MutableStateFlow<List<Payment>>(listOf(
+        Payment(
+            paymentID = "1",
+            userID = "1",
+            amount = 100.0,
+            date = Date(),
+            status = true
+        )
 
     ))
     val payments :StateFlow<List<Payment>> = _payment
-    fun getPaymentByUserId(userId: String): List<Payment> {
-        return payments.value.filter { it.userID == userId }
+    fun getPaymentByUserId(userId: String): Payment? {
+        return payments.value.find { it.userID == userId }
     }
     fun getPaymentByPaymentId(paymentId: String): Payment? {
         return payments.value.find { it.paymentID == paymentId }

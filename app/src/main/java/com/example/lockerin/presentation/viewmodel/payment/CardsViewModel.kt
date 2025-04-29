@@ -1,15 +1,15 @@
 package com.example.lockerin.presentation.viewmodel.payment
 
 import androidx.lifecycle.ViewModel
-import com.example.lockerin.domain.model.Card
+import com.example.lockerin.domain.model.Tarjeta
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.text.SimpleDateFormat
 
 class CardsViewModel: ViewModel() {
     val format= SimpleDateFormat("MM/yyyy")
-    private val _cards = MutableStateFlow<List<Card>>(listOf(
-        Card(
+    private val _cards = MutableStateFlow<List<Tarjeta>>(listOf(
+        Tarjeta(
             cardID = "1",
             cardNumber = "1234567890123456",
             userId = "1",
@@ -18,7 +18,7 @@ class CardsViewModel: ViewModel() {
             cvv = 123,
             typeCard = "Visa"
         ),
-        Card(
+        Tarjeta(
             cardID = "2",
             cardNumber = "9876543210987654",
             userId = "1",
@@ -27,7 +27,7 @@ class CardsViewModel: ViewModel() {
             cvv = 456,
             typeCard = "MasterCard"
         ),
-        Card(
+        Tarjeta(
             cardID = "3",
             cardNumber = "1111222233334444",
             userId = "2",
@@ -36,7 +36,7 @@ class CardsViewModel: ViewModel() {
             cvv = 789,
             typeCard = "American Express"
         ),
-        Card(
+        Tarjeta(
             cardID = "4",
             cardNumber = "5555666677778888",
             userId = "2",
@@ -46,16 +46,19 @@ class CardsViewModel: ViewModel() {
             typeCard = "MasterCard"
         ),
     ))
-    val cards:StateFlow<List<Card>> = _cards
-    fun getCardByIdUser(userId: String): List<Card> {
-        return cards.value.filter { it.userId == userId }
+    val cards:StateFlow<List<Tarjeta>> = _cards
+    fun getCardByUserId(userId: String): Tarjeta? {
+        return cards.value.find { it.userId == userId }
     }
-    fun getCardById(cardId: String): Card? {
+    fun getCardById(cardId: String): Tarjeta? {
         return cards.value.find { it.cardID == cardId }
     }
 
     fun hasNumberCard(cardNumber: String): String {
         return "**** ${cardNumber.takeLast(4)}"
+    }
+    fun addCard(tarjeta: Tarjeta){
+        _cards.value=_cards.value+tarjeta
     }
 
 

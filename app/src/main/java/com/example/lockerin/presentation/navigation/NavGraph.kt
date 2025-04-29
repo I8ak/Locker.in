@@ -18,6 +18,7 @@ import com.example.lockerin.presentation.ui.screens.LoginScreen
 import com.example.lockerin.presentation.ui.screens.PaymentScreen
 import com.example.lockerin.presentation.ui.screens.RegisterScreen
 import com.example.lockerin.presentation.ui.screens.ReserveScreen
+import com.example.lockerin.presentation.ui.screens.ReservedLockersScreen
 import com.example.lockerin.presentation.ui.screens.SplashScreen
 import com.example.lockerin.presentation.ui.screens.StatusPayScreen
 
@@ -126,6 +127,21 @@ fun NavGraph(
         ) { backStackEntry ->
             val userID = backStackEntry.arguments?.getString("userID")!!
             AddCardScreen(userID,navController)
+        }
+        composable(
+            route = Screen.Reserve.route,
+            arguments = listOf(
+                navArgument("userID") { type = NavType.StringType },
+                navArgument("lockerID") { type = NavType.StringType },
+                navArgument("rentalID") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val userID = backStackEntry.arguments?.getString("userID")!!
+            val lockerID = backStackEntry.arguments?.getString("lockerID")!!
+            val rentalID = backStackEntry.arguments?.getString("rentalID")!!
+            ReservedLockersScreen( lockerID, lockerID, rentalID,
+                navController = navController
+            )
         }
     }
 }

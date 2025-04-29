@@ -5,7 +5,7 @@ import com.google.firebase.firestore.ServerTimestamp
 import java.util.Date
 
 data class User(
-    @DocumentId var id: String = "",
+    @DocumentId var userID: String = "",
     val name: String = "",
     val email: String = "",
     val password: String = "",

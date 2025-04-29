@@ -10,8 +10,8 @@ data class Payment(
     val rentalID: String = "",
     val cardID: String = "",
     val amount: Double = 0.0,
-    val status: String = "",
+    val status: Boolean= false,
     val date: Date? = null,
 ) {
-    constructor() : this("", "", "", "", 0.0, "", null)
+    constructor() : this("", "", "", "", 0.0, false, null)
 }

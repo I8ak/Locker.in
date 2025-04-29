@@ -63,8 +63,8 @@ fun HomeScreen(
                     .padding(it)
             ) {
 
-                    Reservas()
-                    Spacer(modifier = Modifier.weight(1f))
+                Reservas()
+                Spacer(modifier = Modifier.weight(1f))
                 val listaCiudades: LockersViewModel = viewModel()
 
                 Column(
@@ -90,7 +90,7 @@ fun HomeScreen(
                         navController = navController
                     )
                 }
-                    Spacer(modifier = Modifier.weight(2f))
+                Spacer(modifier = Modifier.weight(2f))
 
             }
         }
@@ -110,8 +110,8 @@ fun Reservas() {
             .padding(16.dp)
             .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp))
             .padding(6.dp)
-            .clickable{
-                // Acción al hacer clic en la tarjeta
+            .clickable {
+//                navController.navigate(Screen.ResrvedLockers.route)
             },
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -132,9 +132,11 @@ fun Reservas() {
                 color = Color.Black
             )
 
-                Text(
-                    text = "${listReservas.countLockers("1")} ${if (listReservas.countLockers("1") == 1) "Reserva disponible" else "Reservas disponibles"}", modifier = Modifier.padding(top = 8.dp), color = Color.Black
-                )
+            Text(
+                text = "${listReservas.countLockers("1")} ${if (listReservas.countLockers("1") == 1) "Reserva disponible" else "Reservas disponibles"}",
+                modifier = Modifier.padding(top = 8.dp),
+                color = Color.Black
+            )
 
 
         }
@@ -143,7 +145,7 @@ fun Reservas() {
 
 
 @Composable
-fun CiudadCard(nombre: String, cantidad: Int, imagen: Int,navController: NavHostController) {
+fun CiudadCard(nombre: String, cantidad: Int, imagen: Int, navController: NavHostController) {
     Row(
         modifier = Modifier
             .background(BeigeClaro)
@@ -172,7 +174,7 @@ fun CiudadCard(nombre: String, cantidad: Int, imagen: Int,navController: NavHost
             )
             Text(
                 text = "$cantidad ${if (cantidad == 1) "Locker disponible" else "Lockers disponibles"}",
-                modifier = Modifier.padding(top = 8.dp),color = Color.Black
+                modifier = Modifier.padding(top = 8.dp), color = Color.Black
             )
         }
     }

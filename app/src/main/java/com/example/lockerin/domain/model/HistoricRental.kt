@@ -11,7 +11,6 @@ data class HistoricRental(
     val paymentID: String = "",
     val startDate: Date? = null,
     val endDate: Date? = null,
-    val paymentStatus: Boolean = false
 ){
-    constructor() : this("", "", "", "", "", null, null, false)
+    constructor() : this("", "", "", "", "", null, null)
 }

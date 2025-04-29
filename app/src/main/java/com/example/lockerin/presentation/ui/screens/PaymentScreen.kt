@@ -2,14 +2,11 @@ package com.example.lockerin.presentation.ui.screens
 
 import android.os.Build
 import android.util.Log
-import android.widget.RadioButton
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -39,7 +36,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.lockerin.R
-import com.example.lockerin.domain.model.Card
+import com.example.lockerin.domain.model.Tarjeta
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCard
@@ -51,8 +48,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Constraints
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.lockerin.domain.model.Payment
 import com.example.lockerin.domain.model.Rental
@@ -63,12 +58,10 @@ import com.example.lockerin.presentation.viewmodel.lockers.LockersViewModel
 import com.example.lockerin.presentation.viewmodel.lockers.RentalViewModel
 import com.example.lockerin.presentation.viewmodel.payment.CardsViewModel
 import com.example.lockerin.presentation.viewmodel.payment.PaymentViewModel
-import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.Date
 import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeParseException
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -80,7 +73,7 @@ fun PaymentScreen(
     totalPrice: String,
     navController: NavHostController = rememberNavController(),
 
-) {
+    ) {
     val graphViewModelStoreOwner = remember(navController.graph.id) {
         navController.getViewModelStoreOwner(navController.graph.id)
     }
@@ -121,7 +114,7 @@ fun PaymentScreen(
                     ) { card ->
                         key(card.cardID) {
                             CardsCard(
-                                card = card,
+                                tarjeta = card,
                                 isSelected = card.cardID == selectedCardId,
                                 onCardSelected = { selectedCardId = it },
                                 cardsViewModel = cardsViewModel,
@@ -208,7 +201,7 @@ fun PaymentScreen(
                                 rentalID = rental.rentalID,
                                 cardID = currebntCardId.toString(),
                                 amount = totalPrice.toDouble(),
-                                status = "Completed",
+                                status = true,
                                 date = Date(),
                             )
                             lockesrViewModel.reserveLocker(lockerID)
@@ -251,12 +244,12 @@ fun transformDate(date: String): Date {
 }
 @Composable
 fun CardsCard(
-    card: Card,
+    tarjeta: Tarjeta,
     isSelected: Boolean,
     onCardSelected: (cardId: String) -> Unit,
     cardsViewModel: CardsViewModel
 ) {
-    val imagen = when (card.typeCard) {
+    val imagen = when (tarjeta.typeCard) {
         "Visa" -> R.drawable.visa
         "MasterCard" -> R.drawable.mastercard
         "American Express" -> R.drawable.american_express
@@ -274,7 +267,7 @@ fun CardsCard(
     ) {
         Column(modifier = Modifier.padding(8.dp)) {
             Text(
-                text = card.typeCard,
+                text = tarjeta.typeCard,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black,
@@ -283,21 +276,21 @@ fun CardsCard(
             Row(modifier = Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
                 Image(
                     painter = painterResource(id = imagen),
-                    contentDescription = card.typeCard,
+                    contentDescription = tarjeta.typeCard,
                     modifier = Modifier
                         .padding(horizontal = 8.dp)
                         .size(60.dp)
                 )
                 Spacer(modifier = Modifier.padding(8.dp))
                 Text(
-                    text = cardsViewModel.hasNumberCard(card.cardNumber), color = Color.Black,
+                    text = cardsViewModel.hasNumberCard(tarjeta.cardNumber), color = Color.Black,
                     modifier = Modifier
                         .weight(1f)
                         .align(Alignment.CenterVertically)
                 )
                 RadioButton(
                     selected = isSelected,
-                    onClick = { onCardSelected(card.cardID) },
+                    onClick = { onCardSelected(tarjeta.cardID) },
                     modifier = Modifier
                         .align(Alignment.CenterVertically),
                     colors = RadioButtonDefaults.colors(

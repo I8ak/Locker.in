@@ -20,20 +20,20 @@ class RentalViewModel: ViewModel(){
     @RequiresApi(Build.VERSION_CODES.O)
     private val _rentalLocker = MutableStateFlow<List<Rental>>(
         listOf(
-//            Rental(
-//                rentalID = "1",
-//                userID = "1",
-//                lockerID = "locker1",
-//                startDate =  Date(),
-//                endDate = format.parse("2025-04-8"),
-//            ),
-//            Rental(
-//                rentalID = "2",
-//                userID = "1",
-//                lockerID = "locker2",
-//                startDate = Date(),  // Fecha actual
-//                endDate = format.parse("2025-05-01"),  // 1 mes después
-//            ),
+            Rental(
+                rentalID = "1",
+                userID = "1",
+                lockerID = "locker1",
+                startDate =  Date(),
+                endDate = format.parse("2025-05-8"),
+            ),
+            Rental(
+                rentalID = "2",
+                userID = "1",
+                lockerID = "locker2",
+                startDate = Date(),  // Fecha actual
+                endDate = format.parse("2025-05-01"),  // 1 mes después
+            ),
 //            Rental(
 //                rentalID = "3",
 //                userID = "3",
@@ -79,6 +79,20 @@ class RentalViewModel: ViewModel(){
     @RequiresApi(Build.VERSION_CODES.O)
     fun addRental(rental: Rental) {
         _rentalLocker.value = _rentalLocker.value + rental
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun getRentalById(rentalID: String): Rental? {
+        return rentalLocker.value.find { it.rentalID == rentalID }
+    }
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun getRentalByUserId(userID: String): Rental? {
+        return rentalLocker.value.find { it.userID == userID }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun getLockerByUserId(userID: String): String {
+        return rentalLocker.value.find { it.userID == userID }?.lockerID ?: ""
     }
 
 
