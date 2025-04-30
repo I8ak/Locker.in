@@ -57,9 +57,6 @@ class CardsViewModel: ViewModel() {
     fun hasNumberCard(cardNumber: String): String {
         return "**** ${cardNumber.takeLast(4)}"
     }
-    fun addCard(tarjeta: Tarjeta){
-        _cards.value=_cards.value+tarjeta
-    }
 
 
 }

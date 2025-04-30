@@ -376,57 +376,58 @@ fun ConfirmDeleteAccountDialog(
     onConfirmation: () -> Unit,
     onDismissRequest: () -> Unit,
 ) {
-    AlertDialog(
-        onDismissRequest = onDismissRequest,
-        containerColor = BeigeClaro,
-        title = {
-            Text(
-                text = "¿Eliminar cuenta?",
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp, start = 16.dp, end = 16.dp)
-            )
-        },
-        text = {
-            Text(
-                text = "¿Quieres eliminar tu cuenta de forma permanente?",
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp, horizontal = 16.dp)
-            )
-        },
-        confirmButton = {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Button(
-                    onClick = {
-                        onConfirmation()
-                        onDismissRequest()
-                    },
+        AlertDialog(
+            onDismissRequest = onDismissRequest,
+            containerColor = BeigeClaro,
+            title = {
+                Text(
+                    text = "¿Eliminar cuenta?",
+                    textAlign = TextAlign.Center,
                     modifier = Modifier
-                        .weight(1f)
-                        .padding(end = 4.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Primary)
-                ) {
-                    Text("Sí", color = White)
-                }
-                Button(
-                    onClick = onDismissRequest,
+                        .fillMaxWidth()
+                        .padding(top = 16.dp, start = 16.dp, end = 16.dp)
+                )
+            },
+            text = {
+                Text(
+                    text = "¿Quieres eliminar tu cuenta de forma permanente?",
+                    textAlign = TextAlign.Center,
                     modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 4.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp, horizontal = 16.dp)
+                )
+            },
+            confirmButton = {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("No", color = White)
+                    Button(
+                        onClick = {
+                            onConfirmation()
+                            onDismissRequest()
+                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 4.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                    ) {
+                        Text("Sí", color = White)
+                    }
+                    Button(
+                        onClick = onDismissRequest,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(start = 4.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                    ) {
+                        Text("No", color = White)
+                    }
                 }
-            }
-        },
-        dismissButton = null
-    )
+            },
+            dismissButton = null
+        )
+
 }
 
 @Composable

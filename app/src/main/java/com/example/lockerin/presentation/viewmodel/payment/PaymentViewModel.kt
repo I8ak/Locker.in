@@ -14,6 +14,13 @@ class PaymentViewModel: ViewModel(){
             amount = 100.0,
             date = Date(),
             status = true
+        ),
+        Payment(
+            paymentID = "2",
+            userID = "1",
+            amount = 50.0,
+            date = Date(),
+            status = true
         )
 
     ))

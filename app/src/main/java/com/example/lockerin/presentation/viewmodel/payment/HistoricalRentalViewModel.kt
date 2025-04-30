@@ -19,10 +19,19 @@ class HistoricalRentalViewModel:ViewModel() {
             startDate = Date(),
             endDate = Date()
         ),
+        HistoricRental(
+            historicID = "2",
+            userID = "1",
+            rentalID = "2",
+            lockerID = "locker2",
+            paymentID = "2",
+            startDate = Date(),
+            endDate = Date()
+        ),
     ))
     val historicalRental:StateFlow<List<HistoricRental>> = _historicalRental
-    fun getHistoricalRentalByUserId(userId: String): List<HistoricRental> {
-        return historicalRental.value.filter { it.userID == userId }
+    fun getHistoricalRentalByUserId(userId: String): HistoricRental? {
+        return historicalRental.value.find { it.userID == userId }
     }
     fun addHistoricalRental(historicalRental: HistoricRental) {
         _historicalRental.value = _historicalRental.value + historicalRental

@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Help
@@ -47,11 +48,14 @@ import com.example.lockerin.domain.model.Locker
 import com.example.lockerin.domain.model.Payment
 import com.example.lockerin.domain.model.Rental
 import com.example.lockerin.domain.model.User
+import androidx.compose.foundation.lazy.items
+import androidx.compose.runtime.collectAsState
 import com.example.lockerin.presentation.ui.components.DrawerMenu
 import com.example.lockerin.presentation.ui.theme.BeigeClaro
 import com.example.lockerin.presentation.viewmodel.lockers.LockersViewModel
 import com.example.lockerin.presentation.viewmodel.lockers.RentalViewModel
 import com.example.lockerin.presentation.viewmodel.payment.CardsViewModel
+import com.example.lockerin.presentation.viewmodel.payment.HistoricalRentalViewModel
 import com.example.lockerin.presentation.viewmodel.payment.PaymentViewModel
 import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
 import kotlinx.coroutines.delay
@@ -71,12 +75,16 @@ fun ReservedLockersScreen(
     val lockersViewModel: LockersViewModel = viewModel()
     val rentalViewModel: RentalViewModel = viewModel()
     val paymentViewModel: PaymentViewModel = viewModel()
-    val usersViewModel:UsersViewModel = viewModel()
+    val usersViewModel: UsersViewModel = viewModel()
+    val historicalRentalViewModel: HistoricalRentalViewModel = viewModel()
 
     val user = usersViewModel.getUserById(userID)
     val locker = lockersViewModel.getLockerById(lockerID)
     val rental = rentalViewModel.getRentalById(rentalID)
     val payment = paymentViewModel.getPaymentByUserId(userID)
+
+    val rentalState = rentalViewModel.rentalLocker.collectAsState()
+    val historicRentalState = historicalRentalViewModel.historicalRental.collectAsState()
 
     DrawerMenu(
         textoBar = "Reservas",
@@ -94,16 +102,20 @@ fun ReservedLockersScreen(
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(8.dp)
                 )
-                Spacer(modifier = Modifier.size(8.dp))
-                items { rental?.rentalID->
-                    key(rentalId) {
-                        CardReserved(
-                            locker,
-                            rental,
-                            payment
-                        )
-                    }
 
+                LazyColumn {
+                    items(
+                        rentalState.value.filter { it.userID == userID }
+                    ) { rentalLazy ->
+                        key(rentalLazy) {
+                            Spacer(modifier = Modifier.size(8.dp))
+                            CardReserved(
+                                locker,
+                                rental,
+                                payment
+                            )
+                        }
+                    }
                 }
 
 
@@ -116,10 +128,19 @@ fun ReservedLockersScreen(
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(8.dp)
                 )
-                Spacer(modifier = Modifier.size(8.dp))
-                CardHistoricRents(
-                    user
-                )
+
+                LazyColumn {
+                    items(
+                        historicRentalState.value.filter { it.userID == userID }
+                    ) { historicLazy ->
+                        key(historicLazy) {
+                            Spacer(modifier = Modifier.size(8.dp))
+                            CardHistoricRents(
+                                user
+                            )
+                        }
+                    }
+                }
 
             }
         }
@@ -254,14 +275,14 @@ fun CountDown(endDate: Date?) {
 @Composable
 fun CardHistoricRents(
     user: User?
-){
+) {
     var isSelected by remember { mutableStateOf(false) }
     val lockersViewModel: LockersViewModel = viewModel()
     val rentalViewModel: RentalViewModel = viewModel()
     val paymentViewModel: PaymentViewModel = viewModel()
     val cardsViewModel: CardsViewModel = viewModel()
     val userID = user?.userID ?: ""
-    val lockerID= rentalViewModel.getLockerByUserId(userID)
+    val lockerID = rentalViewModel.getLockerByUserId(userID)
     val locker = lockersViewModel.getLockerById(lockerID)
     val rental = rentalViewModel.getRentalByUserId(userID)
     val payment = paymentViewModel.getPaymentByUserId(userID)
@@ -288,55 +309,73 @@ fun CardHistoricRents(
         )
     ) {
 
-            Column(
-                modifier = Modifier
-                    .background(BeigeClaro)
-                    .padding(12.dp)
-            ) {
+        Column(
+            modifier = Modifier
+                .background(BeigeClaro)
+                .padding(12.dp)
+        ) {
 
-                if (payment?.status ==true){
-                    textStatus= "Pagado"
-                    colorStatus= Color.Green
+            if (payment?.status == true) {
+                textStatus = "Pagado"
+                colorStatus = Color.Green
 
-                }else{
-                    textStatus= "Pendiente"
-                    colorStatus= Color.Red
-                }
-                Row (
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(text = textStatus, color = colorStatus, fontSize = 20.sp)
-                    Icon(
-                        imageVector = arrowIcon,
-                        contentDescription = "Ayuda",
-                        tint = Color.Black,
-                        modifier = Modifier
-                            .clickable {
-                                isSelected = !isSelected
-                            }
-                    )
-                }
-                Spacer(modifier = Modifier.padding(4.dp))
-                Text(text = "Precio total: ${payment?.amount}€", color = Color.Black)
-                Spacer(modifier = Modifier.padding(4.dp))
-                Text(text = "Fecha de reserva: ${convertDateToString(payment?.date)}", color = Color.Black)
-                if (isSelected) {
-                    Spacer(modifier = Modifier.padding(4.dp))
-                    Text(text = "Localización: ${locker?.location} ${locker?.city}", color = Color.Black)
-                    Spacer(modifier = Modifier.padding(4.dp))
-                    Text(text = "Fecha de inicio: ${convertDateToString(rental?.startDate)}", color = Color.Black)
-                    Spacer(modifier = Modifier.padding(4.dp))
-                    Text(text = "Fecha de fin: ${convertDateToString(rental?.endDate)}", color = Color.Black)
-                    Spacer(modifier = Modifier.padding(4.dp))
-                    Text(text = "Tipo de casillero: ${locker?.size} ${locker?.dimension}", color = Color.Black)
-                    Spacer(modifier = Modifier.padding(4.dp))
-                    Text(text = "Número de tarjeta: ${cardsViewModel.hasNumberCard(card?.cardNumber.toString())}", color = Color.Black)
-
-                }
+            } else {
+                textStatus = "Pendiente"
+                colorStatus = Color.Red
             }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(text = textStatus, color = colorStatus, fontSize = 20.sp)
+                Icon(
+                    imageVector = arrowIcon,
+                    contentDescription = "Ayuda",
+                    tint = Color.Black,
+                    modifier = Modifier
+                        .clickable {
+                            isSelected = !isSelected
+                        }
+                )
+            }
+            Spacer(modifier = Modifier.padding(4.dp))
+            Text(text = "Precio total: ${payment?.amount}€", color = Color.Black)
+            Spacer(modifier = Modifier.padding(4.dp))
+            Text(
+                text = "Fecha de reserva: ${convertDateToString(payment?.date)}",
+                color = Color.Black
+            )
+            if (isSelected) {
+                Spacer(modifier = Modifier.padding(4.dp))
+                Text(
+                    text = "Localización: ${locker?.location} ${locker?.city}",
+                    color = Color.Black
+                )
+                Spacer(modifier = Modifier.padding(4.dp))
+                Text(
+                    text = "Fecha de inicio: ${convertDateToString(rental?.startDate)}",
+                    color = Color.Black
+                )
+                Spacer(modifier = Modifier.padding(4.dp))
+                Text(
+                    text = "Fecha de fin: ${convertDateToString(rental?.endDate)}",
+                    color = Color.Black
+                )
+                Spacer(modifier = Modifier.padding(4.dp))
+                Text(
+                    text = "Tipo de casillero: ${locker?.size} ${locker?.dimension}",
+                    color = Color.Black
+                )
+                Spacer(modifier = Modifier.padding(4.dp))
+                Text(
+                    text = "Número de tarjeta: ${cardsViewModel.hasNumberCard(card?.cardNumber.toString())}",
+                    color = Color.Black
+                )
+
+            }
+        }
 
 
     }
@@ -346,6 +385,6 @@ fun CardHistoricRents(
 @RequiresApi(Build.VERSION_CODES.O)
 @Preview
 @Composable
-fun ReserverScreenPreview() {
+fun ReserverLockerScreenPreview() {
     ReservedLockersScreen("1", "1", "locker1", rememberNavController())
 }

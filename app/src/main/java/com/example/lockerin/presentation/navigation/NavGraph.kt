@@ -13,12 +13,14 @@ import com.example.lockerin.presentation.ui.screens.AddCardScreen
 import com.example.lockerin.presentation.ui.screens.CardsScreen
 import com.example.lockerin.presentation.ui.screens.ConfigurationScreen
 import com.example.lockerin.presentation.ui.screens.DetailsScreen
+import com.example.lockerin.presentation.ui.screens.EmailResetPassScreen
 import com.example.lockerin.presentation.ui.screens.HomeScreen
 import com.example.lockerin.presentation.ui.screens.LoginScreen
 import com.example.lockerin.presentation.ui.screens.PaymentScreen
 import com.example.lockerin.presentation.ui.screens.RegisterScreen
 import com.example.lockerin.presentation.ui.screens.ReserveScreen
 import com.example.lockerin.presentation.ui.screens.ReservedLockersScreen
+import com.example.lockerin.presentation.ui.screens.ResetPass
 import com.example.lockerin.presentation.ui.screens.SplashScreen
 import com.example.lockerin.presentation.ui.screens.StatusPayScreen
 
@@ -142,6 +144,12 @@ fun NavGraph(
             ReservedLockersScreen( lockerID, lockerID, rentalID,
                 navController = navController
             )
+        }
+        composable(Screen.EmailResetPass.route) {
+            EmailResetPassScreen(navController)
+        }
+        composable(Screen.ResetPass.route) {
+            ResetPass(navController)
         }
     }
 }
