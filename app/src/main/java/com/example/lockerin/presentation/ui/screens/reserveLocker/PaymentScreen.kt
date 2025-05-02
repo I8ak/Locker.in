@@ -1,4 +1,4 @@
-package com.example.lockerin.presentation.ui.screens
+package com.example.lockerin.presentation.ui.screens.reserveLocker
 
 import android.os.Build
 import android.util.Log
@@ -58,6 +58,8 @@ import com.example.lockerin.presentation.viewmodel.lockers.LockersViewModel
 import com.example.lockerin.presentation.viewmodel.lockers.RentalViewModel
 import com.example.lockerin.presentation.viewmodel.payment.CardsViewModel
 import com.example.lockerin.presentation.viewmodel.payment.PaymentViewModel
+import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
+import org.koin.androidx.compose.koinViewModel
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.Date
@@ -72,18 +74,21 @@ fun PaymentScreen(
     endDate: String,
     totalPrice: String,
     navController: NavHostController = rememberNavController(),
-
+    userViewModel: UsersViewModel= koinViewModel()
     ) {
     val graphViewModelStoreOwner = remember(navController.graph.id) {
         navController.getViewModelStoreOwner(navController.graph.id)
     }
-    val lockesrViewModel = LockersViewModel()
-    val paymentViewModel: PaymentViewModel = viewModel(viewModelStoreOwner = graphViewModelStoreOwner)
-    val cardsViewModel: CardsViewModel = viewModel(viewModelStoreOwner = graphViewModelStoreOwner)
-    val rentalViewModel: RentalViewModel = viewModel(viewModelStoreOwner = graphViewModelStoreOwner)
+    val lockesrViewModel: LockersViewModel= koinViewModel()
+    val paymentViewModel: PaymentViewModel = koinViewModel()
+    val cardsViewModel: CardsViewModel = koinViewModel()
+    val rentalViewModel: RentalViewModel = koinViewModel()
+    val user= userViewModel.getUserById(userID)
     DrawerMenu(
         textoBar = "Medios de pago",
         navController = navController,
+        authViewModel = viewModel(),
+        fullUser = user,
         content = { paddingValues ->
             Column(
                 modifier = Modifier
@@ -204,7 +209,7 @@ fun PaymentScreen(
                                 status = true,
                                 date = Date(),
                             )
-                            lockesrViewModel.reserveLocker(lockerID)
+                            //lockesrViewModel.reserveLocker(lockerID)
                             rentalViewModel.addRental(
                                 rental
                             )

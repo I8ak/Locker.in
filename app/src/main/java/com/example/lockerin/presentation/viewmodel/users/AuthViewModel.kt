@@ -1,0 +1,163 @@
+package com.example.lockerin.presentation.viewmodel.users
+
+import android.util.Log
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.lockerin.domain.model.User
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.auth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import com.google.firebase.auth.FirebaseAuth // Asegúrate de tener esta importación si usas getInstance()
+import com.google.firebase.auth.ktx.auth // Asegúrate de tener esta importación si usas Firebase.auth
+import com.google.firebase.FirebaseException // Importar FirebaseException para logging más detallado
+
+
+
+enum class AuthState{
+    LOGGED_IN,
+    LOGGED_OUT,
+    LOADING,
+    ERROR
+}
+
+class AuthViewModel : ViewModel(){
+    private val firebaseAuth= Firebase.auth
+    private val firestore = FirebaseFirestore.getInstance()
+
+
+    // Propiedad para obtener solo el UID del usuario actual
+    val currentUserId: String?
+        get() = firebaseAuth.currentUser?.uid
+
+    private val _authState = MutableStateFlow(AuthState.LOADING)
+    val authState: StateFlow<AuthState> = _authState
+    init {
+        Log.d("AuthViewModel", "ViewModel init: Estableciendo idioma a 'es'")
+        firebaseAuth.setLanguageCode("es")
+        Log.d("AuthViewModel", "ViewModel init: Idioma establecido. Idioma actual reportado por Auth: ${firebaseAuth.languageCode}") // Log para verificar si se estableció
+
+        firebaseAuth.addAuthStateListener { auth ->
+            _authState.value = if (auth.currentUser != null) {
+                AuthState.LOGGED_IN
+            } else {
+                AuthState.LOGGED_OUT
+            }
+        }
+    }
+    fun createUser(
+        name: String,
+        email: String,
+        password: String,
+        role: String,
+        onComplete: (Boolean, String?) -> Unit
+    ){
+        _authState.value= AuthState.LOADING
+        Log.d("AuthViewModel", "createUser: $name, $email, $password, $role")
+        firebaseAuth.createUserWithEmailAndPassword(email, password)
+            .addOnCompleteListener { task ->
+                if(task.isSuccessful){
+                    val firebaseUser = firebaseAuth.currentUser
+                    firebaseUser?.let {
+                        Log.d("AuthViewModel", "Guardando datos en Firestore para UID: ${it.uid}")
+                        val newUser= User(
+                            userID = it.uid,
+                            name = name,
+                            email = email,
+                            password = "",
+                            role = role
+                        )
+                        firestore.collection("users").document(it.uid).set(newUser)
+                            .addOnSuccessListener {
+                                Log.d("AuthViewModel", "Datos de usuario guardados en Firestore.")
+                                _authState.value = AuthState.LOGGED_IN
+                                onComplete(true, null)
+                            }
+                            .addOnFailureListener { e ->
+                                Log.e("AuthViewModel", "Error al guardar en Firestore: ${e.message}", e)
+                                _authState.value = AuthState.LOGGED_OUT
+                                onComplete(false, e.message)
+                            }
+                    }?:run {
+                        Log.e("AuthViewModel", "Error interno: Usuario de Auth nulo después de createUser exitoso.")
+                        _authState.value = AuthState.LOGGED_OUT
+                        onComplete(false, "Error al obtener el usuario")
+                    }
+                }else{
+                    Log.e("AuthViewModel", "Error al crear usuario en Auth: ${task.exception?.message}", task.exception) // <-- Añade este Log de ERROR
+                    _authState.value = AuthState.LOGGED_OUT
+                    onComplete(false, task.exception?.message)
+                }
+            }
+    }
+    fun signIn(
+        email: String,
+        password: String,
+        onComplete: (Boolean, String?) -> Unit
+    ){
+        _authState.value= AuthState.LOADING
+        firebaseAuth.signInWithEmailAndPassword(email, password)
+            .addOnCompleteListener { task ->
+                if(task.isSuccessful){
+                    _authState.value = AuthState.LOGGED_IN
+                    onComplete(true, null)
+                }else{
+                    _authState.value = AuthState.LOGGED_OUT
+                    onComplete(false, task.exception?.message)
+                }
+            }
+    }
+    fun signOut(){
+        viewModelScope.launch {
+            firebaseAuth.signOut()
+            _authState.value = AuthState.LOGGED_OUT
+        }
+    }
+
+    fun updatePassword(
+        newPassword: String,
+        onComplete: (Boolean, String?) -> Unit
+    ){
+        val user = firebaseAuth.currentUser
+        if(user != null){
+            user.updatePassword(newPassword)
+                .addOnCompleteListener { task ->
+                    if(task.isSuccessful){
+                        onComplete(true, null)
+                    }else{
+                        onComplete(false, task.exception?.message)
+                    }
+                }
+        }else{
+            onComplete(false, "Usuario no autenticado")
+        }
+    }
+
+    fun deleteUser(onComplete: (Boolean, String?) -> Unit){
+        val user = firebaseAuth.currentUser
+        if(user != null){
+            user.delete()
+                .addOnCompleteListener { task ->
+                    if(task.isSuccessful){
+                        firestore.collection("users").document(user.uid).delete()
+                            .addOnSuccessListener {
+                                onComplete(true, null)
+                            }
+                            .addOnFailureListener { e ->
+                                onComplete(false, e.message)
+                            }
+                    }else{
+                        onComplete(false, task.exception?.message)
+                    }
+                }
+        }else{
+            onComplete(false, "Usuario no autenticado")
+        }
+    }
+
+
+
+}

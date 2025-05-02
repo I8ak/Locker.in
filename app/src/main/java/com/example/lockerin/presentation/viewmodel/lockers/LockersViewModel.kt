@@ -3,70 +3,32 @@ package com.example.lockerin.presentation.viewmodel.lockers
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.lockerin.domain.model.Locker
+import com.example.lockerin.domain.usecase.locker.AddLockerUseCase
+import com.example.lockerin.domain.usecase.locker.CountAvalibleLockerByCityUseCase
+import com.example.lockerin.domain.usecase.locker.DeleteLockerUseCase
+import com.example.lockerin.domain.usecase.locker.EditLockerUseCase
+import com.example.lockerin.domain.usecase.locker.GetLockerByIdUseCase
+import com.example.lockerin.domain.usecase.locker.ListLockersUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import java.util.UUID
 
-class LockersViewModel:ViewModel() {
-    private val _lockers = MutableStateFlow<List<Locker>>(listOf(
-        Locker(
-            lockerID = "locker1",
-            location = "Location 1",
-            city = "Madrid",
-            status = true,
-            size = "Large",
-            dimension = "4x4x4",
-            pricePerHour = 10.0,
-        ),
-        Locker(
-            lockerID = "locker2",
-            location = "Location 2",
-            city = "Madrid",
-            status = false,
-            size = "Medium",
-            dimension = "3x3x3",
-            pricePerHour = 5.0,
-        ),
-        Locker(
-            lockerID = "locker3",
-            location = "Location 3",
-            city = "Barcelona",
-            status = true,
-            size = "Small",
-            dimension = "2x2x2",
-            pricePerHour = 2.0,
-        ),
-        Locker(
-            lockerID = "locker4",
-            location = "Location 4",
-            city = "Barcelona",
-            status = false,
-            size = "Large",
-            dimension = "4x4x4",
-            pricePerHour = 10.0,
-        ),
-        Locker(
-            lockerID = "locker5",
-            location = "Location 3",
-            city = "Barcelona",
-            status = true,
-            size = "Small",
-            dimension = "2x2x2",
-            pricePerHour = 2.0,
-        ),
-        Locker(
-            lockerID = "locker6",
-            location = "Location 2",
-            city = "Madrid",
-            status = false,
-            size = "Large",
-            dimension = "4x4x4",
-            pricePerHour = 10.0,
-        )
-    ))
+class LockersViewModel(
+    listLockersUseCase: ListLockersUseCase,
+    val addLockerUseCase: AddLockerUseCase,
+    val deleteLockerUseCase: DeleteLockerUseCase,
+    val getLockerByIdUseCase: GetLockerByIdUseCase,
+    val editlockerUseCase: EditLockerUseCase,
+    val countAvalibleLockerByCityUseCase: CountAvalibleLockerByCityUseCase
+):ViewModel() {
+    private val _lockers =listLockersUseCase()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 //    fun setLockerId(id: String){
 //        val filtered = _lockers.value.filter { it.lockerID == id }
 //        _lockers.value = filtered
@@ -78,14 +40,45 @@ class LockersViewModel:ViewModel() {
 
     val lockers: StateFlow<List<Locker>> = _lockers
 
-    fun countAvailableLockersByCity(city: String): Int {
-        return lockers.value.count { locker ->
-            locker.city.equals(city, ignoreCase = true) && locker.status
+
+    private val _availableCounts = MutableStateFlow<Map<String, Int>>(emptyMap())
+    val availableCounts: StateFlow<Map<String, Int>> = _availableCounts.asStateFlow()
+
+    fun countAvailableLockersByCity(city: String) {
+        viewModelScope.launch {
+            val count = countAvalibleLockerByCityUseCase(city)
+            _availableCounts.value = _availableCounts.value.toMutableMap().apply {
+                put(city, count)
+            }
         }
     }
 
-    fun getLockerById(lockerId: String): Locker? {
-        return lockers.value.find { it.lockerID == lockerId }
+    suspend fun getLockerById(id: String): Locker? {
+        return getLockerByIdUseCase(id)
+    }
+
+
+
+    fun addLocker(locker: Locker, onIdAlreadyExists: () -> Unit) {
+        viewModelScope.launch {
+            val existingLocker = getLockerById(locker.lockerID)
+            if (existingLocker != null) {
+                onIdAlreadyExists()
+            } else {
+                addLockerUseCase(locker)
+
+            }
+        }
+    }
+    fun deleteLocker(id: Locker) {
+        viewModelScope.launch {
+            deleteLockerUseCase(id)
+        }
+    }
+    fun editLocker(locker: Locker) {
+        viewModelScope.launch {
+            editlockerUseCase(locker)
+        }
     }
 
 
@@ -95,17 +88,17 @@ class LockersViewModel:ViewModel() {
 //            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
 //
 //    // Function to reserve a locker
-    fun reserveLocker(lockerId: String) {
-        _lockers.update { lockers ->
-            lockers.map { locker ->
-                if (locker.lockerID == lockerId) {
-                    locker.copy(status = false) // Mark as reserved
-                } else {
-                    locker
-                }
-            }
-        }
-    }
+//    fun reserveLocker(lockerId: String) {
+//        _lockers.update { lockers ->
+//            lockers.map { locker ->
+//                if (locker.lockerID == lockerId) {
+//                    locker.copy(status = false) // Mark as reserved
+//                } else {
+//                    locker
+//                }
+//            }
+//        }
+//    }
 //
 //    // Function to free a locker
 //    fun freeLocker(lockerId: String) {

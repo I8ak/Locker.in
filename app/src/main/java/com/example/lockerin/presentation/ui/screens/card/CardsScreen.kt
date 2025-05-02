@@ -1,4 +1,4 @@
-package com.example.lockerin.presentation.ui.screens
+package com.example.lockerin.presentation.ui.screens.card
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -17,13 +17,19 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCard
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -40,17 +46,27 @@ import com.example.lockerin.domain.model.Tarjeta
 import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.components.DrawerMenu
 import com.example.lockerin.presentation.viewmodel.payment.CardsViewModel
+import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun CardsScreen(
     userID: String,
     navController: NavHostController = rememberNavController(),
+    userViewModel: UsersViewModel= koinViewModel(),
+    cardsViewModel: CardsViewModel = koinViewModel()
 ) {
-    val cardsViewModel: CardsViewModel = viewModel()
-    val cardsState = cardsViewModel.cards.collectAsState()
+    val user by userViewModel.user.collectAsState()
+    val cardsState by cardsViewModel.cards.collectAsState()
+    LaunchedEffect(userID) {
+        cardsViewModel.setUserId(userID)
+    }
+
     DrawerMenu(
         textoBar = "Mis tarjetas",
         navController = navController,
+        authViewModel = viewModel(),
+        fullUser = user,
         content = { paddingValues ->
 
             Column(
@@ -62,7 +78,7 @@ fun CardsScreen(
             ) {
                 LazyColumn{
                     items(
-                        cardsState.value.filter { it.userId == userID }
+                        cardsState
                     ) { card ->
                         key(card.cardID) {
                             CardsCard(
@@ -108,6 +124,7 @@ fun CardsCard(
     tarjeta: Tarjeta,
     cardsViewModel: CardsViewModel
 ) {
+    var isSelected by remember { mutableStateOf(false) }
     val imagen = when (tarjeta.typeCard) {
         "Visa" -> R.drawable.visa
         "MasterCard" -> R.drawable.mastercard
@@ -118,7 +135,8 @@ fun CardsCard(
         modifier = Modifier
             .fillMaxSize()
             .padding(8.dp)
-            .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp)),
+            .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp))
+        .clickable { isSelected = !isSelected },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color.Transparent
@@ -148,6 +166,29 @@ fun CardsCard(
                         .align(Alignment.CenterVertically)
                 )
             }
+            if (isSelected) {
+                Text(
+                    text = "Nombre: ${tarjeta.cardName}",
+                    color = Color.Black,
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                )
+                Text(
+                    text = "Fecha de vencimiento: ${tarjeta.expDate}",
+                    color = Color.Black,
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                )
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Eliminar",
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clickable {
+                           cardsViewModel.removeCard(tarjeta)
+                        }
+                        .align(Alignment.End)
+                )
+            }
+
         }
     }
 }

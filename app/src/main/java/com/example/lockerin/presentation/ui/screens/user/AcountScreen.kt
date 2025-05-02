@@ -1,4 +1,4 @@
-package com.example.lockerin.presentation.ui.screens
+package com.example.lockerin.presentation.ui.screens.user
 
 import android.util.Log
 import androidx.compose.foundation.background
@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Lock
@@ -29,13 +28,13 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.text.font.FontWeight
@@ -53,18 +52,26 @@ import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.components.DrawerMenu
 import com.example.lockerin.presentation.ui.theme.BeigeClaro
 import com.example.lockerin.presentation.ui.theme.Primary
+import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun AcountScreen(
     userID: String,
     navController: NavHostController,
-    userViewModel: UsersViewModel= viewModel()
+    userViewModel: UsersViewModel= koinViewModel(),
+    authViewModel: AuthViewModel = viewModel()
 ){
+    val userId= authViewModel.currentUserId
+    val userState by userViewModel.user.collectAsState()
     val user=userViewModel.getUserById(userID)
+    Log.d("usuario",userID)
     DrawerMenu(
         textoBar = "Cuenta",
         navController=navController,
+        authViewModel = viewModel(),
+        fullUser = userState,
         content = {
             Column(
                 modifier = Modifier
@@ -132,9 +139,9 @@ fun AcountScreen(
                     )
                 }
                 Spacer(modifier = Modifier.padding(8.dp))
-                ChangePass(userID)
+                ChangePass(authViewModel)
                 Spacer(modifier = Modifier.padding(8.dp))
-                DeleteAcount(userID,navController)
+                DeleteAcount(authViewModel,navController,userViewModel,userId.toString())
                 Spacer(modifier = Modifier.padding(8.dp))
                 Cards(userID,navController)
 
@@ -145,7 +152,7 @@ fun AcountScreen(
 }
 
 @Composable
-fun ChangePass(userID: String) {
+fun ChangePass(authViewModel: AuthViewModel) {
     var isSelected by remember { mutableStateOf(false) }
     var oldPassword by remember { mutableStateOf("") }
     var newPassw by remember { mutableStateOf("") }
@@ -161,6 +168,9 @@ fun ChangePass(userID: String) {
             .padding(8.dp)
             .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp))
             .padding(16.dp)
+            .clickable{
+                isSelected = !isSelected
+            }
     ) {
         Text(
             text = "Cambiar contraseña",
@@ -206,8 +216,10 @@ fun ChangePass(userID: String) {
                     .background(Color.Transparent, RoundedCornerShape(12.dp)),
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color.Black,
-                    unfocusedBorderColor = Color.Black,
+                            focusedBorderColor = Color.Black,
+                            unfocusedBorderColor = Color.Black,
+                            focusedTextColor = Color.Black,
+                            unfocusedTextColor = Color.Black
                 )
             )
             OutlinedTextField(
@@ -243,8 +255,10 @@ fun ChangePass(userID: String) {
                     .background(Color.Transparent, RoundedCornerShape(12.dp)),
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color.Black,
-                    unfocusedBorderColor = Color.Black,
+                            focusedBorderColor = Color.Black,
+                            unfocusedBorderColor = Color.Black,
+                            focusedTextColor = Color.Black,
+                            unfocusedTextColor = Color.Black
                 )
             )
             Spacer(modifier = Modifier.padding(5.dp))
@@ -282,8 +296,10 @@ fun ChangePass(userID: String) {
                     .background(Color.Transparent),
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color.Black,
-                    unfocusedBorderColor = Color.Black,
+                            focusedBorderColor = Color.Black,
+                            unfocusedBorderColor = Color.Black,
+                            focusedTextColor = Color.Black,
+                            unfocusedTextColor = Color.Black
                 )
             )
             Spacer(modifier = Modifier.padding(5.dp))
@@ -304,18 +320,20 @@ fun ChangePass(userID: String) {
                             texto="Los campos estan vacios"
                         }else {
                             if (passwordsMatch){
-                                texto="Contraseña cambiada exitosamente"
-                                isSelected=false
-                                oldPassword=""
-                                newPassw=""
-                                confirmPass=""
+                                authViewModel.updatePassword(newPassw) { success, errorMessage ->
+                                    if (success) {
+                                        texto = "Contraseña cambiada exitosamente."
+                                        oldPassword = ""
+                                        newPassw = ""
+                                        confirmPass = ""
+                                    }
+                                }
                             }else {
                                 texto="Las contraseñas no coinciden"
                             }
                         }
 
-                        // Aquí iría la lógica para cambiar la contraseña en la base de datos
-                        // Solo si passwordsMatch es true
+
 
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Primary),
@@ -335,8 +353,9 @@ fun ChangePass(userID: String) {
 }
 
 @Composable
-fun DeleteAcount(userID: String, navController: NavController){
+fun DeleteAcount(authViewModel: AuthViewModel, navController: NavController,userViewModel: UsersViewModel,userId:String){
     var showDialog by remember { mutableStateOf(false) }
+    var deleteErrorMessage by remember { mutableStateOf<String?>(null) }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -362,11 +381,25 @@ fun DeleteAcount(userID: String, navController: NavController){
         if (showDialog) {
             ConfirmDeleteAccountDialog(
                 onConfirmation = {
-                    // Aquí puedes colocar la lógica para eliminar la cuenta
-                    Log.d("Cuenta","Cuenta eliminada")
-                    navController.navigate(Screen.Login.route)
+                    userViewModel.deleteAccount(userId) { success, errorMessage ->
+                        if (success) {
+                            authViewModel.deleteUser { success, errorMessage ->
+                                authViewModel.signOut()
+                                navController.navigate(Screen.Login.route) {
+                                    popUpTo(Screen.Login.route) { inclusive = true }
+                                }
+                            }
+                        } else {
+                            deleteErrorMessage = errorMessage
+                        }
+                    }
+
+
                 },
-                onDismissRequest = { showDialog = false })
+                onDismissRequest = {
+                    showDialog = false // Cerrar diálogo al cancelar
+                }
+            )
         }
     }
 }
@@ -385,7 +418,8 @@ fun ConfirmDeleteAccountDialog(
                     textAlign = TextAlign.Center,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 16.dp, start = 16.dp, end = 16.dp)
+                        .padding(top = 16.dp, start = 16.dp, end = 16.dp),
+                    color = Color.Black,
                 )
             },
             text = {
@@ -394,7 +428,8 @@ fun ConfirmDeleteAccountDialog(
                     textAlign = TextAlign.Center,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 16.dp, horizontal = 16.dp)
+                        .padding(vertical = 16.dp, horizontal = 16.dp),
+                    color = Color.Black,
                 )
             },
             confirmButton = {
@@ -443,7 +478,8 @@ fun PasswordChangeConfirmationDialog(
                 text = texto,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth(),
-                fontSize = 20.sp
+                fontSize = 20.sp,
+                color = Color.Black
             )
         },
         confirmButton = {

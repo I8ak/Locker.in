@@ -1,9 +1,7 @@
-package com.example.lockerin.presentation.ui.screens
+package com.example.lockerin.presentation.ui.screens.user
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.net.Uri
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -16,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -31,6 +28,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -42,6 +40,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -64,15 +63,22 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.lockerin.presentation.ui.theme.Primary
 import androidx.core.net.toUri
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.theme.BeigeClaro
+import com.example.lockerin.presentation.viewmodel.users.AuthState
+import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun RegisterScreen(navController: NavHostController) {
+fun RegisterScreen(
+    navController: NavHostController,
+    authViewModel: AuthViewModel= viewModel()
+) {
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+
     var user by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -80,6 +86,11 @@ fun RegisterScreen(navController: NavHostController) {
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPassword by remember { mutableStateOf(false) }
     var confirmFieldFocused by remember { mutableStateOf(false) }
+
+    val authenticationState by authViewModel.authState.collectAsState()
+    val isLoading = authenticationState == AuthState.LOADING
+
+    val context = LocalContext.current
     Scaffold(
         modifier = Modifier.statusBarsPadding(),
         snackbarHost = { SnackbarHost(snackbarHostState)},
@@ -148,9 +159,10 @@ fun RegisterScreen(navController: NavHostController) {
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color.Black,
-                            unfocusedBorderColor = Color.Black
+                            unfocusedBorderColor = Color.Black,
+                            focusedTextColor = Color.Black,
+                            unfocusedTextColor = Color.Black
                         )
-
                     )
                     Spacer(modifier = Modifier.padding(5.dp))
 
@@ -179,7 +191,9 @@ fun RegisterScreen(navController: NavHostController) {
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color.Black,
-                            unfocusedBorderColor = Color.Black
+                            unfocusedBorderColor = Color.Black,
+                            focusedTextColor = Color.Black,
+                            unfocusedTextColor = Color.Black
                         )
                     )
                     Spacer(modifier = Modifier.padding(5.dp))
@@ -219,6 +233,8 @@ fun RegisterScreen(navController: NavHostController) {
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color.Black,
                             unfocusedBorderColor = Color.Black,
+                            focusedTextColor = Color.Black,
+                            unfocusedTextColor = Color.Black
                         )
                     )
                     Spacer(modifier = Modifier.padding(5.dp))
@@ -264,6 +280,8 @@ fun RegisterScreen(navController: NavHostController) {
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color.Black,
                             unfocusedBorderColor = Color.Black,
+                            focusedTextColor = Color.Black,
+                            unfocusedTextColor = Color.Black
                         )
                     )
                     Spacer(modifier = Modifier.padding(5.dp))
@@ -349,6 +367,28 @@ fun RegisterScreen(navController: NavHostController) {
                                         )
                                     }
                                 }
+
+                                if (!isLoading){
+                                    val userRole="user"
+                                    authViewModel.createUser(user.capitalize(), email, password, userRole){
+                                        success,errorMessage->
+                                        if (success) {
+                                            navController.navigate(Screen.Home.route) {
+                                                popUpTo(Screen.Register.route) {
+                                                    inclusive = true
+                                                }
+                                            }
+                                        }else{
+                                            scope.launch {
+                                                snackbarHostState.showSnackbar(
+                                                    message = "Error al registrar el usuario: $errorMessage",
+                                                    duration = SnackbarDuration.Short
+                                                )
+                                            }
+                                        }
+                                    }
+
+                                }
                             },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = if (allFieldsValid) Primary else Color.Gray.copy(alpha = 0.5f),
@@ -356,9 +396,16 @@ fun RegisterScreen(navController: NavHostController) {
                             ),
                             enabled = true
                         ) {
-                            Text("Ingresar", color = Color.White)
-                            Icon(Icons.Default.ArrowForward, contentDescription = "Ingresar",
-                                tint = Color.White)
+                            if (isLoading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp),
+                                    color = Color.White,
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                Text("Registrarse", color = Color.White)
+                                Icon(Icons.Default.ArrowForward, contentDescription = "Registrarse", tint = Color.White)
+                            }
                         }
                     }
                 }

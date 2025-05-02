@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -41,42 +42,55 @@ android {
 }
 
 dependencies {
+    // Koin
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.compose)
+
     implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation(libs.androidx.material.icons.extended)
-    implementation(libs.androidx.material3)
-    implementation(libs.androidx.material.icons.extended)
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.navigation.compose)
-    implementation(libs.firebase.firestore)
-    implementation(libs.androidx.core.ktx)
+
     implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.lifecycle.livedata.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+
+
+    // Material3 y Compose UI
+    implementation(libs.androidx.material3)
     implementation(libs.androidx.ui)
+
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.androidx.material.icons.extended)
+
+
+    // BOMs
+    implementation(platform(libs.androidx.compose.bom)) // BOM de Compose
+    implementation(platform("com.google.firebase:firebase-bom:33.13.0"))
+
+
+    // Librerías de Firebase
+    implementation(libs.firebase.firestore)
+
+
+    implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation("com.google.firebase:firebase-auth")
+
+    // AndroidX Core, Activity
+    implementation(libs.androidx.core.ktx)
+
+    implementation(libs.androidx.activity.compose) // Usa esta si está en libs
+
+
+    // Navegación Compose
+    implementation(libs.androidx.navigation.compose)
+
+    // Otras dependencias
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.annotation)
     implementation(libs.androidx.constraintlayout)
-    implementation(libs.androidx.lifecycle.livedata.ktx)
-    implementation(libs.androidx.lifecycle.viewmodel.ktx)
-    implementation(libs.firebase.firestore.ktx)
-    implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.0")
-    // Import the BoM for the Firebase platform
-    implementation(platform("com.google.firebase:firebase-bom:33.12.0"))
-
-    // Add the dependency for the Firebase Authentication library
-    // When using the BoM, you don't specify versions in Firebase library dependencies
-    implementation("com.google.firebase:firebase-auth")
-    implementation ("androidx.core:core-ktx:1.12.0")
-    implementation ("androidx.activity:activity-compose:1.8.2")
-    implementation ("androidx.compose.ui:ui")
-    implementation ("androidx.compose.material3:material3")
-    implementation ("com.google.accompanist:accompanist-webview:0.30.1")
+    implementation("com.google.accompanist:accompanist-webview:0.30.1") // Esta no parece gestionada por tus BOMs, mantén la versión si la necesitas
 
 
-
+    // Dependencias de prueba 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -84,4 +98,5 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
 }

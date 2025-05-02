@@ -1,4 +1,4 @@
-package com.example.lockerin.presentation.ui.screens
+package com.example.lockerin.presentation.ui.screens.user
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -34,26 +35,33 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.White
 
 
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.theme.BeigeClaro
 import com.example.lockerin.presentation.ui.theme.Primary
+import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 
 
 @Composable
 fun LoginScreen(
-    navController: NavHostController
+    navController: NavHostController,
+    authViewModel: AuthViewModel=viewModel()
 ){
+    var showDialog by remember { mutableStateOf(false) }
+    var dialogMessage by remember { mutableStateOf("") }
     Surface(
         modifier = Modifier.statusBarsPadding(),color = BeigeClaro
     ) {
@@ -85,8 +93,10 @@ fun LoginScreen(
                         .background(Color.Transparent, RoundedCornerShape(12.dp)), // Fondo blanco con esquinas redondas
                     shape = RoundedCornerShape(12.dp), // Bordes circulares
                     colors =  OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color.Black,
-                        unfocusedBorderColor = Color.Black
+                            focusedBorderColor = Color.Black,
+                            unfocusedBorderColor = Color.Black,
+                            focusedTextColor = Color.Black,
+                            unfocusedTextColor = Color.Black
                     )
                 )
                 Spacer(modifier = Modifier.padding(5.dp))
@@ -126,8 +136,10 @@ fun LoginScreen(
                         .background(Color.Transparent, RoundedCornerShape(12.dp)),
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color.Black,
-                        unfocusedBorderColor = Color.Black,
+                            focusedBorderColor = Color.Black,
+                            unfocusedBorderColor = Color.Black,
+                            focusedTextColor = Color.Black,
+                            unfocusedTextColor = Color.Black
                     )
                 )
                 Spacer(modifier = Modifier.padding(5.dp))
@@ -144,18 +156,31 @@ fun LoginScreen(
                 ){
                     Button(
                         onClick = {
-                            navController.navigate(Screen.Home.route){
-                                popUpTo(Screen.Login.route) {
-                                    inclusive = true
+                            if (email.isBlank() || password.isBlank()) {
+                                dialogMessage = "Por favor, introduce email y contraseña."
+                                showDialog = true
+                                return@Button
+                            }
+                            authViewModel.signIn(email, password) { success, errorMessage ->
+                                if (success) {
+                                    navController.navigate(Screen.Home.route){
+                                        popUpTo(Screen.Login.route) {
+                                            inclusive = true
+                                        }
+                                    }
+                                } else { dialogMessage= "La contraseña o el email son incorrectos"
+                                    showDialog = true
                                 }
                             }
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Primary),
                     ) {
                         Text(text = "Ingresar",
-                            color = Color.White)
+                            color = White
+                        )
                         Icon(imageVector = Icons.Default.ArrowForward, contentDescription = "Row Icon",
-                            tint = Color.White)
+                            tint = White
+                        )
                     }
                 }
             }
@@ -185,9 +210,43 @@ fun LoginScreen(
             }
         }
     }
+        if (showDialog) {
+            UserConfirmationDialog(
+                onDismissRequest = { showDialog = false }
+                , texto = dialogMessage
+            )
+        }
 }
 
-
+@Composable
+fun UserConfirmationDialog(
+    onDismissRequest: () -> Unit,
+    texto: String
+) {
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        containerColor = BeigeClaro,
+        title = {
+            Text(
+                text = texto,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
+                fontSize = 20.sp,
+                color = Color.Black
+            )
+        },
+        confirmButton = {
+            Button(
+                onClick = onDismissRequest,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = Primary)
+            ) {
+                Text("Cerrar", color = White)
+            }
+        },
+        dismissButton = null
+    )
+}
 
 @Preview
 @Composable

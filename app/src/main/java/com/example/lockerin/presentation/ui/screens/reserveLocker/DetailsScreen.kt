@@ -1,4 +1,4 @@
-package com.example.lockerin.presentation.ui.screens
+package com.example.lockerin.presentation.ui.screens.reserveLocker
 
 import android.util.Log
 import androidx.compose.foundation.background
@@ -17,14 +17,18 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.lockerin.domain.model.Locker
@@ -32,18 +36,31 @@ import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.components.DrawerMenu
 import com.example.lockerin.presentation.ui.theme.Primary
 import com.example.lockerin.presentation.viewmodel.lockers.LockersViewModel
+import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun DetailsScreen(lockerID: String,
-                  startDate: String,
-                  endDate: String,
-                  totalPrice: String,
-                  navController: NavHostController= rememberNavController()
+fun DetailsScreen(
+    userId: String,
+    lockerID: String,
+    startDate: String,
+    endDate: String,
+    totalPrice: String,
+    navController: NavHostController= rememberNavController(),
+    userViewModel: UsersViewModel= koinViewModel()
 ){
+    val user= userViewModel.getUserById(userId)
     Log.d("DetailsScreen", totalPrice.toString())
+    val lockersViewModel: LockersViewModel= koinViewModel()
+    var locker by remember { mutableStateOf<Locker?>(null) }
+    LaunchedEffect(lockerID) {
+        locker = lockersViewModel.getLockerById(lockerID)
+    }
     DrawerMenu(
         textoBar = "Datos de la Reserva",
         navController = navController,
+        authViewModel = viewModel(),
+        fullUser = user,
         content = { paddingValues ->
             Column(
                 modifier = Modifier
@@ -52,8 +69,9 @@ fun DetailsScreen(lockerID: String,
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                val lockersViewModel = LockersViewModel()
-                val locker = lockersViewModel.getLockerById(lockerID)
+
+
+
 
                 locker?.let {
                     // Fecha de inicio
@@ -227,13 +245,13 @@ fun DetailsScreen(lockerID: String,
     )
 }
 
-@Composable
-@Preview
-fun DetailsScreenPreview(){
-    DetailsScreen(
-        lockerID = "locker1",
-        startDate = "2023-10-01",
-        endDate = "2023-10-02",
-        totalPrice = "10.0"
-    )
-}
+//@Composable
+//@Preview
+//fun DetailsScreenPreview(){
+//    DetailsScreen(
+//        lockerID = "locker1",
+//        startDate = "2023-10-01",
+//        endDate = "2023-10-02",
+//        totalPrice = "10.0"
+//    )
+//}

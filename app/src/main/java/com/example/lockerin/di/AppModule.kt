@@ -1,8 +1,61 @@
 package com.example.lockerin.di
 
+import com.example.lockerin.data.source.remote.CardFirestoreRepository
+import com.example.lockerin.data.source.remote.LockerFirestoreRepository
+import com.example.lockerin.data.source.remote.UserFirestoreRepository
+import com.example.lockerin.domain.usecase.card.AddCardUseCase
+import com.example.lockerin.domain.usecase.card.DeleteCardUseCase
+import com.example.lockerin.domain.usecase.card.GetCardByIdUseCase
+import com.example.lockerin.domain.usecase.card.GetCardByUserIdUseCase
+import com.example.lockerin.domain.usecase.card.ListCardUseCase
+import com.example.lockerin.domain.usecase.locker.AddLockerUseCase
+import com.example.lockerin.domain.usecase.locker.CountAvalibleLockerByCityUseCase
+import com.example.lockerin.domain.usecase.locker.DeleteLockerUseCase
+import com.example.lockerin.domain.usecase.locker.EditLockerUseCase
+import com.example.lockerin.domain.usecase.locker.GetLockerByIdUseCase
+import com.example.lockerin.domain.usecase.locker.ListLockersUseCase
+import com.example.lockerin.domain.usecase.user.DeleteUserUseCase
+import com.example.lockerin.domain.usecase.user.GetUserUseCase
+import com.example.lockerin.presentation.viewmodel.lockers.LockersViewModel
+import com.example.lockerin.presentation.viewmodel.payment.CardsViewModel
+import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
+import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
 import com.google.firebase.firestore.FirebaseFirestore
+import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 val appModule = module  {
     single { FirebaseFirestore.getInstance() }
+    //Repositories
+    single { UserFirestoreRepository(get()) }
+    single { LockerFirestoreRepository(get()) }
+    single { CardFirestoreRepository(get()) }
+
+    //Users
+    factory { GetUserUseCase(get()) }
+    factory { DeleteUserUseCase(get()) }
+
+    //Lockers
+    factory { ListLockersUseCase(get()) }
+    factory { AddLockerUseCase(get()) }
+    factory { DeleteLockerUseCase(get())  }
+    factory { GetLockerByIdUseCase(get()) }
+    factory { EditLockerUseCase(get()) }
+    factory { CountAvalibleLockerByCityUseCase(get()) }
+
+    //Cards
+    factory { ListCardUseCase(get()) }
+    factory { AddCardUseCase(get()) }
+    factory { DeleteCardUseCase(get()) }
+    factory { GetCardByIdUseCase(get()) }
+    factory { GetCardByUserIdUseCase(get()) }
+
+
+    //ViewModels
+    viewModel { UsersViewModel(get(),get()) }
+    viewModel { AuthViewModel() }
+    viewModel { LockersViewModel(get(),get(),get(),get(),get(),get()) }
+    viewModel { CardsViewModel(get(),get(),get(),get(),get()) }
+
+
 }

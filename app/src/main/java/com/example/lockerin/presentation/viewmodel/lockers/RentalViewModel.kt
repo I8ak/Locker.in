@@ -8,12 +8,12 @@ import androidx.lifecycle.ViewModel
 import com.example.lockerin.domain.model.Rental
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import org.koin.androidx.compose.koinViewModel
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.util.Date
 
 class RentalViewModel: ViewModel(){
-    val lockesrViewModel = LockersViewModel()
     @SuppressLint("SimpleDateFormat")
     @RequiresApi(Build.VERSION_CODES.O)
     val format =  SimpleDateFormat("yyyy-MM-dd")
@@ -59,22 +59,23 @@ class RentalViewModel: ViewModel(){
     }
     @RequiresApi(Build.VERSION_CODES.O)
     fun isLockerAvailable(lockerId: String, date: Date?, city: String): Boolean {
-        if (date == null) return false
-
-        val lockersInCity = lockesrViewModel.lockers.value.filter {
-            it.city.equals(city, ignoreCase = true)
-        }
-
-        val selectedLocker = lockersInCity.find { it.lockerID == lockerId }
-        Log.d("casilleros", selectedLocker.toString())
-
-        if (selectedLocker == null) return false
-
-        if (selectedLocker.status) return true
-
-        return rentalLocker.value.any { rental ->
-            rental.lockerID == lockerId && rental.endDate?.before(date) == true
-        }
+//        if (date == null) return false
+//
+//        val lockersInCity = lockesrViewModel.lockers.value.filter {
+//            it.city.equals(city, ignoreCase = true)
+//        }
+//
+//        val selectedLocker = lockersInCity.find { it.lockerID == lockerId }
+//        Log.d("casilleros", selectedLocker.toString())
+//
+//        if (selectedLocker == null) return false
+//
+//        if (selectedLocker.status) return true
+//
+//        return rentalLocker.value.any { rental ->
+//            rental.lockerID == lockerId && rental.endDate?.before(date) == true
+//        }
+        return true
     }
     @RequiresApi(Build.VERSION_CODES.O)
     fun addRental(rental: Rental) {

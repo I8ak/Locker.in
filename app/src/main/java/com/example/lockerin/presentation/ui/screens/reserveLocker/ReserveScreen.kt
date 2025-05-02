@@ -1,4 +1,4 @@
-package com.example.lockerin.presentation.ui.screens
+package com.example.lockerin.presentation.ui.screens.reserveLocker
 
 import android.app.TimePickerDialog
 import android.os.Build
@@ -47,12 +47,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.example.lockerin.R
 import com.example.lockerin.domain.model.Locker
 import com.example.lockerin.presentation.ui.components.DrawerMenu
@@ -67,6 +65,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CardDefaults
 import androidx.compose.ui.text.font.FontWeight
 import com.example.lockerin.presentation.navigation.Screen
+import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
+import org.koin.androidx.compose.koinViewModel
 import java.util.Date
 import java.time.Duration
 import java.time.LocalDateTime
@@ -75,10 +75,13 @@ import java.time.LocalDateTime
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReserveScreen(
+    userID: String,
     navController: NavHostController,
     city: String,
-    lockersViewModel: LockersViewModel = viewModel()
+    lockersViewModel: LockersViewModel = koinViewModel(),
+    userViewModel: UsersViewModel= koinViewModel()
 ) {
+    val user = userViewModel.getUserById(userID)
     val lockers = lockersViewModel.lockers.collectAsState()
     // Estados
     var startDate by remember { mutableStateOf<LocalDate?>(null) }
@@ -114,6 +117,8 @@ fun ReserveScreen(
     DrawerMenu(
         textoBar = city,
         navController = navController,
+        authViewModel = viewModel(),
+        fullUser = user,
         content = { paddingValues ->
             Column(
                 modifier = Modifier
@@ -236,6 +241,7 @@ fun ReserveScreen(
                         items(lockers.value.filter { it.city.equals(city, ignoreCase = true) }) { locker ->
                             key(locker.lockerID) {
                                 LockersCard(
+                                    userID = userID,
                                     locker = locker,
                                     date = startDateAsDate,
                                     rentalViewModel = rentalViewModel,
@@ -398,7 +404,7 @@ fun TimeSelector(
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun LockersCard(locker: Locker, date: Date?, rentalViewModel: RentalViewModel,city: String,navController: NavHostController,duration: Double,startDate: String,endDate: String) {
+fun LockersCard(userID: String, locker: Locker, date: Date?, rentalViewModel: RentalViewModel,city: String,navController: NavHostController,duration: Double,startDate: String,endDate: String) {
     val imagen = when (locker.size) {
         "Small" -> R.drawable.personal_bag
         "Medium" -> R.drawable.luggage
@@ -410,7 +416,7 @@ fun LockersCard(locker: Locker, date: Date?, rentalViewModel: RentalViewModel,ci
             .fillMaxSize()
             .padding(8.dp)
             .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp))
-            .clickable { if (isAvailable) navController.navigate(Screen.Details.createRoute(locker.lockerID,startDate,endDate,(duration*locker.pricePerHour).toString())) },
+            .clickable { if (isAvailable) navController.navigate(Screen.Details.createRoute(userID,locker.lockerID,startDate,endDate,(duration*locker.pricePerHour).toString())) },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color.Transparent
@@ -445,14 +451,14 @@ fun LockersCard(locker: Locker, date: Date?, rentalViewModel: RentalViewModel,ci
 }
 
 
-@RequiresApi(Build.VERSION_CODES.O)
-@Preview
-@Composable
-fun ReserveScreenPreview() {
-    val navController = rememberNavController()
-    ReserveScreen(
-        navController = navController,
-        city = "Madrid"
-    )
-}
+//@RequiresApi(Build.VERSION_CODES.O)
+//@Preview
+//@Composable
+//fun ReserveScreenPreview() {
+//    val navController = rememberNavController()
+//    ReserveScreen(
+//        navController = navController,
+//        city = "Madrid"
+//    )
+//}
 

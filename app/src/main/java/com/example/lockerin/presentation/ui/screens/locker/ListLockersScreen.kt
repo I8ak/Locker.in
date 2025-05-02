@@ -1,0 +1,241 @@
+package com.example.lockerin.presentation.ui.screens.locker
+
+import android.os.Build
+import android.util.Log
+import androidx.annotation.RequiresApi
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import com.example.lockerin.R
+import com.example.lockerin.domain.model.Locker
+import com.example.lockerin.domain.model.User
+import com.example.lockerin.presentation.navigation.Screen
+import com.example.lockerin.presentation.ui.components.DrawerMenu
+import com.example.lockerin.presentation.ui.components.LoadingScreen
+import com.example.lockerin.presentation.ui.theme.BeigeClaro
+import com.example.lockerin.presentation.ui.theme.Primary
+import com.example.lockerin.presentation.viewmodel.lockers.LockersViewModel
+import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
+import kotlinx.coroutines.delay
+import org.koin.androidx.compose.koinViewModel
+import java.util.UUID
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+fun ListLockersScreen(
+    userID: String,
+    navController: NavHostController,
+    userViewModel: UsersViewModel = koinViewModel(),
+    lockerViewModel: LockersViewModel = koinViewModel()
+) {
+    val isLoading = remember { mutableStateOf(true) }
+
+    // Obtener los datos del usuario y los lockers
+    userViewModel.getUserById(userID)
+    val user by userViewModel.user.collectAsState()
+    val lockers by lockerViewModel.lockers.collectAsState()
+
+    // Simular carga de datos (esto debe ser reemplazado con lógica real)
+    LaunchedEffect(lockers) {
+        if (lockers.isNotEmpty()) {
+            isLoading.value = false // Cuando los lockers estén cargados, quitar el indicador
+        }
+    }
+
+    Log.d("Locker en Screen", "Mapped Locker: $lockers")
+
+    if (user != null && lockers != null) {
+        DrawerMenu(
+            textoBar = "Lockers",
+            navController = navController,
+            authViewModel = viewModel(),
+            fullUser = user!!,
+            content = { paddingValues ->
+                Scaffold(
+                    modifier = Modifier.statusBarsPadding(),
+                    content = { innerPadding ->
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(innerPadding)
+                                .background(BeigeClaro)
+                        ) {
+                            LazyColumn(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(8.dp),
+                                contentPadding = paddingValues
+                            ) {
+                                items(lockers) { locker ->
+                                    key(locker.lockerID) {
+                                        LockersCard(
+                                            user = user!!,
+                                            locker = locker,
+                                            navController = navController,
+                                            lockerViewModel = lockerViewModel
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    floatingActionButton = {
+                        Button(
+                            onClick = {
+                                navController.navigate(Screen.AddLocker.createRoute(userID))
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Primary,
+                                disabledContentColor = Color.White.copy(alpha = 0.7f)
+                            )
+                        ) {
+                            Icon(
+                                Icons.Default.Add,
+                                contentDescription = "AddProduct"
+                            )
+                        }
+                    }
+                )
+            }
+        )
+    } else {
+        // Mostrar un estado de carga si los datos aún no están disponibles
+        LoadingScreen(true)
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+fun LockersCard(
+    user: User?, locker: Locker?, navController: NavHostController,
+    lockerViewModel: LockersViewModel
+) {
+    if (locker == null || user == null) {
+        Log.d("Locker en Card", "Mapped Locker: $locker y user: $user")
+        return
+    }
+    Log.d("Locker en Card", "Mapped Locker: $locker y user: $user")
+    val imagen = when (locker.size) {
+        "Small" -> R.drawable.personal_bag
+        "Medium" -> R.drawable.luggage
+        else -> R.drawable.trolley
+    }
+    Card(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(8.dp)
+            .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp)),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.Transparent
+        )
+    ) {
+        Row(
+            Modifier.fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Image(
+                painter = painterResource(id = imagen),
+                contentDescription = "size ${locker.size}",
+                modifier = Modifier
+                    .size(64.dp)
+                    .align(Alignment.CenterVertically)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Column(
+                Modifier
+                    .padding(8.dp)
+                    .weight(1f)
+            ) {
+
+                Text(text = "Locker Id: ${locker.lockerID}", color = Color.Black)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(text = "Dirección: ${locker.location}", color = Color.Black)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(text = "Ciudad: ${locker.city}", color = Color.Black)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Estado: ${if (locker.status) "Disponible" else "No disponible"}",
+                    color = Color.Black
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(text = "Tamaño: ${locker.size}", color = Color.Black)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(text = "Dimensiones: ${locker.dimension}", color = Color.Black)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(text = "Precio por hora: ${locker.pricePerHour}", color = Color.Black)
+            }
+            Row(
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(8.dp)
+            ) {
+                Icon(
+                    Icons.Filled.Edit,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clickable {
+                            navController.navigate(
+                                Screen.EditLocker.createRoute(
+                                    user.userID,
+                                    locker.lockerID
+                                )
+                            )
+                        },
+                    contentDescription = "Editar",
+                    tint = Color.Black
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Icon(
+                    Icons.Filled.Delete,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clickable { lockerViewModel.deleteLocker(locker) },
+                    contentDescription = "Eliminar",
+                    tint = Color.Black
+                )
+            }
+        }
+    }
+}
+

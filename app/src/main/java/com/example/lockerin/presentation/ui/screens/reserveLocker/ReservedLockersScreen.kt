@@ -1,4 +1,4 @@
-package com.example.lockerin.presentation.ui.screens
+package com.example.lockerin.presentation.ui.screens.reserveLocker
 
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Help
 import androidx.compose.material.icons.filled.KeyboardDoubleArrowDown
 import androidx.compose.material.icons.filled.KeyboardDoubleArrowUp
 import androidx.compose.material3.Card
@@ -59,6 +58,7 @@ import com.example.lockerin.presentation.viewmodel.payment.HistoricalRentalViewM
 import com.example.lockerin.presentation.viewmodel.payment.PaymentViewModel
 import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
 import kotlinx.coroutines.delay
+import org.koin.androidx.compose.koinViewModel
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -70,16 +70,22 @@ fun ReservedLockersScreen(
     userID: String,
     rentalID: String,
     lockerID: String,
-    navController: NavHostController
+    navController: NavHostController,
+    lockersViewModel: LockersViewModel = koinViewModel(),
+    rentalViewModel: RentalViewModel = viewModel(),
+    paymentViewModel: PaymentViewModel = viewModel(),
+    usersViewModel: UsersViewModel = koinViewModel(),
+    historicalRentalViewModel: HistoricalRentalViewModel = viewModel()
 ) {
-    val lockersViewModel: LockersViewModel = viewModel()
-    val rentalViewModel: RentalViewModel = viewModel()
-    val paymentViewModel: PaymentViewModel = viewModel()
-    val usersViewModel: UsersViewModel = viewModel()
-    val historicalRentalViewModel: HistoricalRentalViewModel = viewModel()
+
+
 
     val user = usersViewModel.getUserById(userID)
-    val locker = lockersViewModel.getLockerById(lockerID)
+    var locker by remember { mutableStateOf<Locker?>(null) }
+
+    LaunchedEffect(lockerID) {
+        locker = lockersViewModel.getLockerById(lockerID)
+    }
     val rental = rentalViewModel.getRentalById(rentalID)
     val payment = paymentViewModel.getPaymentByUserId(userID)
 
@@ -89,6 +95,8 @@ fun ReservedLockersScreen(
     DrawerMenu(
         textoBar = "Reservas",
         navController = navController,
+        authViewModel = viewModel(),
+        fullUser = user,
         content = {
             Column(
                 modifier = Modifier
@@ -277,13 +285,17 @@ fun CardHistoricRents(
     user: User?
 ) {
     var isSelected by remember { mutableStateOf(false) }
-    val lockersViewModel: LockersViewModel = viewModel()
+    val lockersViewModel: LockersViewModel = koinViewModel()
     val rentalViewModel: RentalViewModel = viewModel()
     val paymentViewModel: PaymentViewModel = viewModel()
     val cardsViewModel: CardsViewModel = viewModel()
     val userID = user?.userID ?: ""
     val lockerID = rentalViewModel.getLockerByUserId(userID)
-    val locker = lockersViewModel.getLockerById(lockerID)
+    var locker by remember { mutableStateOf<Locker?>(null) }
+
+    LaunchedEffect(lockerID) {
+        locker = lockersViewModel.getLockerById(lockerID)
+    }
     val rental = rentalViewModel.getRentalByUserId(userID)
     val payment = paymentViewModel.getPaymentByUserId(userID)
     val card = cardsViewModel.getCardByUserId(userID)

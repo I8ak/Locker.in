@@ -20,11 +20,13 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cases
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.ShopTwo
 import androidx.compose.material.icons.filled.ViewCompactAlt
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.DrawerValue
@@ -40,6 +42,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,8 +59,12 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.lockerin.domain.model.User
 import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.theme.BeigeClaro
+import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
+import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
 import kotlinx.coroutines.launch
 import kotlin.div
 import kotlin.times
@@ -68,14 +75,19 @@ import kotlin.times
 fun DrawerMenu(
     textoBar: String,
     navController: NavHostController,
-    content: @Composable (PaddingValues) -> Unit
+    content: @Composable (PaddingValues) -> Unit,
+    authViewModel: AuthViewModel=viewModel(),
+    fullUser:User?
 ) {
+//    val currentUser by authViewModel.currentUserFlow.collectAsState()
+    val currentUserID = authViewModel.currentUserId
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val defaultAvatar = painterResource(R.drawable.default_avatar)
     val drawerWidth = with(LocalConfiguration.current) {
         screenWidthDp.dp * 2f / 3f
     }
+    val usersViewModel:UsersViewModel = viewModel()
 
     ModalNavigationDrawer(
         modifier = Modifier.statusBarsPadding(),
@@ -106,7 +118,7 @@ fun DrawerMenu(
                             contentScale = ContentScale.Crop
                         )
                         Text(
-                            text = "Nombre de usuario",
+                            text = fullUser?.name ?: "Nombre de Usuario",
                             modifier = Modifier.padding(start = 8.dp).weight(1f),
                             color = Color.Black
                         )
@@ -126,13 +138,22 @@ fun DrawerMenu(
                     DrawerItem(
                         icon = { Icon(Icons.Default.Person, "Cuenta", tint = Color.Black) },
                         text = "Cuenta",
-                        onClick = { navController.navigate(Screen.Acount.createRoute("1")) }
+                        onClick = { navController.navigate(Screen.Acount.createRoute(userID = fullUser?.userID.toString())) }
                     )
                     DrawerItem(
                         icon = { Icon(Icons.Default.Settings, "Configuración", tint = Color.Black) },
                         text = "Configuración",
                         onClick = {navController.navigate(Screen.Configuration.route) }
                     )
+                    if (fullUser?.role == "administrator"){
+                        DrawerItem(
+                            icon = { Icon(Icons.Default.ShopTwo, "Lockers", tint = Color.Black) },
+                            text = "Lockers",
+                            onClick = { navController.navigate(Screen.ListLockers.createRoute(
+                                fullUser.userID.toString())) }
+                        )
+
+                    }
                 }
 
                 // Barra inferior fija
@@ -145,11 +166,17 @@ fun DrawerMenu(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { navController.navigate(Screen.Login.route){
-                                popUpTo(Screen.Home.route) {
-                                    inclusive = true
+                            .clickable {
+                                scope.launch {
+                                    drawerState.close()
+                                    authViewModel.signOut()
+                                    navController.navigate(Screen.Login.route) {
+                                        popUpTo(Screen.Login.route) {
+                                            inclusive = true
+                                        }
+                                    }
                                 }
-                            } }
+                            }
                             .padding(vertical = 12.dp, horizontal = 16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -250,20 +277,21 @@ fun DrawerItem(
     }
 }
 
-@Preview
-@Composable
-fun PreviewDrawerMenu() {
-    DrawerMenu(
-        textoBar = "Drawer Menu",
-        navController = rememberNavController(),
-        content = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(it)
-            ) {
-                Text(text = "Contenido de la pantalla")
-            }
-        }
-    )
-}
+//@Preview
+//@Composable
+//fun PreviewDrawerMenu() {
+//    DrawerMenu(
+//        textoBar = "Drawer Menu",
+//        navController = rememberNavController(),
+//        authViewModel = viewModel(),
+//        content = {
+//            Column(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(it)
+//            ) {
+//                Text(text = "Contenido de la pantalla")
+//            }
+//        }
+//    )
+//}

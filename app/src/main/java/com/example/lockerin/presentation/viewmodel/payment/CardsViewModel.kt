@@ -1,61 +1,75 @@
 package com.example.lockerin.presentation.viewmodel.payment
 
+import androidx.compose.runtime.Composable
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.lockerin.domain.model.Locker
 import com.example.lockerin.domain.model.Tarjeta
+import com.example.lockerin.domain.model.User
+import com.example.lockerin.domain.usecase.card.AddCardUseCase
+import com.example.lockerin.domain.usecase.card.DeleteCardUseCase
+import com.example.lockerin.domain.usecase.card.GetCardByIdUseCase
+import com.example.lockerin.domain.usecase.card.GetCardByUserIdUseCase
+import com.example.lockerin.domain.usecase.card.ListCardUseCase
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import java.text.SimpleDateFormat
+import kotlinx.coroutines.flow.SharingStarted
 
-class CardsViewModel: ViewModel() {
-    val format= SimpleDateFormat("MM/yyyy")
-    private val _cards = MutableStateFlow<List<Tarjeta>>(listOf(
-        Tarjeta(
-            cardID = "1",
-            cardNumber = "1234567890123456",
-            userId = "1",
-            cardName = "John Doe",
-            expDate = format.parse("12/2025"),
-            cvv = 123,
-            typeCard = "Visa"
-        ),
-        Tarjeta(
-            cardID = "2",
-            cardNumber = "9876543210987654",
-            userId = "1",
-            cardName = "Jane Smith",
-            expDate = format.parse("06/2028"),
-            cvv = 456,
-            typeCard = "MasterCard"
-        ),
-        Tarjeta(
-            cardID = "3",
-            cardNumber = "1111222233334444",
-            userId = "2",
-            cardName = "Alice Johnson",
-            expDate = format.parse("09/2027"),
-            cvv = 789,
-            typeCard = "American Express"
-        ),
-        Tarjeta(
-            cardID = "4",
-            cardNumber = "5555666677778888",
-            userId = "2",
-            cardName = "Bob Brown",
-            expDate = format.parse("03/2026"),
-            cvv = 101,
-            typeCard = "MasterCard"
-        ),
-    ))
-    val cards:StateFlow<List<Tarjeta>> = _cards
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+
+class CardsViewModel(
+    listCardUseCase: ListCardUseCase,
+    val getCardsUseCase: GetCardByIdUseCase,
+    val addCardUseCase: AddCardUseCase,
+    val deleteCardUseCase: DeleteCardUseCase,
+    val getCardByUserIdUseCase: GetCardByUserIdUseCase
+): ViewModel() {
+    private val _userId = MutableStateFlow<String?>(null)
+    val userId: StateFlow<String?> = _userId.asStateFlow()
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val _card: MutableStateFlow<Tarjeta?> = MutableStateFlow(null)
+    val cards: StateFlow<List<Tarjeta>> = _userId
+        .filterNotNull()
+        .flatMapLatest { userId: String ->
+            getCardByUserIdUseCase(userId)
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     fun getCardByUserId(userId: String): Tarjeta? {
         return cards.value.find { it.userId == userId }
     }
-    fun getCardById(cardId: String): Tarjeta? {
-        return cards.value.find { it.cardID == cardId }
+    fun setUserId(userId: String) {
+        _userId.value = userId
+    }
+     fun getCardById(cardId: String): Tarjeta? {
+         viewModelScope.launch {
+            _card.value= getCardsUseCase(cardId)
+         }
+        return _card.value
     }
 
     fun hasNumberCard(cardNumber: String): String {
         return "**** ${cardNumber.takeLast(4)}"
+    }
+
+    fun addCard(card: Tarjeta) {
+        viewModelScope.launch {
+            addCardUseCase(card)
+        }
+    }
+    fun removeCard(card: Tarjeta) {
+        viewModelScope.launch {
+            deleteCardUseCase(card)
+        }
+    }
+
+    fun countCardsByUserId(userId: String): Int {
+        return cards.value.count { it.userId == userId }
     }
 
 

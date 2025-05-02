@@ -1,4 +1,4 @@
-package com.example.lockerin.presentation.ui.screens
+package com.example.lockerin.presentation.ui.screens.user
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -12,12 +12,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ContactSupport
-import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Help
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.KeyboardDoubleArrowDown
 import androidx.compose.material.icons.filled.PrivacyTip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -30,20 +27,26 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.example.lockerin.presentation.ui.components.DrawerMenu
+import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun ConfigurationScreen(
-    navController: NavHostController
+    userId: String,
+    navController: NavHostController,
+    userViewModel: UsersViewModel= koinViewModel()
 ){
+    val user = userViewModel.getUserById(userId)
     DrawerMenu(
       textoBar = "Configuración",
         navController=navController,
+        authViewModel = viewModel(),
+        fullUser = user,
         content = {
             Column(
                 modifier = Modifier
@@ -298,9 +301,9 @@ fun ContactUs(){
     }
 }
 
-@Preview
-@Composable
-fun ConfigurationScreenPreview(){
-    ConfigurationScreen(navController = rememberNavController())
-}
+//@Preview
+//@Composable
+//fun ConfigurationScreenPreview(){
+//    ConfigurationScreen(navController = rememberNavController())
+//}
 

@@ -3,33 +3,37 @@ package com.example.lockerin.presentation.navigation
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.lockerin.presentation.ui.screens.AcountScreen
-import com.example.lockerin.presentation.ui.screens.AddCardScreen
-import com.example.lockerin.presentation.ui.screens.CardsScreen
-import com.example.lockerin.presentation.ui.screens.ConfigurationScreen
-import com.example.lockerin.presentation.ui.screens.DetailsScreen
-import com.example.lockerin.presentation.ui.screens.EmailResetPassScreen
+import com.example.lockerin.presentation.ui.screens.user.AcountScreen
+import com.example.lockerin.presentation.ui.screens.card.AddCardScreen
+import com.example.lockerin.presentation.ui.screens.locker.AddLockerScreen
+import com.example.lockerin.presentation.ui.screens.card.CardsScreen
+import com.example.lockerin.presentation.ui.screens.reserveLocker.DetailsScreen
+import com.example.lockerin.presentation.ui.screens.user.EmailResetPassScreen
 import com.example.lockerin.presentation.ui.screens.HomeScreen
-import com.example.lockerin.presentation.ui.screens.LoginScreen
-import com.example.lockerin.presentation.ui.screens.PaymentScreen
-import com.example.lockerin.presentation.ui.screens.RegisterScreen
-import com.example.lockerin.presentation.ui.screens.ReserveScreen
-import com.example.lockerin.presentation.ui.screens.ReservedLockersScreen
-import com.example.lockerin.presentation.ui.screens.ResetPass
+import com.example.lockerin.presentation.ui.screens.locker.ListLockersScreen
+import com.example.lockerin.presentation.ui.screens.user.LoginScreen
+import com.example.lockerin.presentation.ui.screens.reserveLocker.PaymentScreen
+import com.example.lockerin.presentation.ui.screens.user.RegisterScreen
+import com.example.lockerin.presentation.ui.screens.reserveLocker.ReserveScreen
+import com.example.lockerin.presentation.ui.screens.reserveLocker.ReservedLockersScreen
+import com.example.lockerin.presentation.ui.screens.user.ResetPass
 import com.example.lockerin.presentation.ui.screens.SplashScreen
-import com.example.lockerin.presentation.ui.screens.StatusPayScreen
+import com.example.lockerin.presentation.ui.screens.locker.EditLockerScreen
+import com.example.lockerin.presentation.ui.screens.reserveLocker.StatusPayScreen
+import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun NavGraph(
+    navController: NavHostController,
     startDestination: String = Screen.Splash.route,
+    authViewModel: AuthViewModel
 ) {
-    val navController = rememberNavController()
     NavHost(
         navController = navController,
         startDestination = startDestination
@@ -41,7 +45,9 @@ fun NavGraph(
             LoginScreen(navController)
         }
         composable(Screen.Register.route) {
-            RegisterScreen(navController)
+            RegisterScreen(
+                navController,
+                authViewModel = authViewModel)
         }
         composable(Screen.Home.route) {
             HomeScreen(navController)
@@ -49,25 +55,29 @@ fun NavGraph(
         composable(
             route = Screen.Reserve.route,
             arguments = listOf(
+                navArgument("userID") { type = NavType.StringType },
                 navArgument("city") { type = NavType.StringType }
             )
         ) { backStackEntry ->
+            val userID = backStackEntry.arguments?.getString("userID")!!
             val city = backStackEntry.arguments?.getString("city")!!
-            ReserveScreen(navController, city)
+            ReserveScreen(userID, navController, city)
         }
         composable(
             route = Screen.Details.route,
             arguments = listOf(
+                navArgument("userID") { type = NavType.StringType },
                 navArgument("lockerID") { type = NavType.StringType },
                 navArgument("startDate") { type = NavType.StringType },
                 navArgument("endDate") { type = NavType.StringType }
             )
         ) { backStackEntry ->
+            val userID = backStackEntry.arguments?.getString("userID")!!
             val lockerID = backStackEntry.arguments?.getString("lockerID")!!
             val startDate = backStackEntry.arguments?.getString("startDate")!!
             val endDate = backStackEntry.arguments?.getString("endDate")!!
             val totalPrice = backStackEntry.arguments?.getString("totalPrice")!!
-            DetailsScreen( lockerID, startDate, endDate,totalPrice,
+            DetailsScreen(userID, lockerID, startDate, endDate,totalPrice,
                 navController = navController
             )
         }
@@ -109,9 +119,9 @@ fun NavGraph(
             val userID = backStackEntry.arguments?.getString("userID")!!
             AcountScreen(userID, navController)
         }
-        composable(Screen.Configuration.route) {
-            ConfigurationScreen(navController)
-        }
+//        composable(Screen.Configuration.route) {
+//            ConfigurationScreen(navController)
+//        }
         composable(
             route = Screen.Cards.route,
             arguments = listOf(
@@ -131,7 +141,7 @@ fun NavGraph(
             AddCardScreen(userID,navController)
         }
         composable(
-            route = Screen.Reserve.route,
+            route = Screen.ResrvedLockers.route,
             arguments = listOf(
                 navArgument("userID") { type = NavType.StringType },
                 navArgument("lockerID") { type = NavType.StringType },
@@ -141,7 +151,7 @@ fun NavGraph(
             val userID = backStackEntry.arguments?.getString("userID")!!
             val lockerID = backStackEntry.arguments?.getString("lockerID")!!
             val rentalID = backStackEntry.arguments?.getString("rentalID")!!
-            ReservedLockersScreen( lockerID, lockerID, rentalID,
+            ReservedLockersScreen( userID, lockerID, rentalID,
                 navController = navController
             )
         }
@@ -150,6 +160,36 @@ fun NavGraph(
         }
         composable(Screen.ResetPass.route) {
             ResetPass(navController)
+        }
+
+        composable(
+            route = Screen.ListLockers.route,
+            arguments = listOf(
+                navArgument("userID") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val userID = backStackEntry.arguments?.getString("userID")!!
+            ListLockersScreen(userID,navController)
+        }
+        composable(
+            route = Screen.AddLocker.route,
+            arguments = listOf(
+                navArgument("userID") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val userID = backStackEntry.arguments?.getString("userID")!!
+            AddLockerScreen(userID,navController)
+        }
+        composable(
+            route = Screen.EditLocker.route,
+            arguments = listOf(
+                navArgument("userID") { type = NavType.StringType },
+                navArgument("lockerID") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val userID = backStackEntry.arguments?.getString("userID")!!
+            val lockerID = backStackEntry.arguments?.getString("lockerID")!!
+            EditLockerScreen(userID,lockerID,navController )
         }
     }
 }

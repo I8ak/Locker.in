@@ -1,4 +1,4 @@
-package com.example.lockerin.presentation.ui.screens
+package com.example.lockerin.presentation.ui.screens.reserveLocker
 
 import android.util.Log
 import androidx.compose.foundation.background
@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -41,10 +40,10 @@ import com.example.lockerin.presentation.ui.theme.BeigeClaro
 import com.example.lockerin.presentation.ui.theme.myGreenColor
 import com.example.lockerin.presentation.viewmodel.payment.CardsViewModel
 import com.example.lockerin.presentation.viewmodel.payment.PaymentViewModel
-import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import androidx.lifecycle.viewmodel.compose.viewModel
+import org.koin.androidx.compose.koinViewModel
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -55,12 +54,9 @@ fun StatusPayScreen(
     navController: NavHostController = rememberNavController(),
 ) {
 
-    val graphViewModelStoreOwner = remember(navController.graph.id) {
-        navController.getViewModelStoreOwner(navController.graph.id)
-    }
 
-    val paymentViewModel: PaymentViewModel = viewModel(viewModelStoreOwner = graphViewModelStoreOwner)
-    val cardsViewModel: CardsViewModel = viewModel(viewModelStoreOwner = graphViewModelStoreOwner)
+    val paymentViewModel: PaymentViewModel = viewModel()
+    val cardsViewModel: CardsViewModel = koinViewModel()
     val startDate = Date()
     val  format = SimpleDateFormat("dd/MM/yyyy",Locale.getDefault())
     Log.d("Payment", "ID: $paymentID")
