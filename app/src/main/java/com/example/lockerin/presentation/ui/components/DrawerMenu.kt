@@ -66,6 +66,7 @@ import com.example.lockerin.presentation.ui.theme.BeigeClaro
 import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
 import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
 import kotlin.div
 import kotlin.times
 
@@ -87,7 +88,7 @@ fun DrawerMenu(
     val drawerWidth = with(LocalConfiguration.current) {
         screenWidthDp.dp * 2f / 3f
     }
-    val usersViewModel:UsersViewModel = viewModel()
+    val usersViewModel:UsersViewModel = koinViewModel()
 
     ModalNavigationDrawer(
         modifier = Modifier.statusBarsPadding(),

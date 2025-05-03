@@ -204,7 +204,7 @@ fun AddCardScreen(
                             cardsViewModel.addCard(
                                 newCard
                             )
-                            navController.navigate(Screen.Cards.createRoute(userID))
+                            navController.popBackStack()
                         }
 
                     },

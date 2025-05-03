@@ -43,6 +43,7 @@ import com.example.lockerin.presentation.viewmodel.payment.PaymentViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.lockerin.presentation.navigation.Screen
 import org.koin.androidx.compose.koinViewModel
 import java.util.Locale
 
@@ -55,7 +56,7 @@ fun StatusPayScreen(
 ) {
 
 
-    val paymentViewModel: PaymentViewModel = viewModel()
+    val paymentViewModel: PaymentViewModel = koinViewModel()
     val cardsViewModel: CardsViewModel = koinViewModel()
     val startDate = Date()
     val  format = SimpleDateFormat("dd/MM/yyyy",Locale.getDefault())
@@ -82,7 +83,7 @@ fun StatusPayScreen(
                 },
                 navigationIcon = {
                     IconButton(
-                        onClick = {  navController.popBackStack() }
+                        onClick = {  navController.navigate(Screen.Home.route) }
                     ) {
                         Icon(imageVector = Icons.Filled.ArrowBack
                             ,contentDescription = "Ir atras"

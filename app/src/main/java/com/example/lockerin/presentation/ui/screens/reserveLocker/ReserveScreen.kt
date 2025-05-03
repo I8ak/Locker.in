@@ -222,7 +222,7 @@ fun ReserveScreen(
                     !dateStartError && !timeStartError && !dateError && !timeError
                 ) {
 
-                    val rentalViewModel: RentalViewModel = viewModel()
+                    val rentalViewModel: RentalViewModel = koinViewModel()
 
                     // Convertir LocalDate a Date para usar en isLockerAvailable
                     val startDateTime = startDate!!.atTime(startTime!!)

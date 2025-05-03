@@ -132,7 +132,7 @@ fun HomeScreen(
 fun Reservas(
     userId: String,
     navController: NavController) {
-    val listReservas: RentalViewModel = viewModel()
+    val listReservas: RentalViewModel = koinViewModel()
     val rentalCount =listReservas.countLockers(userId = userId)
 
     Row(

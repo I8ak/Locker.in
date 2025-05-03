@@ -1,37 +1,49 @@
 package com.example.lockerin.presentation.viewmodel.payment
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.lockerin.domain.model.Locker
 import com.example.lockerin.domain.model.Payment
+import com.example.lockerin.domain.model.Rental
+import com.example.lockerin.domain.usecase.payment.AddPaymentUseCase
+import com.example.lockerin.domain.usecase.payment.ListPaymentsUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import java.util.Date
 
-class PaymentViewModel: ViewModel(){
-    private val _payment = MutableStateFlow<List<Payment>>(listOf(
-        Payment(
-            paymentID = "1",
-            userID = "1",
-            amount = 100.0,
-            date = Date(),
-            status = true
-        ),
-        Payment(
-            paymentID = "2",
-            userID = "1",
-            amount = 50.0,
-            date = Date(),
-            status = true
-        )
-
-    ))
-    val payments :StateFlow<List<Payment>> = _payment
+class PaymentViewModel(
+    val addPaymentUseCase: AddPaymentUseCase,
+    val listPaymentsUseCase: ListPaymentsUseCase
+): ViewModel(){
+    private val _userId = MutableStateFlow<String?>(null)
+    val userId: StateFlow<String?> = _userId.asStateFlow()
+    private val _payments: MutableStateFlow<Payment?> = MutableStateFlow(null)
+    val payments: StateFlow<List<Payment>> = _userId
+        .filterNotNull()
+        .flatMapLatest { userId: String ->
+            listPaymentsUseCase(userId)
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
     fun getPaymentByUserId(userId: String): Payment? {
         return payments.value.find { it.userID == userId }
     }
     fun getPaymentByPaymentId(paymentId: String): Payment? {
         return payments.value.find { it.paymentID == paymentId }
     }
+    @RequiresApi(Build.VERSION_CODES.O)
     fun addPayment(payment: Payment) {
-        _payment.value = _payment.value + payment
+        viewModelScope.launch {
+            addPaymentUseCase(payment)
+        }
     }
 }
+
+

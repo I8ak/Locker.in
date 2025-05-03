@@ -44,6 +44,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.RadioButtonDefaults
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -64,6 +65,7 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.Date
 import java.time.format.DateTimeFormatter
+import kotlin.random.Random
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -74,16 +76,19 @@ fun PaymentScreen(
     endDate: String,
     totalPrice: String,
     navController: NavHostController = rememberNavController(),
-    userViewModel: UsersViewModel= koinViewModel()
+    userViewModel: UsersViewModel= koinViewModel(),
+    //lockesrViewModel: LockersViewModel= koinViewModel(),
+    paymentViewModel: PaymentViewModel = koinViewModel(),
+    cardsViewModel: CardsViewModel = koinViewModel(),
+    rentalViewModel: RentalViewModel = koinViewModel()
     ) {
-    val graphViewModelStoreOwner = remember(navController.graph.id) {
-        navController.getViewModelStoreOwner(navController.graph.id)
+
+
+    val user by userViewModel.user.collectAsState()
+    val cardsState by cardsViewModel.cards.collectAsState()
+    LaunchedEffect(userID) {
+        cardsViewModel.setUserId(userID)
     }
-    val lockesrViewModel: LockersViewModel= koinViewModel()
-    val paymentViewModel: PaymentViewModel = koinViewModel()
-    val cardsViewModel: CardsViewModel = koinViewModel()
-    val rentalViewModel: RentalViewModel = koinViewModel()
-    val user= userViewModel.getUserById(userID)
     DrawerMenu(
         textoBar = "Medios de pago",
         navController = navController,
@@ -98,7 +103,6 @@ fun PaymentScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 var selectedCardId by remember { mutableStateOf<String?>(null) }
-                val cardsState = cardsViewModel.cards.collectAsState()
                 Text(
                     text = "Selecciona una tarjeta",
                     fontSize = 25.sp,
@@ -115,7 +119,7 @@ fun PaymentScreen(
                         .background(Color.Transparent)
                 ) {
                     items(
-                        cardsState.value.filter { it.userId == userID }
+                        cardsState
                     ) { card ->
                         key(card.cardID) {
                             CardsCard(
@@ -192,22 +196,21 @@ fun PaymentScreen(
                     Button(
                         enabled = selectedCardId != null,
                         onClick = {
+                            val rentalIDRandom = generarNumeroSeisDigitos().toString()
                             val currebntCardId=selectedCardId
                             val rental= Rental(
-                                rentalID = "1",
+                                rentalID = rentalIDRandom,
                                 userID = userID,
                                 lockerID = lockerID,
                                 startDate = transformDate(startDate),
                                 endDate = transformDate(endDate),
                             )
                             val payment=Payment(
-                                paymentID = "1",
                                 userID = userID,
                                 rentalID = rental.rentalID,
                                 cardID = currebntCardId.toString(),
                                 amount = totalPrice.toDouble(),
                                 status = true,
-                                date = Date(),
                             )
                             //lockesrViewModel.reserveLocker(lockerID)
                             rentalViewModel.addRental(
@@ -237,6 +240,10 @@ fun PaymentScreen(
             }
         }
     )
+}
+
+fun generarNumeroSeisDigitos(): Int {
+    return Random.nextInt(100000, 1000000)
 }
 
 @RequiresApi(Build.VERSION_CODES.O)

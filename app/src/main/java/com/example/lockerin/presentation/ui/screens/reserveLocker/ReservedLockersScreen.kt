@@ -72,8 +72,8 @@ fun ReservedLockersScreen(
     lockerID: String,
     navController: NavHostController,
     lockersViewModel: LockersViewModel = koinViewModel(),
-    rentalViewModel: RentalViewModel = viewModel(),
-    paymentViewModel: PaymentViewModel = viewModel(),
+    rentalViewModel: RentalViewModel = koinViewModel(),
+    paymentViewModel: PaymentViewModel = koinViewModel(),
     usersViewModel: UsersViewModel = koinViewModel(),
     historicalRentalViewModel: HistoricalRentalViewModel = viewModel()
 ) {
@@ -89,7 +89,7 @@ fun ReservedLockersScreen(
     val rental = rentalViewModel.getRentalById(rentalID)
     val payment = paymentViewModel.getPaymentByUserId(userID)
 
-    val rentalState = rentalViewModel.rentalLocker.collectAsState()
+    val rentalState = rentalViewModel.rentals.collectAsState()
     val historicRentalState = historicalRentalViewModel.historicalRental.collectAsState()
 
     DrawerMenu(
@@ -286,9 +286,9 @@ fun CardHistoricRents(
 ) {
     var isSelected by remember { mutableStateOf(false) }
     val lockersViewModel: LockersViewModel = koinViewModel()
-    val rentalViewModel: RentalViewModel = viewModel()
-    val paymentViewModel: PaymentViewModel = viewModel()
-    val cardsViewModel: CardsViewModel = viewModel()
+    val rentalViewModel: RentalViewModel = koinViewModel()
+    val paymentViewModel: PaymentViewModel = koinViewModel()
+    val cardsViewModel: CardsViewModel = koinViewModel()
     val userID = user?.userID ?: ""
     val lockerID = rentalViewModel.getLockerByUserId(userID)
     var locker by remember { mutableStateOf<Locker?>(null) }
@@ -356,7 +356,7 @@ fun CardHistoricRents(
             Text(text = "Precio total: ${payment?.amount}€", color = Color.Black)
             Spacer(modifier = Modifier.padding(4.dp))
             Text(
-                text = "Fecha de reserva: ${convertDateToString(payment?.date)}",
+                text = "Fecha de reserva: ${convertDateToString(payment?.createdAt)}",
                 color = Color.Black
             )
             if (isSelected) {

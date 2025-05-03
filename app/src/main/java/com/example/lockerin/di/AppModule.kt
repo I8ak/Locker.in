@@ -2,6 +2,8 @@ package com.example.lockerin.di
 
 import com.example.lockerin.data.source.remote.CardFirestoreRepository
 import com.example.lockerin.data.source.remote.LockerFirestoreRepository
+import com.example.lockerin.data.source.remote.PaymentFirestoreRepository
+import com.example.lockerin.data.source.remote.RentalFirestoreRepository
 import com.example.lockerin.data.source.remote.UserFirestoreRepository
 import com.example.lockerin.domain.usecase.card.AddCardUseCase
 import com.example.lockerin.domain.usecase.card.DeleteCardUseCase
@@ -14,10 +16,16 @@ import com.example.lockerin.domain.usecase.locker.DeleteLockerUseCase
 import com.example.lockerin.domain.usecase.locker.EditLockerUseCase
 import com.example.lockerin.domain.usecase.locker.GetLockerByIdUseCase
 import com.example.lockerin.domain.usecase.locker.ListLockersUseCase
+import com.example.lockerin.domain.usecase.payment.AddPaymentUseCase
+import com.example.lockerin.domain.usecase.payment.ListPaymentsUseCase
+import com.example.lockerin.domain.usecase.rental.AddRentalUseCase
+import com.example.lockerin.domain.usecase.rental.ListRentalsByUserIdUseCase
 import com.example.lockerin.domain.usecase.user.DeleteUserUseCase
 import com.example.lockerin.domain.usecase.user.GetUserUseCase
 import com.example.lockerin.presentation.viewmodel.lockers.LockersViewModel
+import com.example.lockerin.presentation.viewmodel.lockers.RentalViewModel
 import com.example.lockerin.presentation.viewmodel.payment.CardsViewModel
+import com.example.lockerin.presentation.viewmodel.payment.PaymentViewModel
 import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
 import com.google.firebase.firestore.FirebaseFirestore
@@ -30,6 +38,8 @@ val appModule = module  {
     single { UserFirestoreRepository(get()) }
     single { LockerFirestoreRepository(get()) }
     single { CardFirestoreRepository(get()) }
+    single { RentalFirestoreRepository(get()) }
+    single { PaymentFirestoreRepository(get()) }
 
     //Users
     factory { GetUserUseCase(get()) }
@@ -50,12 +60,22 @@ val appModule = module  {
     factory { GetCardByIdUseCase(get()) }
     factory { GetCardByUserIdUseCase(get()) }
 
+    //Rentals
+    factory { AddRentalUseCase(get()) }
+    factory { ListRentalsByUserIdUseCase(get()) }
+
+    //Payments
+    factory { AddPaymentUseCase(get()) }
+    factory { ListPaymentsUseCase(get()) }
+
 
     //ViewModels
     viewModel { UsersViewModel(get(),get()) }
     viewModel { AuthViewModel() }
     viewModel { LockersViewModel(get(),get(),get(),get(),get(),get()) }
     viewModel { CardsViewModel(get(),get(),get(),get(),get()) }
+    viewModel { RentalViewModel(get(),get()) }
+    viewModel { PaymentViewModel(get(),get()) }
 
 
 }

@@ -231,7 +231,7 @@ fun DetailsScreen(
 
                     Button(
                         onClick = {
-                            navController.navigate(Screen.Payment.createRoute("1", lockerID, startDate, endDate, totalPrice))
+                            navController.navigate(Screen.Payment.createRoute(userId, lockerID, startDate, endDate, totalPrice))
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Primary)
                     ) {
