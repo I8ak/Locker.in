@@ -80,16 +80,25 @@ fun ReservedLockersScreen(
 
 
 
-    val user = usersViewModel.getUserById(userID)
+    val user by usersViewModel.user.collectAsState()
     var locker by remember { mutableStateOf<Locker?>(null) }
+    LaunchedEffect(userID) {
+        rentalViewModel.setUserId(userID)
+    }
 
     LaunchedEffect(lockerID) {
         locker = lockersViewModel.getLockerById(lockerID)
     }
-    val rental = rentalViewModel.getRentalById(rentalID)
+    LaunchedEffect(rentalID) {
+        rentalViewModel.getRentalById(rentalID)
+    }
+    LaunchedEffect(userID) {
+        rentalViewModel.getRentalByUserId(userID)
+    }
+    val rental by rentalViewModel.selectedRental.collectAsState()
     val payment = paymentViewModel.getPaymentByUserId(userID)
 
-    val rentalState = rentalViewModel.rentals.collectAsState()
+    val rentalState by rentalViewModel.rentals.collectAsState()
     val historicRentalState = historicalRentalViewModel.historicalRental.collectAsState()
 
     DrawerMenu(
@@ -113,7 +122,7 @@ fun ReservedLockersScreen(
 
                 LazyColumn {
                     items(
-                        rentalState.value.filter { it.userID == userID }
+                        rentalState
                     ) { rentalLazy ->
                         key(rentalLazy) {
                             Spacer(modifier = Modifier.size(8.dp))
@@ -204,7 +213,7 @@ fun CardReserved(
 
                 Column {
                     Text(
-                        text = locker?.city ?: "",
+                        text = locker?.lockerID?: "",
                         fontWeight = FontWeight.Bold,
                         fontSize = 25.sp,
                         color = Color.Black
@@ -215,7 +224,7 @@ fun CardReserved(
                     )
                     if (isSelected) {
                         Spacer(modifier = Modifier.size(8.dp))
-                        Text(text = "Localización: ${locker?.location}", color = Color.Black)
+                        Text(text = "Localización: ${locker?.location},${locker?.city} ", color = Color.Black)
                         Spacer(modifier = Modifier.size(8.dp))
                         Text(text = "Precio: ${payment?.amount}€", color = Color.Black)
                         Spacer(modifier = Modifier.size(8.dp))

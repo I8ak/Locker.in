@@ -11,7 +11,14 @@ import kotlinx.coroutines.tasks.await
 class RentalFirestoreRepository(private val firestore: FirebaseFirestore) {
     private val rentalCollection = firestore.collection("rentals")
 
-    fun getRentalById(rentalID: String) = rentalCollection.document(rentalID).get()
+    suspend fun getRentalById(rentalId: String): Rental? {
+        val document = rentalCollection.document(rentalId).get().await()
+        return if (document.exists()) {
+            document.toObject(Rental::class.java)?.copy(rentalID = document.id)
+        } else {
+            null
+        }
+    }
 
 
     suspend fun save(rental: Rental) {

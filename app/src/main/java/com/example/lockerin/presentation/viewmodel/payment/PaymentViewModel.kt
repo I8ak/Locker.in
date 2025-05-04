@@ -8,6 +8,7 @@ import com.example.lockerin.domain.model.Locker
 import com.example.lockerin.domain.model.Payment
 import com.example.lockerin.domain.model.Rental
 import com.example.lockerin.domain.usecase.payment.AddPaymentUseCase
+import com.example.lockerin.domain.usecase.payment.GetPaymentUseCase
 import com.example.lockerin.domain.usecase.payment.ListPaymentsUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -21,7 +22,8 @@ import java.util.Date
 
 class PaymentViewModel(
     val addPaymentUseCase: AddPaymentUseCase,
-    val listPaymentsUseCase: ListPaymentsUseCase
+    val listPaymentsUseCase: ListPaymentsUseCase,
+    val getPaymentUseCase: GetPaymentUseCase
 ): ViewModel(){
     private val _userId = MutableStateFlow<String?>(null)
     val userId: StateFlow<String?> = _userId.asStateFlow()
@@ -35,13 +37,21 @@ class PaymentViewModel(
     fun getPaymentByUserId(userId: String): Payment? {
         return payments.value.find { it.userID == userId }
     }
-    fun getPaymentByPaymentId(paymentId: String): Payment? {
-        return payments.value.find { it.paymentID == paymentId }
-    }
+
     @RequiresApi(Build.VERSION_CODES.O)
     fun addPayment(payment: Payment) {
         viewModelScope.launch {
             addPaymentUseCase(payment)
+        }
+    }
+
+    private val _selectedPayment = MutableStateFlow<Payment?>(null)
+    val selectedPayment: StateFlow<Payment?> = _selectedPayment.asStateFlow()
+
+    fun getPaymentByPaymentId(paymentId: String) {
+        viewModelScope.launch {
+            val payment = getPaymentUseCase(paymentId)
+            _selectedPayment.value = payment
         }
     }
 }

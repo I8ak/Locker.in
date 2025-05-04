@@ -10,6 +10,7 @@ import com.example.lockerin.domain.model.Locker
 import com.example.lockerin.domain.model.Rental
 import com.example.lockerin.domain.model.Tarjeta
 import com.example.lockerin.domain.usecase.rental.AddRentalUseCase
+import com.example.lockerin.domain.usecase.rental.GetRentalUseCase
 import com.example.lockerin.domain.usecase.rental.ListRentalsByUserIdUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -26,7 +27,8 @@ import java.util.Date
 
 class RentalViewModel(
     val addRentalUseCase: AddRentalUseCase,
-    val listRentalsByUserIdUseCase: ListRentalsByUserIdUseCase
+    val listRentalsByUserIdUseCase: ListRentalsByUserIdUseCase,
+    val getRentalUseCase: GetRentalUseCase,
 ): ViewModel(){
     private val _userId = MutableStateFlow<String?>(null)
     val userId: StateFlow<String?> = _userId.asStateFlow()
@@ -45,6 +47,9 @@ class RentalViewModel(
 //    val rentalLocker:StateFlow<List<Rental>> = _rentalLocker
 
 //    @RequiresApi(Build.VERSION_CODES.O)
+    fun setUserId(userId: String) {
+        _userId.value = userId
+    }
     fun countLockers(userId: String): Int {
 //        return rentalLocker.value.count { it.userID == userId }
         return 0
@@ -76,11 +81,7 @@ class RentalViewModel(
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun getRentalById(rentalID: String): Rental? {
-//        return rentalLocker.value.find { it.rentalID == rentalID }
-        return Rental()
-    }
+
     @RequiresApi(Build.VERSION_CODES.O)
     fun getRentalByUserId(userID: String): Rental? {
 //        return rentalLocker.value.find { it.userID == userID }
@@ -91,6 +92,15 @@ class RentalViewModel(
     fun getLockerByUserId(userID: String): String {
 //        return rentalLocker.value.find { it.userID == userID }?.lockerID ?: ""
         return ""
+    }
+
+    private val _selectedRental = MutableStateFlow<Rental?>(null)
+    val selectedRental: StateFlow<Rental?> = _selectedRental.asStateFlow()
+    fun getRentalById(rentalId: String) {
+        viewModelScope.launch {
+            val rental = getRentalUseCase(rentalId)
+            _selectedRental.value = rental
+        }
     }
 
 

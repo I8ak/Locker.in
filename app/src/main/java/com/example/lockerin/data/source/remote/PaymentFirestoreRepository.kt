@@ -12,7 +12,14 @@ class PaymentFirestoreRepository(
 ) {
     private val paymentCollection = firestore.collection("payments")
 
-    fun getPaymentById(paymentID: String) = paymentCollection.document(paymentID).get()
+    suspend fun getPaymentById(paymentId: String): Payment? {
+        val document = paymentCollection.document(paymentId).get().await()
+        return if (document.exists()) {
+            document.toObject(Payment::class.java)?.copy(paymentID = document.id)
+        } else {
+            null
+        }
+    }
 
 
 

@@ -67,7 +67,6 @@ class AuthViewModel : ViewModel(){
                             userID = it.uid,
                             name = name,
                             email = email,
-                            password = "",
                             role = role
                         )
                         firestore.collection("users").document(it.uid).set(newUser)
@@ -87,7 +86,7 @@ class AuthViewModel : ViewModel(){
                         onComplete(false, "Error al obtener el usuario")
                     }
                 }else{
-                    Log.e("AuthViewModel", "Error al crear usuario en Auth: ${task.exception?.message}", task.exception) // <-- Añade este Log de ERROR
+                    Log.e("AuthViewModel", "Error al crear usuario en Auth: ${task.exception?.message}", task.exception)
                     _authState.value = AuthState.LOGGED_OUT
                     onComplete(false, task.exception?.message)
                 }

@@ -60,6 +60,7 @@ import com.example.lockerin.presentation.viewmodel.lockers.RentalViewModel
 import com.example.lockerin.presentation.viewmodel.payment.CardsViewModel
 import com.example.lockerin.presentation.viewmodel.payment.PaymentViewModel
 import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
+import com.google.firebase.firestore.FirebaseFirestore
 import org.koin.androidx.compose.koinViewModel
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -122,6 +123,7 @@ fun PaymentScreen(
                         cardsState
                     ) { card ->
                         key(card.cardID) {
+                            Log.d("Card", "Tarjeta: ${card.cardID}")
                             CardsCard(
                                 tarjeta = card,
                                 isSelected = card.cardID == selectedCardId,
@@ -205,7 +207,9 @@ fun PaymentScreen(
                                 startDate = transformDate(startDate),
                                 endDate = transformDate(endDate),
                             )
+                            val paymentID = FirebaseFirestore.getInstance().collection("payments").document().id
                             val payment=Payment(
+                                paymentID = paymentID,
                                 userID = userID,
                                 rentalID = rental.rentalID,
                                 cardID = currebntCardId.toString(),
@@ -219,7 +223,7 @@ fun PaymentScreen(
                             paymentViewModel.addPayment(payment)
                             Log.d("Rental", "Alquiler agregado: $rental")
                             Log.d("Payment", "Pago agregado: $payment")
-                            navController.navigate(Screen.StatusPay.createRoute(currebntCardId.toString(), payment.paymentID))
+                            navController.navigate(Screen.StatusPay.createRoute(currebntCardId.toString(), payment.paymentID,rentalIDRandom))
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Primary),
                         modifier = Modifier.width(130.dp)

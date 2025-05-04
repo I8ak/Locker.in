@@ -46,12 +46,7 @@ class CardsViewModel(
     fun setUserId(userId: String) {
         _userId.value = userId
     }
-     fun getCardById(cardId: String): Tarjeta? {
-         viewModelScope.launch {
-            _card.value= getCardsUseCase(cardId)
-         }
-        return _card.value
-    }
+
 
     fun hasNumberCard(cardNumber: String): String {
         return "**** ${cardNumber.takeLast(4)}"
@@ -70,6 +65,15 @@ class CardsViewModel(
 
     fun countCardsByUserId(userId: String): Int {
         return cards.value.count { it.userId == userId }
+    }
+
+    private val _selectedCard = MutableStateFlow<Tarjeta?>(null)
+    val selectedCard: StateFlow<Tarjeta?> = _selectedCard.asStateFlow()
+    fun getCardById(cardId: String) {
+        viewModelScope.launch {
+            val card = getCardsUseCase(cardId)
+            _selectedCard.value = card
+        }
     }
 
 

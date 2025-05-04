@@ -8,9 +8,8 @@ data class User(
     @DocumentId var userID: String = "",
     val name: String = "",
     val email: String = "",
-    val password: String = "",
     val role: String = "",
     @ServerTimestamp var createdAt: Date? = null
 ) {
-    constructor() : this("", "", "", "", "",null)
+    constructor() : this("", "", "", "",null)
 }

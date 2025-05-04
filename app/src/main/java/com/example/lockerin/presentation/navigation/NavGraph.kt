@@ -104,11 +104,13 @@ fun NavGraph(
             arguments = listOf(
                 navArgument("cardID") { type = NavType.StringType },
                 navArgument("paymentID") { type = NavType.StringType },
+                navArgument("rentalID") { type = NavType.StringType },
             )
         ) { backStackEntry ->
             val userID = backStackEntry.arguments?.getString("cardID")!!
-            val lockerID = backStackEntry.arguments?.getString("paymentID")!!
-            StatusPayScreen( userID,lockerID, navController = navController)
+            val paymentID = backStackEntry.arguments?.getString("paymentID")!!
+            val rentalID = backStackEntry.arguments?.getString("rentalID")!!
+            StatusPayScreen( userID,paymentID,rentalID, navController = navController)
         }
         composable(
             route = Screen.Acount.route,

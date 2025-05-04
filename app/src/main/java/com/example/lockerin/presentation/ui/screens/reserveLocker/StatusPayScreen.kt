@@ -22,9 +22,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.runtime.getValue
+
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,6 +48,8 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.lockerin.presentation.navigation.Screen
+import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
+import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
 import org.koin.androidx.compose.koinViewModel
 import java.util.Locale
 
@@ -52,17 +58,31 @@ import java.util.Locale
 fun StatusPayScreen(
     cardID: String,
     paymentID: String,
+    rentalID: String,
+    paymentViewModel: PaymentViewModel = koinViewModel(),
+    cardsViewModel: CardsViewModel = koinViewModel(),
+    authViewModel: AuthViewModel = koinViewModel(),
+    userViewModel: UsersViewModel = koinViewModel(),
     navController: NavHostController = rememberNavController(),
 ) {
+//    val userId = authViewModel.currentUserId
+//    val userState by userViewModel.user.collectAsState()
+//    val user=userViewModel.getUserById(userId.toString())
 
+    Log.d("Payment", "ID: $cardID")
+    LaunchedEffect(paymentID) {
+        paymentViewModel.getPaymentByPaymentId(paymentID)
+    }
 
-    val paymentViewModel: PaymentViewModel = koinViewModel()
-    val cardsViewModel: CardsViewModel = koinViewModel()
+    val payment by paymentViewModel.selectedPayment.collectAsState()
+
+    LaunchedEffect(cardID) {
+        cardsViewModel.getCardById(cardID)
+    }
+    val card by cardsViewModel.selectedCard.collectAsState()
     val startDate = Date()
     val  format = SimpleDateFormat("dd/MM/yyyy",Locale.getDefault())
     Log.d("Payment", "ID: $paymentID")
-    val payment = paymentViewModel.getPaymentByPaymentId(paymentID)
-    Log.d("Payment", "Payment: $payment")
     Scaffold(
         topBar = {
             TopAppBar(
@@ -132,7 +152,36 @@ fun StatusPayScreen(
                     .padding(4.dp)
             ) {
                 Text(
-                    text = "Fecha de inicio",
+                    text = "Codigo del locker",
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .background(Color.LightGray)
+                        .padding(8.dp)
+                        .height(50.dp)
+                        .weight(1f),
+                    fontSize = 20.sp,
+                    color = Color.Black
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = rentalID,
+                    modifier = Modifier
+                        .border(1.dp, Color.Black)
+                        .padding(8.dp)
+                        .height(50.dp)
+                        .weight(1f),
+                    fontSize = 20.sp,
+                    color = Color.Black
+                )
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(4.dp)
+            ) {
+                Text(
+                    text = "Fecha de pago",
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
                         .background(Color.LightGray)
@@ -154,7 +203,7 @@ fun StatusPayScreen(
                     color = Color.Black
                 )
             }
-            val card = cardsViewModel.getCardById(cardID)
+
             // Fecha de fin
             Row(
                 modifier = Modifier
@@ -174,7 +223,7 @@ fun StatusPayScreen(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = cardsViewModel.hasNumberCard(card?.cardNumber ?: String()),
+                    text = cardsViewModel.hasNumberCard(card?.cardNumber.toString()),
                     modifier = Modifier
                         .border(1.dp, Color.Black)
                         .padding(8.dp)
@@ -203,8 +252,9 @@ fun StatusPayScreen(
                     color = Color.Black
                 )
                 Spacer(modifier = Modifier.width(8.dp))
+                Log.d("Payment", "PaymentID: $paymentID")
                 Text(
-                    text = payment?.paymentID ?: String(),
+                    text = paymentID,
                     modifier = Modifier
                         .border(1.dp, Color.Black)
                         .padding(8.dp)
@@ -251,8 +301,8 @@ fun StatusPayScreen(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun StatusPayScreenPreview() {
-    StatusPayScreen(cardID = "1", paymentID = "1")
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun StatusPayScreenPreview() {
+//    StatusPayScreen(cardID = "1", paymentID = "1")
+//}
