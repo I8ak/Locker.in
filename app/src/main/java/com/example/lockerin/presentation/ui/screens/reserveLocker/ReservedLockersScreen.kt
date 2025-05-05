@@ -36,12 +36,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.example.lockerin.R
 import com.example.lockerin.domain.model.Locker
 import com.example.lockerin.domain.model.Payment
@@ -68,8 +66,6 @@ import java.util.Date
 @Composable
 fun ReservedLockersScreen(
     userID: String,
-    rentalID: String,
-    lockerID: String,
     navController: NavHostController,
     lockersViewModel: LockersViewModel = koinViewModel(),
     rentalViewModel: RentalViewModel = koinViewModel(),
@@ -82,24 +78,26 @@ fun ReservedLockersScreen(
 
     val user by usersViewModel.user.collectAsState()
     var locker by remember { mutableStateOf<Locker?>(null) }
+    val rentalState by rentalViewModel.rentals.collectAsState()
+    val rental by rentalViewModel.selectedRental.collectAsState()
+    val payment by paymentViewModel.selectedPayment.collectAsState()
     LaunchedEffect(userID) {
         rentalViewModel.setUserId(userID)
     }
 
-    LaunchedEffect(lockerID) {
-        locker = lockersViewModel.getLockerById(lockerID)
-    }
-    LaunchedEffect(rentalID) {
-        rentalViewModel.getRentalById(rentalID)
-    }
+
     LaunchedEffect(userID) {
         rentalViewModel.getRentalByUserId(userID)
     }
-    val rental by rentalViewModel.selectedRental.collectAsState()
-    val payment = paymentViewModel.getPaymentByUserId(userID)
+    LaunchedEffect(userID) {
+        paymentViewModel.getPaymentByUserId(userID)
+    }
 
-    val rentalState by rentalViewModel.rentals.collectAsState()
     val historicRentalState = historicalRentalViewModel.historicalRental.collectAsState()
+
+    LaunchedEffect(rental?.lockerID) {
+        lockersViewModel.getLockerById(rental?.lockerID.toString())
+    }
 
     DrawerMenu(
         textoBar = "Reservas",
@@ -124,7 +122,7 @@ fun ReservedLockersScreen(
                     items(
                         rentalState
                     ) { rentalLazy ->
-                        key(rentalLazy) {
+                        key(rentalLazy.lockerID) {
                             Spacer(modifier = Modifier.size(8.dp))
                             CardReserved(
                                 locker,
@@ -134,10 +132,6 @@ fun ReservedLockersScreen(
                         }
                     }
                 }
-
-
-
-
                 Spacer(modifier = Modifier.size(20.dp))
                 Text(
                     text = "Historial de reservas",
@@ -158,7 +152,6 @@ fun ReservedLockersScreen(
                         }
                     }
                 }
-
             }
         }
     )
@@ -303,7 +296,7 @@ fun CardHistoricRents(
     var locker by remember { mutableStateOf<Locker?>(null) }
 
     LaunchedEffect(lockerID) {
-        locker = lockersViewModel.getLockerById(lockerID)
+        lockersViewModel.getLockerById(lockerID)
     }
     val rental = rentalViewModel.getRentalByUserId(userID)
     val payment = paymentViewModel.getPaymentByUserId(userID)
@@ -402,10 +395,10 @@ fun CardHistoricRents(
     }
 
 }
-
-@RequiresApi(Build.VERSION_CODES.O)
-@Preview
-@Composable
-fun ReserverLockerScreenPreview() {
-    ReservedLockersScreen("1", "1", "locker1", rememberNavController())
-}
+//
+//@RequiresApi(Build.VERSION_CODES.O)
+//@Preview
+//@Composable
+//fun ReserverLockerScreenPreview() {
+//    ReservedLockersScreen("1", "1", "locker1", rememberNavController())
+//}

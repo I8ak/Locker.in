@@ -56,6 +56,7 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatusPayScreen(
+    userID: String,
     cardID: String,
     paymentID: String,
     rentalID: String,
@@ -66,8 +67,12 @@ fun StatusPayScreen(
     navController: NavHostController = rememberNavController(),
 ) {
 //    val userId = authViewModel.currentUserId
-//    val userState by userViewModel.user.collectAsState()
-//    val user=userViewModel.getUserById(userId.toString())
+    val userState by userViewModel.user.collectAsState()
+
+    val user by userViewModel.user.collectAsState()
+    LaunchedEffect(userID) {
+        cardsViewModel.setUserId(userID)
+    }
 
     Log.d("Payment", "ID: $cardID")
     LaunchedEffect(paymentID) {
@@ -81,7 +86,7 @@ fun StatusPayScreen(
     }
     val card by cardsViewModel.selectedCard.collectAsState()
     val startDate = Date()
-    val  format = SimpleDateFormat("dd/MM/yyyy",Locale.getDefault())
+    val format = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     Log.d("Payment", "ID: $paymentID")
     Scaffold(
         topBar = {
@@ -103,12 +108,14 @@ fun StatusPayScreen(
                 },
                 navigationIcon = {
                     IconButton(
-                        onClick = {  navController.navigate(Screen.Home.route) }
+                        onClick = { navController.navigate(Screen.Home.route) }
                     ) {
-                        Icon(imageVector = Icons.Filled.ArrowBack
-                            ,contentDescription = "Ir atras"
-                            ,tint = Color.Black,
-                            modifier = Modifier.size(30.dp))
+                        Icon(
+                            imageVector = Icons.Filled.ArrowBack,
+                            contentDescription = "Ir atras",
+                            tint = Color.Black,
+                            modifier = Modifier.size(30.dp)
+                        )
                     }
 
                 },
@@ -131,8 +138,7 @@ fun StatusPayScreen(
                 imageVector = Icons.Default.CheckCircle,
                 contentDescription = "Pago realizado con éxito",
                 modifier = Modifier
-                    .size(200.dp)
-                ,
+                    .size(200.dp),
                 tint = myGreenColor
             )
 
@@ -228,7 +234,7 @@ fun StatusPayScreen(
                         .border(1.dp, Color.Black)
                         .padding(8.dp)
                         .weight(1f)
-                        .height(50.dp) ,
+                        .height(50.dp),
                     fontSize = 20.sp,
                     color = Color.Black
                 )

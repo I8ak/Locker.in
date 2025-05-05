@@ -40,18 +40,13 @@ class RentalViewModel(
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
     @SuppressLint("SimpleDateFormat")
-    @RequiresApi(Build.VERSION_CODES.O)
-//    private val _rentals =addRentalUseCase()
-//        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-//    @RequiresApi(Build.VERSION_CODES.O)
-//    val rentalLocker:StateFlow<List<Rental>> = _rentalLocker
 
-//    @RequiresApi(Build.VERSION_CODES.O)
     fun setUserId(userId: String) {
         _userId.value = userId
     }
     fun countLockers(userId: String): Int {
-//        return rentalLocker.value.count { it.userID == userId }
+
+
         return 0
     }
     @RequiresApi(Build.VERSION_CODES.O)

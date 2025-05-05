@@ -78,7 +78,7 @@ fun PaymentScreen(
     totalPrice: String,
     navController: NavHostController = rememberNavController(),
     userViewModel: UsersViewModel= koinViewModel(),
-    //lockesrViewModel: LockersViewModel= koinViewModel(),
+    lockersViewModel: LockersViewModel= koinViewModel(),
     paymentViewModel: PaymentViewModel = koinViewModel(),
     cardsViewModel: CardsViewModel = koinViewModel(),
     rentalViewModel: RentalViewModel = koinViewModel()
@@ -216,14 +216,14 @@ fun PaymentScreen(
                                 amount = totalPrice.toDouble(),
                                 status = true,
                             )
-                            //lockesrViewModel.reserveLocker(lockerID)
+                            lockersViewModel.setStatus(lockerID,false)
                             rentalViewModel.addRental(
                                 rental
                             )
                             paymentViewModel.addPayment(payment)
                             Log.d("Rental", "Alquiler agregado: $rental")
                             Log.d("Payment", "Pago agregado: $payment")
-                            navController.navigate(Screen.StatusPay.createRoute(currebntCardId.toString(), payment.paymentID,rentalIDRandom))
+                            navController.navigate(Screen.StatusPay.createRoute(userID,currebntCardId.toString(), payment.paymentID,rentalIDRandom))
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Primary),
                         modifier = Modifier.width(130.dp)

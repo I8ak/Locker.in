@@ -410,7 +410,7 @@ fun LockersCard(userID: String, locker: Locker, date: Date?, rentalViewModel: Re
         "Medium" -> R.drawable.luggage
         else -> R.drawable.trolley
     }
-    val isAvailable = rentalViewModel.isLockerAvailable(locker.lockerID,date,city)
+    val isAvailable = locker.status
     Card(
         modifier = Modifier
             .fillMaxSize()

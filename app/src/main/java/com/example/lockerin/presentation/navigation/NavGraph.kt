@@ -25,6 +25,7 @@ import com.example.lockerin.presentation.ui.screens.user.ResetPass
 import com.example.lockerin.presentation.ui.screens.SplashScreen
 import com.example.lockerin.presentation.ui.screens.locker.EditLockerScreen
 import com.example.lockerin.presentation.ui.screens.reserveLocker.StatusPayScreen
+import com.example.lockerin.presentation.ui.screens.user.ConfigurationScreen
 import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -102,15 +103,17 @@ fun NavGraph(
         composable(
             route = Screen.StatusPay.route,
             arguments = listOf(
+                navArgument("userID") { type = NavType.StringType },
                 navArgument("cardID") { type = NavType.StringType },
                 navArgument("paymentID") { type = NavType.StringType },
                 navArgument("rentalID") { type = NavType.StringType },
             )
         ) { backStackEntry ->
-            val userID = backStackEntry.arguments?.getString("cardID")!!
+            val userID = backStackEntry.arguments?.getString("userID")!!
+            val cardID = backStackEntry.arguments?.getString("cardID")!!
             val paymentID = backStackEntry.arguments?.getString("paymentID")!!
             val rentalID = backStackEntry.arguments?.getString("rentalID")!!
-            StatusPayScreen( userID,paymentID,rentalID, navController = navController)
+            StatusPayScreen( userID,cardID,paymentID,rentalID, navController = navController)
         }
         composable(
             route = Screen.Acount.route,
@@ -121,9 +124,16 @@ fun NavGraph(
             val userID = backStackEntry.arguments?.getString("userID")!!
             AcountScreen(userID, navController)
         }
-//        composable(Screen.Configuration.route) {
-//            ConfigurationScreen(navController)
-//        }
+        composable(
+            route = Screen.Configuration.route,
+            arguments = listOf(
+                navArgument("userID") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val userID = backStackEntry.arguments?.getString("userID")!!
+            ConfigurationScreen(userID, navController)
+        }
+
         composable(
             route = Screen.Cards.route,
             arguments = listOf(
@@ -146,14 +156,10 @@ fun NavGraph(
             route = Screen.ResrvedLockers.route,
             arguments = listOf(
                 navArgument("userID") { type = NavType.StringType },
-                navArgument("lockerID") { type = NavType.StringType },
-                navArgument("rentalID") { type = NavType.StringType }
             )
         ) { backStackEntry ->
             val userID = backStackEntry.arguments?.getString("userID")!!
-            val lockerID = backStackEntry.arguments?.getString("lockerID")!!
-            val rentalID = backStackEntry.arguments?.getString("rentalID")!!
-            ReservedLockersScreen( userID, lockerID, rentalID,
+            ReservedLockersScreen( userID,
                 navController = navController
             )
         }

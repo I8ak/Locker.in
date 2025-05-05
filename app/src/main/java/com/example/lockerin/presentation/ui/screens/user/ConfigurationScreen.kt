@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.PrivacyTip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,6 +35,7 @@ import androidx.navigation.NavHostController
 import com.example.lockerin.presentation.ui.components.DrawerMenu
 import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
 import org.koin.androidx.compose.koinViewModel
+import kotlin.toString
 
 @Composable
 fun ConfigurationScreen(
@@ -41,12 +43,13 @@ fun ConfigurationScreen(
     navController: NavHostController,
     userViewModel: UsersViewModel= koinViewModel()
 ){
-    val user = userViewModel.getUserById(userId)
+    val userState by userViewModel.user.collectAsState()
+    val user=userViewModel.getUserById(userId.toString())
     DrawerMenu(
       textoBar = "Configuración",
         navController=navController,
         authViewModel = viewModel(),
-        fullUser = user,
+        fullUser = userState,
         content = {
             Column(
                 modifier = Modifier

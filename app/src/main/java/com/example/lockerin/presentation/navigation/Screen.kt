@@ -17,22 +17,24 @@ sealed class Screen(val route: String) {
         fun createRoute(userID: String, lockerID: String, startDate: String, endDate: String, totalPrice: String): String =
             "lockers/payment/$userID/$lockerID/$startDate/$endDate/$totalPrice"
     }
-    object StatusPay : Screen("lockers/statuaPay/{cardID}/{paymentID}/{rentalID}") {
-        fun createRoute(cardId: String, paymentID: String,rentalID: String): String =
-            "lockers/statuaPay/$cardId/$paymentID/$rentalID"
+    object StatusPay : Screen("lockers/statuaPay/{userID}/{cardID}/{paymentID}/{rentalID}") {
+        fun createRoute(userID: String,cardId: String, paymentID: String,rentalID: String): String =
+            "lockers/statuaPay/$userID/$cardId/$paymentID/$rentalID"
     }
     object Acount : Screen("lockers/acount/{userID}"){
         fun createRoute(userID: String): String="lockers/acount/$userID"
     }
-    object Configuration: Screen("configuration")
+    object Configuration: Screen("lockers/configuration/{userID}"){
+        fun createRoute(userID: String): String="lockers/configuration/$userID"
+    }
     object Cards: Screen("lockers/cards/{userID}"){
         fun createRoute(userID: String): String="lockers/cards/$userID"
     }
     object AddCard: Screen("lockers/addCard/{userID}"){
         fun createRoute(userID: String): String="lockers/addCard/$userID"
     }
-    object ResrvedLockers: Screen("lockers/reservedLockers/{userID}/{rentalID}/{lockerID}"){
-        fun createRoute(userID: String,rentalID: String,lockerID: String): String="lockers/reservedLockers/$userID/$rentalID/$lockerID"
+    object ResrvedLockers: Screen("lockers/reservedLockers/{userID}"){
+        fun createRoute(userID: String): String="lockers/reservedLockers/$userID"
     }
     object EmailResetPass: Screen("emailResetPass")
     object ResetPass: Screen("resetPass")

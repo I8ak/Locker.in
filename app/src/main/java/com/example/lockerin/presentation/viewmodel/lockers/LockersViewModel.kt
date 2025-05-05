@@ -13,30 +13,20 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.util.UUID
 
 class LockersViewModel(
     listLockersUseCase: ListLockersUseCase,
     val addLockerUseCase: AddLockerUseCase,
     val deleteLockerUseCase: DeleteLockerUseCase,
     val getLockerByIdUseCase: GetLockerByIdUseCase,
-    val editlockerUseCase: EditLockerUseCase,
+    val editLockerUseCase: EditLockerUseCase,
     val countAvalibleLockerByCityUseCase: CountAvalibleLockerByCityUseCase
 ):ViewModel() {
     private val _lockers =listLockersUseCase()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-//    fun setLockerId(id: String){
-//        val filtered = _lockers.value.filter { it.lockerID == id }
-//        _lockers.value = filtered
-//    }
-//    fun setLockerLocation(location: String){
-//        val filtered = _lockers.value.filter { it.location == location }
-//        _lockers.value = filtered
-//    }
+
 
     val lockers: StateFlow<List<Locker>> = _lockers
 
@@ -53,15 +43,22 @@ class LockersViewModel(
         }
     }
 
-    suspend fun getLockerById(id: String): Locker? {
-        return getLockerByIdUseCase(id)
+    private val _selectedLocker = MutableStateFlow<Locker?>(null)
+    val selectedLocker: StateFlow<Locker?> = _selectedLocker.asStateFlow()
+
+    fun getLockerById(lockerId: String) {
+        viewModelScope.launch {
+            val locker = getLockerByIdUseCase(lockerId)
+            _selectedLocker.value = locker
+        }
     }
+
 
 
 
     fun addLocker(locker: Locker, onIdAlreadyExists: () -> Unit) {
         viewModelScope.launch {
-            val existingLocker = getLockerById(locker.lockerID)
+            val existingLocker = getLockerByIdUseCase(locker.lockerID)
             if (existingLocker != null) {
                 onIdAlreadyExists()
             } else {
@@ -77,39 +74,19 @@ class LockersViewModel(
     }
     fun editLocker(locker: Locker) {
         viewModelScope.launch {
-            editlockerUseCase(locker)
+            editLockerUseCase(locker)
+        }
+    }
+
+    fun setStatus(lockerId: String, status: Boolean) {
+        viewModelScope.launch {
+            val locker = getLockerByIdUseCase(lockerId)
+            if (locker != null) {
+                val updatedLocker = locker.copy(status = status)
+                editLockerUseCase(updatedLocker)
+            }
         }
     }
 
 
-//    // Get only available lockers
-//    val availableLockers: StateFlow<List<Locker>> =
-//        _lockers.map { lockers -> lockers.filter { it.status } }
-//            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
-//
-//    // Function to reserve a locker
-//    fun reserveLocker(lockerId: String) {
-//        _lockers.update { lockers ->
-//            lockers.map { locker ->
-//                if (locker.lockerID == lockerId) {
-//                    locker.copy(status = false) // Mark as reserved
-//                } else {
-//                    locker
-//                }
-//            }
-//        }
-//    }
-//
-//    // Function to free a locker
-//    fun freeLocker(lockerId: String) {
-//        _lockers.update { lockers ->
-//            lockers.map { locker ->
-//                if (locker.lockerID == lockerId) {
-//                    locker.copy(status = true) // Mark as available
-//                } else {
-//                    locker
-//                }
-//            }
-//        }
-//    }
 }

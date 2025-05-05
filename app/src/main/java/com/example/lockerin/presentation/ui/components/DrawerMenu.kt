@@ -80,15 +80,13 @@ fun DrawerMenu(
     authViewModel: AuthViewModel=viewModel(),
     fullUser:User?
 ) {
-//    val currentUser by authViewModel.currentUserFlow.collectAsState()
-    val currentUserID = authViewModel.currentUserId
+
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val defaultAvatar = painterResource(R.drawable.default_avatar)
     val drawerWidth = with(LocalConfiguration.current) {
         screenWidthDp.dp * 2f / 3f
     }
-    val usersViewModel:UsersViewModel = koinViewModel()
 
     ModalNavigationDrawer(
         modifier = Modifier.statusBarsPadding(),
@@ -134,7 +132,7 @@ fun DrawerMenu(
                     DrawerItem(
                         icon = { Icon(Icons.Default.ViewCompactAlt, "Reservas", tint = Color.Black) },
                         text = "Reservas",
-                        onClick = { navController.navigate(Screen.ResrvedLockers.route) }
+                        onClick = { navController.navigate(Screen.ResrvedLockers.createRoute(userID = fullUser?.userID.toString())) }
                     )
                     DrawerItem(
                         icon = { Icon(Icons.Default.Person, "Cuenta", tint = Color.Black) },
