@@ -91,7 +91,7 @@ val appModule = module  {
     viewModel { AuthViewModel() }
     viewModel { LockersViewModel(get(),get(),get(),get(),get(),get()) }
     viewModel { CardsViewModel(get(),get(),get(),get(),get()) }
-    viewModel { RentalViewModel(get(),get(),get(),get(),get()) }
+    viewModel { RentalViewModel(get(),get(),get(),get(),get(),get(),get(),get(),get(),get(),get()) }
     viewModel { PaymentViewModel(get(),get(),get()) }
     viewModel { HistoricalRentalViewModel(get(),get()) }
 

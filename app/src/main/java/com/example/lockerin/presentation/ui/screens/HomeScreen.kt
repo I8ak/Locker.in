@@ -50,6 +50,7 @@ fun HomeScreen(
     authViewModel: AuthViewModel = viewModel(),
     userViewModel: UsersViewModel= koinViewModel(),
     lockersViewModel: LockersViewModel = koinViewModel(),
+    rentalViewModel: RentalViewModel=koinViewModel()
 ) {
 
     val userId = authViewModel.currentUserId
@@ -60,6 +61,9 @@ fun HomeScreen(
     LaunchedEffect(Unit) {
         lockersViewModel.countAvailableLockersByCity("Madrid")
         lockersViewModel.countAvailableLockersByCity("Barcelona")
+        userId?.let {
+            rentalViewModel.checkAndMoveExpiredRentals(it)
+        }
     }
 
     val cantidadMadrid = counts["Madrid"] ?: 0

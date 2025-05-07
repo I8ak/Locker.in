@@ -8,6 +8,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -48,6 +49,8 @@ import com.example.lockerin.domain.model.Payment
 import com.example.lockerin.domain.model.Rental
 import com.example.lockerin.domain.model.User
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.collectAsState
 import com.example.lockerin.domain.model.HistoricRental
 import com.example.lockerin.presentation.ui.components.DrawerMenu
@@ -82,6 +85,7 @@ fun ReservedLockersScreen(
 
 
     val userState by usersViewModel.user.collectAsState()
+    val user=usersViewModel.getUserById(userID)
 
     val rentalState by rentalViewModel.rentals.collectAsState()
     val lockers by lockersViewModel.lockers.collectAsState()
@@ -93,12 +97,6 @@ fun ReservedLockersScreen(
         paymentViewModel.setUserId(userID)
         historicalRentalViewModel.setUserId(userID)
     }
-
-
-    LaunchedEffect(userID) {
-        rentalViewModel.getRentalByUserId(userID)
-    }
-
 
 
 
@@ -122,7 +120,11 @@ fun ReservedLockersScreen(
                     modifier = Modifier.padding(8.dp)
                 )
 
-                LazyColumn {
+                LazyColumn (
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                ){
                     items(rentalState) { rentalLazy ->
                         val lockerMatch = lockers.find { it.lockerID == rentalLazy.lockerID }
                         val paymentMatch = payments.find { it.rentalID == rentalLazy.rentalID }
@@ -150,7 +152,11 @@ fun ReservedLockersScreen(
                     modifier = Modifier.padding(8.dp)
                 )
 
-                LazyColumn {
+                LazyColumn (
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                ){
                     items(
                         historicRentalState
                     ) { historicLazy ->
@@ -190,7 +196,6 @@ fun CardReserved(
     LaunchedEffect(payment?.cardID) {
         cardsViewModel.getCardById(payment?.cardID.toString())
     }
-    val card by cardsViewModel.selectedCard.collectAsState()
 
 
     Card(
@@ -242,35 +247,10 @@ fun CardReserved(
                         Spacer(modifier = Modifier.size(8.dp))
                         Text(text = "Precio: ${payment?.amount}€", color = Color.Black)
                         Spacer(modifier = Modifier.size(8.dp))
-                        var finished=CountDown(rental?.endDate)
-                        if (finished == "Finalizado") {
-                            val historicRentalID = FirebaseFirestore.getInstance().collection("historicRentals").document().id
-                            if (rental != null) {
-                                historicalRentalViewModel.addHistoricRental(
-                                    HistoricRental(
-                                        historicID = historicRentalID,
-                                        userID = rental.userID,
-                                        location = locker?.location.toString(),
-                                        city = locker?.city.toString(),
-                                        size = locker?.size.toString(),
-                                        dimension = locker?.dimension.toString(),
-                                        cardNumber = card?.cardNumber.toString(),
-                                        typeCard = card?.typeCard.toString(),
-                                        amount = payment?.amount ?: 0.0,
-                                        status = true,
-                                        startDate = rental.startDate,
-                                        endDate = rental.endDate
-                                    )
-                                )
-                                lockersViewModel.setStatus(locker?.lockerID.toString(), false)
-                                rentalViewModel.deleteRental(rental)
-                            }
-
-
-
-                        }
+                        CountDown(rental?.endDate)
 
                     }
+
                 }
             }
         }
@@ -288,7 +268,7 @@ fun convertDateToString(endDate: Date?): String {
 }
 
 @Composable
-fun CountDown(endDate: Date?): String {
+fun CountDown(endDate: Date?) {
     var timeleftString by remember { mutableStateOf("Calculando...") }
     LaunchedEffect(endDate) {
         if (endDate == null) {
@@ -327,7 +307,6 @@ fun CountDown(endDate: Date?): String {
         }
     }
     Text(text = "Finaliza en $timeleftString", color = Color.Black, fontSize = 20.sp)
-    return timeleftString
 }
 
 @RequiresApi(Build.VERSION_CODES.O)

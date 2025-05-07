@@ -54,4 +54,13 @@ class PaymentFirestoreRepository(
 
         awaitClose { listener.remove() }
     }
+    suspend fun getPaymentByRentalId(rentalId: String): Payment? {
+        val query = paymentCollection.whereEqualTo("rentalID", rentalId).limit(1).get().await()
+
+        return if (!query.isEmpty) {
+            query.documents.firstOrNull()?.toObject(Payment::class.java)?.copy(paymentID = query.documents.first().id)
+        } else {
+            null
+        }
+    }
 }
