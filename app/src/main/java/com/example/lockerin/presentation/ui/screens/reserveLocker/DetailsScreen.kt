@@ -18,6 +18,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,9 +53,9 @@ fun DetailsScreen(
     val user= userViewModel.getUserById(userId)
     Log.d("DetailsScreen", totalPrice.toString())
     val lockersViewModel: LockersViewModel= koinViewModel()
-    var locker by remember { mutableStateOf<Locker?>(null) }
+    val locker by lockersViewModel.selectedLocker.collectAsState()
     LaunchedEffect(lockerID) {
-        locker = lockersViewModel.getLockerById(lockerID)
+        lockersViewModel.getLockerById(lockerID)
     }
     DrawerMenu(
         textoBar = "Datos de la Reserva",
@@ -153,7 +154,7 @@ fun DetailsScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = it.location,
+                            text = locker!!.location,
                             modifier = Modifier
                                 .border(1.dp, Color.Black)
                                 .padding(8.dp)

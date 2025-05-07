@@ -54,6 +54,10 @@ class PaymentViewModel(
             _selectedPayment.value = payment
         }
     }
+
+    fun setUserId(userId: String) {
+        _userId.value = userId
+    }
 }
 
 

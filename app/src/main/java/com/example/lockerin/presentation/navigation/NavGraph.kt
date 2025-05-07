@@ -22,7 +22,7 @@ import com.example.lockerin.presentation.ui.screens.user.RegisterScreen
 import com.example.lockerin.presentation.ui.screens.reserveLocker.ReserveScreen
 import com.example.lockerin.presentation.ui.screens.reserveLocker.ReservedLockersScreen
 import com.example.lockerin.presentation.ui.screens.user.ResetPass
-import com.example.lockerin.presentation.ui.screens.SplashScreen
+import com.example.lockerin.presentation.ui.components.SplashScreen
 import com.example.lockerin.presentation.ui.screens.locker.EditLockerScreen
 import com.example.lockerin.presentation.ui.screens.reserveLocker.StatusPayScreen
 import com.example.lockerin.presentation.ui.screens.user.ConfigurationScreen

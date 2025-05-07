@@ -31,7 +31,7 @@ class RentalFirestoreRepository(private val firestore: FirebaseFirestore) {
     }
 
     fun getRentalByUserId(userId: String): Flow<List<Rental>> = callbackFlow {
-        val query = rentalCollection.whereEqualTo("userId", userId)
+        val query = rentalCollection.whereEqualTo("userID", userId)
 
         val listener = query.addSnapshotListener { snapshot, error ->
             if (error != null) {
@@ -51,6 +51,17 @@ class RentalFirestoreRepository(private val firestore: FirebaseFirestore) {
         }
 
         awaitClose { listener.remove() }
+    }
+    suspend fun countRentalsById(userId: String): Int {
+        val snapshot = rentalCollection
+            .whereEqualTo("userID", userId)
+            .get()
+            .await()
+
+        return snapshot.size()
+    }
+    suspend fun deleteRental(rental: Rental) {
+        rentalCollection.document(rental.rentalID).delete().await()
     }
     
     

@@ -33,7 +33,7 @@ class PaymentFirestoreRepository(
     }
 
     fun getPaymentByUserId(userId: String): Flow<List<Payment>> = callbackFlow {
-        val query = paymentCollection.whereEqualTo("userId", userId)
+        val query = paymentCollection.whereEqualTo("userID", userId)
 
         val listener = query.addSnapshotListener { snapshot, error ->
             if (error != null) {

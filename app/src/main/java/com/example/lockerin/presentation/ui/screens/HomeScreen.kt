@@ -6,33 +6,20 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.collectAsState
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.runtime.State
-import androidx.compose.runtime.collectAsState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material3.Card
 
-import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -46,7 +33,6 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.lockerin.R
-import com.example.lockerin.domain.model.Locker
 import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.components.DrawerMenu
 import com.example.lockerin.presentation.ui.theme.BeigeClaro
@@ -54,7 +40,6 @@ import com.example.lockerin.presentation.viewmodel.lockers.LockersViewModel
 import com.example.lockerin.presentation.viewmodel.lockers.RentalViewModel
 import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
-import kotlinx.coroutines.launch
 import androidx.compose.runtime.getValue
 import org.koin.androidx.compose.koinViewModel
 
@@ -91,7 +76,7 @@ fun HomeScreen(
                     .fillMaxWidth()
                     .padding(it)
             ) {
-                Reservas(userId = userId.toString(), navController = navController)
+                Reservas(userID = userId.toString(), navController = navController)
                 Spacer(modifier = Modifier.weight(1f))
 
                 Column(
@@ -130,10 +115,19 @@ fun HomeScreen(
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun Reservas(
-    userId: String,
+    userID: String,
     navController: NavController) {
-    val listReservas: RentalViewModel = koinViewModel()
-    val rentalCount =listReservas.countLockers(userId = userId)
+
+
+    val rentalViewModel: RentalViewModel = koinViewModel()
+    val rentalCount by rentalViewModel.rentalCount.collectAsState()
+
+    LaunchedEffect(userID) {
+        rentalViewModel.countRentals(userID)
+    }
+
+
+
 
     Row(
         modifier = Modifier
@@ -143,7 +137,7 @@ fun Reservas(
             .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp))
             .padding(6.dp)
             .clickable {
-//                navController.navigate(Screen.ResrvedLockers.route)
+                navController.navigate(Screen.ResrvedLockers.createRoute(userID))
             },
         verticalAlignment = Alignment.CenterVertically
     ) {

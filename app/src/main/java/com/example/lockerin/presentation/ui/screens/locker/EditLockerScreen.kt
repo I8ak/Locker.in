@@ -53,7 +53,7 @@ fun EditLockerScreen(
     var locker by remember { mutableStateOf<Locker?>(null) }
 
     LaunchedEffect(lockerID) {
-        locker = lockerViewModel.getLockerById(lockerID)
+        lockerViewModel.getLockerById(lockerID)
     }
     val user by userViewModel.user.collectAsState()
     var address by remember { mutableStateOf("") }
