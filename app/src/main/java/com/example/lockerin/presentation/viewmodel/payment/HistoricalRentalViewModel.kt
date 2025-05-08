@@ -35,7 +35,6 @@ class HistoricalRentalViewModel(
             Log.e("HistoricalRentalViewModel", "Getting historic rentals for userId: ${userId}")
             listHistoricRentalUseCase(userId).catch {e->
                 Log.e("HistoricalRentalViewModel", "Error fetching historical rentals: ${e.message}")
-                // Opcionalmente, puedes emitir una lista vacía o un error en el estado
                 emit(emptyList())
             }
         }

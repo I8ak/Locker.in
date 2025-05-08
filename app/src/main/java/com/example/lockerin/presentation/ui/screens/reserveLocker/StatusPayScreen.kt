@@ -29,13 +29,11 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -46,8 +44,9 @@ import com.example.lockerin.presentation.viewmodel.payment.CardsViewModel
 import com.example.lockerin.presentation.viewmodel.payment.PaymentViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.lockerin.presentation.navigation.Screen
+import com.example.lockerin.presentation.ui.components.decrypt
+import com.example.lockerin.presentation.ui.components.generateAesKey
 import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -70,6 +69,7 @@ fun StatusPayScreen(
     val userState by userViewModel.user.collectAsState()
 
     val user by userViewModel.user.collectAsState()
+    val key= generateAesKey()
     LaunchedEffect(userID) {
         cardsViewModel.setUserId(userID)
     }
@@ -229,7 +229,7 @@ fun StatusPayScreen(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = cardsViewModel.hasNumberCard(card?.cardNumber.toString()),
+                    text = decrypt(card?.cardNumber.toString(), card?.iv.toString(),key),
                     modifier = Modifier
                         .border(1.dp, Color.Black)
                         .padding(8.dp)

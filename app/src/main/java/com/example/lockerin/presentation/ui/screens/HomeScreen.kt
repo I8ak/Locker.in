@@ -80,7 +80,9 @@ fun HomeScreen(
                     .fillMaxWidth()
                     .padding(it)
             ) {
-                Reservas(userID = userId.toString(), navController = navController)
+                userId?.let { nonNullUserId ->
+                    Reservas(userID = nonNullUserId, navController = navController)
+                }
                 Spacer(modifier = Modifier.weight(1f))
 
                 Column(

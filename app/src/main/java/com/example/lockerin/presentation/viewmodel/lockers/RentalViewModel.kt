@@ -136,11 +136,13 @@ class RentalViewModel(
                             size = locker?.size.orEmpty(),
                             dimension = locker?.dimension.orEmpty(),
                             cardNumber = card?.cardNumber.orEmpty(),
+                            iv = card?.iv.toString(),
                             typeCard = card?.typeCard.orEmpty(),
                             amount = payment?.amount ?: 0.0,
                             status = true,
                             startDate = rental.startDate,
-                            endDate = rental.endDate
+                            endDate = rental.endDate,
+                            createdAt = payment?.createdAt
                         )
                     )
 

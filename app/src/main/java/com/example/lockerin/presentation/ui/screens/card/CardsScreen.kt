@@ -45,6 +45,8 @@ import com.example.lockerin.R
 import com.example.lockerin.domain.model.Tarjeta
 import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.components.DrawerMenu
+import com.example.lockerin.presentation.ui.components.decrypt
+import com.example.lockerin.presentation.ui.components.generateAesKey
 import com.example.lockerin.presentation.viewmodel.payment.CardsViewModel
 import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -124,6 +126,7 @@ fun CardsCard(
     tarjeta: Tarjeta,
     cardsViewModel: CardsViewModel
 ) {
+    val key=generateAesKey()
     var isSelected by remember { mutableStateOf(false) }
     val imagen = when (tarjeta.typeCard) {
         "Visa" -> R.drawable.visa
@@ -160,7 +163,7 @@ fun CardsCard(
                 )
                 Spacer(modifier = Modifier.padding(8.dp))
                 Text(
-                    text = cardsViewModel.hasNumberCard(tarjeta.cardNumber), color = Color.Black,
+                    text = decrypt(tarjeta.cardNumber, tarjeta.iv.toString(),key), color = Color.Black,
                     modifier = Modifier
                         .weight(1f)
                         .align(Alignment.CenterVertically)

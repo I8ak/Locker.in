@@ -54,6 +54,8 @@ import com.example.lockerin.domain.model.Payment
 import com.example.lockerin.domain.model.Rental
 import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.components.DrawerMenu
+import com.example.lockerin.presentation.ui.components.decrypt
+import com.example.lockerin.presentation.ui.components.generateAesKey
 import com.example.lockerin.presentation.ui.theme.Primary
 import com.example.lockerin.presentation.viewmodel.lockers.LockersViewModel
 import com.example.lockerin.presentation.viewmodel.lockers.RentalViewModel
@@ -265,6 +267,7 @@ fun CardsCard(
     onCardSelected: (cardId: String) -> Unit,
     cardsViewModel: CardsViewModel
 ) {
+    val key= generateAesKey()
     val imagen = when (tarjeta.typeCard) {
         "Visa" -> R.drawable.visa
         "MasterCard" -> R.drawable.mastercard
@@ -299,7 +302,7 @@ fun CardsCard(
                 )
                 Spacer(modifier = Modifier.padding(8.dp))
                 Text(
-                    text = cardsViewModel.hasNumberCard(tarjeta.cardNumber), color = Color.Black,
+                    text = decrypt(tarjeta.cardNumber, tarjeta.iv.toString(),key), color = Color.Black,
                     modifier = Modifier
                         .weight(1f)
                         .align(Alignment.CenterVertically)

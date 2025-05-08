@@ -1,11 +1,8 @@
 package com.example.lockerin.presentation.viewmodel.payment
 
-import androidx.compose.runtime.Composable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.lockerin.domain.model.Locker
 import com.example.lockerin.domain.model.Tarjeta
-import com.example.lockerin.domain.model.User
 import com.example.lockerin.domain.usecase.card.AddCardUseCase
 import com.example.lockerin.domain.usecase.card.DeleteCardUseCase
 import com.example.lockerin.domain.usecase.card.GetCardByIdUseCase
@@ -48,7 +45,7 @@ class CardsViewModel(
     }
 
 
-    fun hasNumberCard(cardNumber: String): String {
+    fun decrypt(cardNumber: String): String {
         return "**** ${cardNumber.takeLast(4)}"
     }
 

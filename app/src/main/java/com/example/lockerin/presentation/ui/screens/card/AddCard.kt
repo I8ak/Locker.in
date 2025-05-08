@@ -20,6 +20,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,6 +42,9 @@ import com.example.lockerin.R
 import com.example.lockerin.domain.model.Tarjeta
 import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.components.DrawerMenu
+import com.example.lockerin.presentation.ui.components.encrypt
+import com.example.lockerin.presentation.ui.components.generateAesKey
+import com.example.lockerin.presentation.ui.components.generateIv
 import com.example.lockerin.presentation.ui.screens.user.UserConfirmationDialog
 import com.example.lockerin.presentation.ui.theme.BeigeClaro
 import com.example.lockerin.presentation.ui.theme.Primary
@@ -57,14 +61,18 @@ import java.util.Date
 fun AddCardScreen(
     userID: String,
     navController: NavHostController,
-    userViewModel: UsersViewModel= koinViewModel(),
-    cardsViewModel: CardsViewModel=koinViewModel(),
+    userViewModel: UsersViewModel = koinViewModel(),
+    cardsViewModel: CardsViewModel = koinViewModel(),
     authViewModel: AuthViewModel = viewModel()
 ) {
+
+    val testKey = remember { generateAesKey() }
+    val testIv = remember { generateIv() }
+
     LaunchedEffect(Unit) {
         userViewModel.getUserById(userID)
     }
-    val user=userViewModel.getUserById(userID)
+    val userState by userViewModel.user.collectAsState()
     var numberCard by remember { mutableStateOf("") }
     var nameCard by remember { mutableStateOf("") }
     var expirationDate by remember { mutableStateOf("") }
@@ -81,16 +89,16 @@ fun AddCardScreen(
         textoBar = "Agregar tarjeta",
         navController = navController,
         authViewModel = viewModel(),
-        fullUser = user,
+        fullUser = userState,
         content = { paddingValues ->
 
-            Column (
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
-            ){
+            ) {
                 Image(
                     painter = painterResource(id = imagen),
                     contentDescription = imagen.toString(),
@@ -112,7 +120,7 @@ fun AddCardScreen(
                         .fillMaxWidth()
                         .background(Color.Transparent, RoundedCornerShape(12.dp)),
                     shape = RoundedCornerShape(12.dp),
-                    colors =  OutlinedTextFieldDefaults.colors(
+                    colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color.Black,
                         unfocusedBorderColor = Color.Black,
                         focusedTextColor = Color.Black,
@@ -133,7 +141,7 @@ fun AddCardScreen(
                         .fillMaxWidth()
                         .background(Color.Transparent, RoundedCornerShape(12.dp)),
                     shape = RoundedCornerShape(12.dp),
-                    colors =  OutlinedTextFieldDefaults.colors(
+                    colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color.Black,
                         unfocusedBorderColor = Color.Black,
                         focusedTextColor = Color.Black,
@@ -141,10 +149,10 @@ fun AddCardScreen(
                     )
                 )
                 Spacer(modifier = Modifier.padding(8.dp))
-                Row (
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                ){
+                ) {
                     OutlinedTextField(
                         value = expirationDate,
                         onValueChange = { expirationDate = it },
@@ -159,7 +167,7 @@ fun AddCardScreen(
                             .weight(0.7f)
                             .background(Color.Transparent, RoundedCornerShape(12.dp)),
                         shape = RoundedCornerShape(12.dp),
-                        colors =  OutlinedTextFieldDefaults.colors(
+                        colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color.Black,
                             unfocusedBorderColor = Color.Black,
                             focusedTextColor = Color.Black,
@@ -181,7 +189,7 @@ fun AddCardScreen(
                             .weight(0.3f)
                             .background(Color.Transparent, RoundedCornerShape(12.dp)),
                         shape = RoundedCornerShape(12.dp),
-                        colors =  OutlinedTextFieldDefaults.colors(
+                        colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color.Black,
                             unfocusedBorderColor = Color.Black,
                             focusedTextColor = Color.Black,
@@ -192,14 +200,17 @@ fun AddCardScreen(
                 Spacer(modifier = Modifier.padding(8.dp))
                 Button(
                     onClick = {
+
+                        val (encryptedNumber,ivBase64)= encrypt(numberCard,testKey,testIv)
                         if (numberCard.isNotEmpty() && nameCard.isNotEmpty() && expirationDate.isNotEmpty() && cvv.isNotEmpty()) {
-                            val newCard= Tarjeta(
-                                cardNumber = numberCard,
+                            val newCard = Tarjeta(
+                                cardNumber = encryptedNumber,
                                 userId = userID,
                                 cardName = nameCard,
                                 expDate = expirationDate,
                                 cvv = cvv.toInt(),
-                                typeCard = verificationCardType(numberCard)
+                                typeCard = verificationCardType(numberCard),
+                                iv = ivBase64
                             )
                             cardsViewModel.addCard(
                                 newCard
@@ -210,15 +221,15 @@ fun AddCardScreen(
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Primary,
-                        disabledContentColor = Color.White.copy(alpha = 0.7f)
+                        disabledContentColor = White.copy(alpha = 0.7f)
                     ),
                 ) {
                     Text(
                         text = "Agregar tarjeta",
-                        color = Color.White
+                        color = White
                     )
                 }
-                
+
             }
             if (showDialog) {
                 CardDialog(
@@ -260,7 +271,6 @@ fun CardDialog(
         dismissButton = null
     )
 }
-
 
 
 fun verificationCardType(numberCard: String): String {
@@ -308,6 +318,6 @@ fun verificationCardType(numberCard: String): String {
 
 @Preview
 @Composable
-fun AddCardScreenPreview(){
+fun AddCardScreenPreview() {
     AddCardScreen("1", rememberNavController())
 }

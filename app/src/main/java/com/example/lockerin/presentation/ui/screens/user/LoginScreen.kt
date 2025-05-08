@@ -168,7 +168,7 @@ fun LoginScreen(
                                             inclusive = true
                                         }
                                     }
-                                } else { dialogMessage= "La contraseña o el email son incorrectos"
+                                } else { dialogMessage= errorMessage.toString()
                                     showDialog = true
                                 }
                             }
@@ -248,8 +248,3 @@ fun UserConfirmationDialog(
     )
 }
 
-@Preview
-@Composable
-fun LoginPreview() {
-    LoginScreen(navController = rememberNavController())
-}

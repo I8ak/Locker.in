@@ -8,7 +8,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -47,13 +46,12 @@ import com.example.lockerin.R
 import com.example.lockerin.domain.model.Locker
 import com.example.lockerin.domain.model.Payment
 import com.example.lockerin.domain.model.Rental
-import com.example.lockerin.domain.model.User
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.collectAsState
 import com.example.lockerin.domain.model.HistoricRental
 import com.example.lockerin.presentation.ui.components.DrawerMenu
+import com.example.lockerin.presentation.ui.components.decrypt
+import com.example.lockerin.presentation.ui.components.generateAesKey
 import com.example.lockerin.presentation.ui.theme.BeigeClaro
 import com.example.lockerin.presentation.viewmodel.lockers.LockersViewModel
 import com.example.lockerin.presentation.viewmodel.lockers.RentalViewModel
@@ -61,7 +59,6 @@ import com.example.lockerin.presentation.viewmodel.payment.CardsViewModel
 import com.example.lockerin.presentation.viewmodel.payment.HistoricalRentalViewModel
 import com.example.lockerin.presentation.viewmodel.payment.PaymentViewModel
 import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
-import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
 import java.time.Instant
@@ -179,9 +176,6 @@ fun CardReserved(
     locker: Locker?,
     rental: Rental?,
     payment: Payment?,
-    historicalRentalViewModel: HistoricalRentalViewModel = koinViewModel(),
-    lockersViewModel: LockersViewModel = koinViewModel(),
-    rentalViewModel: RentalViewModel = koinViewModel(),
     cardsViewModel: CardsViewModel = koinViewModel(),
 ) {
 
@@ -316,7 +310,7 @@ fun CardHistoricRents(
 ) {
     var isSelected by remember { mutableStateOf(false) }
 
-    val cardsViewModel: CardsViewModel = koinViewModel()
+    val key= generateAesKey()
 
 
     var textStatus: String
@@ -402,7 +396,7 @@ fun CardHistoricRents(
                 )
                 Spacer(modifier = Modifier.padding(4.dp))
                 Text(
-                    text = "Número de tarjeta: ${cardsViewModel.hasNumberCard(historicRental?.cardNumber.toString())}",
+                    text = "Número de tarjeta: ${decrypt(historicRental?.cardNumber.toString(), historicRental?.iv.toString(),key)}",
                     color = Color.Black
                 )
 
