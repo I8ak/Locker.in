@@ -226,6 +226,8 @@ fun ReserveScreen(
                     // Convertir LocalDate a Date para usar en isLockerAvailable
                     val startDateTime = startDate!!.atTime(startTime!!)
                     val startDateAsDate = Date.from(startDateTime.atZone(ZoneId.systemDefault()).toInstant())
+                    val endDateTime = endDate!!.atTime(endTime!!)
+                    val endDateAsDate = Date.from(endDateTime.atZone(ZoneId.systemDefault()).toInstant())
 
                     val durationstartDateTime = startDate?.atTime(startTime ?: LocalTime.MIDNIGHT)
                     val durationendDateTime = endDate?.atTime(endTime ?: LocalTime.MIDNIGHT)
@@ -242,13 +244,13 @@ fun ReserveScreen(
                                 LockersCard(
                                     userID = userID,
                                     locker = locker,
-                                    date = startDateAsDate,
+                                    startDate = startDateAsDate,
+                                    endDate = endDateAsDate,
                                     rentalViewModel = rentalViewModel,
-                                    city = city,
                                     navController = navController,
                                     duration = duration,
-                                    startDate = TrasformarFecha(durationstartDateTime),
-                                    endDate = TrasformarFecha(durationendDateTime)
+                                    startDateString = TrasformarFecha(durationstartDateTime),
+                                    endDateString = TrasformarFecha(durationendDateTime)
                                 )
                             }
                         }
@@ -403,19 +405,34 @@ fun TimeSelector(
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun LockersCard(userID: String, locker: Locker, date: Date?, rentalViewModel: RentalViewModel,city: String,navController: NavHostController,duration: Double,startDate: String,endDate: String) {
+fun LockersCard(userID: String,
+                locker: Locker,
+                startDate: Date,
+                endDate: Date,
+                rentalViewModel: RentalViewModel,
+                navController: NavHostController,
+                duration: Double,
+                startDateString: String,
+                endDateString: String) {
     val imagen = when (locker.size) {
         "Small" -> R.drawable.personal_bag
         "Medium" -> R.drawable.luggage
         else -> R.drawable.trolley
     }
-    val isAvailable = locker.status
+    val lockerAvailabilityMap by rentalViewModel.lockerAvailability.collectAsState()
+
+    val isAvailable = lockerAvailabilityMap[locker.lockerID] ?: false
+
+    LaunchedEffect(locker.lockerID, startDate, endDate) {
+        Log.d("LockersCard", "LaunchedEffect triggered for locker: ${locker.lockerID}")
+        rentalViewModel.isLockerAvailable(locker.lockerID, startDate, endDate)
+    }
     Card(
         modifier = Modifier
             .fillMaxSize()
             .padding(8.dp)
             .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp))
-            .clickable { if (isAvailable) navController.navigate(Screen.Details.createRoute(userID,locker.lockerID,startDate,endDate,(duration*locker.pricePerHour).toString())) },
+            .clickable { if (isAvailable) navController.navigate(Screen.Details.createRoute(userID,locker.lockerID,startDateString,endDateString,(duration*locker.pricePerHour).toString())) },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color.Transparent

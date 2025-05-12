@@ -1,11 +1,16 @@
 package com.example.lockerin.data.source.remote
 
+import android.system.Os.close
 import com.example.lockerin.domain.model.Rental
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
+import java.time.LocalDate
+import kotlinx.coroutines.channels.awaitClose
+import java.util.Date
+
 
 class RentalFirestoreRepository(private val firestore: FirebaseFirestore) {
     private val rentalCollection = firestore.collection("rentals")
@@ -62,6 +67,55 @@ class RentalFirestoreRepository(private val firestore: FirebaseFirestore) {
     suspend fun deleteRental(rental: String) {
         rentalCollection.document(rental).delete().await()
     }
-    
+    suspend fun isLockerAvailable(
+        lockerId: String,
+        newStartDate: Date,
+        newEndDate: Date
+    ): Boolean {
+        try {
+            val querySnapshot = rentalCollection
+                .whereEqualTo("lockerID", lockerId)
+                .get()
+                .await()
+
+            val existingRentals = querySnapshot.toObjects(Rental::class.java)
+
+            for (existingRental in existingRentals) {
+                if (areRangesOverlapping(
+                        existingRental.startDate,
+                        existingRental.endDate,
+                        newStartDate,
+                        newEndDate
+                    )) {
+                    return false
+                }
+            }
+
+            return true
+
+        } catch (e: Exception) {
+            return false
+        }
+    }
+    private fun areRangesOverlapping(
+        start1: Date?,
+        end1: Date?,
+        start2: Date,
+        end2: Date
+    ): Boolean {
+        val condition1 = if (end1 == null) {
+            true
+        } else {
+            end1 > start2
+        }
+
+        val condition2 = if (start1 == null) {
+            true
+        } else {
+            end2 > start1
+        }
+
+        return condition1 && condition2
+    }
     
 }

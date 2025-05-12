@@ -19,6 +19,7 @@ import com.example.lockerin.domain.usecase.rental.AddRentalUseCase
 import com.example.lockerin.domain.usecase.rental.CountRentalsByUserUseCase
 import com.example.lockerin.domain.usecase.rental.DeleteRentalUseCase
 import com.example.lockerin.domain.usecase.rental.GetRentalUseCase
+import com.example.lockerin.domain.usecase.rental.IsLockerAvailableUseCase
 import com.example.lockerin.domain.usecase.rental.ListRentalsByUserIdUseCase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -31,7 +32,10 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.ZoneId
+import java.util.Date
 
 class RentalViewModel(
     val addRentalUseCase: AddRentalUseCase,
@@ -44,7 +48,8 @@ class RentalViewModel(
     val cardRepository: CardFirestoreRepository,
     val historicalRentalViewModel: HistoricRentalFirestoreRepository,
     val lockersViewModel: LockersViewModel,
-    val rentalFirestoreRepository: RentalFirestoreRepository
+    val rentalFirestoreRepository: RentalFirestoreRepository,
+    val isLockerAvailableUseCase: IsLockerAvailableUseCase
 ) : ViewModel() {
     private val _userId = MutableStateFlow<String?>(null)
     val userId: StateFlow<String?> = _userId.asStateFlow()
@@ -189,6 +194,27 @@ class RentalViewModel(
             } catch (e: Exception) {
                 e.printStackTrace()
             }
+        }
+    }
+    private val _lockerAvailability = MutableStateFlow<Map<String, Boolean>>(emptyMap())
+    val lockerAvailability: StateFlow<Map<String, Boolean>> = _lockerAvailability
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun isLockerAvailable(
+        lockerId: String,
+        newStartDate: Date,
+        newEndDate: Date
+    ) {
+        viewModelScope.launch {
+            Log.d("RentalViewModel", "Checking availability for locker: $lockerId from $newStartDate to $newEndDate") // Log de inicio
+
+            var isAvailable = isLockerAvailableUseCase(lockerId, newStartDate, newEndDate)
+
+            Log.d("RentalViewModel", "Availability result for locker $lockerId: $isAvailable")
+            _lockerAvailability.value = _lockerAvailability.value.toMutableMap().apply {
+                put(lockerId, isAvailable)
+            }
+
         }
     }
 

@@ -26,6 +26,7 @@ import com.example.lockerin.domain.usecase.rental.AddRentalUseCase
 import com.example.lockerin.domain.usecase.rental.CountRentalsByUserUseCase
 import com.example.lockerin.domain.usecase.rental.DeleteRentalUseCase
 import com.example.lockerin.domain.usecase.rental.GetRentalUseCase
+import com.example.lockerin.domain.usecase.rental.IsLockerAvailableUseCase
 import com.example.lockerin.domain.usecase.rental.ListRentalsByUserIdUseCase
 import com.example.lockerin.domain.usecase.user.DeleteUserUseCase
 import com.example.lockerin.domain.usecase.user.GetUserUseCase
@@ -75,6 +76,7 @@ val appModule = module  {
     factory { GetRentalUseCase(get()) }
     factory { CountRentalsByUserUseCase(get()) }
     factory { DeleteRentalUseCase(get()) }
+    factory { IsLockerAvailableUseCase(get()) }
 
     //Payments
     factory { AddPaymentUseCase(get()) }
@@ -91,7 +93,7 @@ val appModule = module  {
     viewModel { AuthViewModel() }
     viewModel { LockersViewModel(get(),get(),get(),get(),get(),get()) }
     viewModel { CardsViewModel(get(),get(),get(),get(),get()) }
-    viewModel { RentalViewModel(get(),get(),get(),get(),get(),get(),get(),get(),get(),get(),get()) }
+    viewModel { RentalViewModel(get(),get(),get(),get(),get(),get(),get(),get(),get(),get(),get(),get()) }
     viewModel { PaymentViewModel(get(),get(),get()) }
     viewModel { HistoricalRentalViewModel(get(),get()) }
 
