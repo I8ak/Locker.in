@@ -29,9 +29,11 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -69,7 +71,8 @@ fun StatusPayScreen(
     val userState by userViewModel.user.collectAsState()
 
     val user by userViewModel.user.collectAsState()
-    val key= generateAesKey()
+    val context = LocalContext.current
+    val key = remember { generateAesKey(context) }
     LaunchedEffect(userID) {
         cardsViewModel.setUserId(userID)
     }
@@ -229,7 +232,7 @@ fun StatusPayScreen(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = decrypt(card?.cardNumber.toString(), card?.iv.toString(),key),
+                    text = card?.cardNumber.toString(),
                     modifier = Modifier
                         .border(1.dp, Color.Black)
                         .padding(8.dp)

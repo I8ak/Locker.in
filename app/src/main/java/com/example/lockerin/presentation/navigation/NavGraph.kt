@@ -125,7 +125,7 @@ fun NavGraph(
             AcountScreen(userID, navController)
         }
         composable(
-            route = Screen.Configuration.route,
+            route = Screen.Information.route,
             arguments = listOf(
                 navArgument("userID") { type = NavType.StringType }
             )

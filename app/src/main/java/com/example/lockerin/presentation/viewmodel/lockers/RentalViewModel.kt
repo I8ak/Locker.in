@@ -32,7 +32,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.ZoneId
-import java.util.Date
 
 class RentalViewModel(
     val addRentalUseCase: AddRentalUseCase,
@@ -136,7 +135,6 @@ class RentalViewModel(
                             size = locker?.size.orEmpty(),
                             dimension = locker?.dimension.orEmpty(),
                             cardNumber = card?.cardNumber.orEmpty(),
-                            iv = card?.iv.toString(),
                             typeCard = card?.typeCard.orEmpty(),
                             amount = payment?.amount ?: 0.0,
                             status = true,
@@ -152,6 +150,44 @@ class RentalViewModel(
 
                     deleteRental(rental)
                 }
+            }
+        }
+    }
+
+    fun finalizeSpecificRental(rental: Rental) {
+        viewModelScope.launch {
+            try {
+                val locker = lockerRepository.getLockerById(rental.lockerID)
+                val payment = paymentRepository.getPaymentByRentalId(rental.rentalID)
+                val card = payment?.cardID?.let { cardId ->
+                    cardRepository.getCardById(cardId)
+                }
+
+                val historicRentalID = FirebaseFirestore.getInstance().collection("historicRentals").document().id
+
+                historicalRentalViewModel.save(
+                    HistoricRental(
+                        historicID = historicRentalID,
+                        userID = rental.userID,
+                        location = locker?.location.orEmpty(),
+                        city = locker?.city.orEmpty(),
+                        size = locker?.size.orEmpty(),
+                        dimension = locker?.dimension.orEmpty(),
+                        cardNumber = card?.cardNumber.orEmpty(),
+                        typeCard = card?.typeCard.orEmpty(),
+                        amount = payment?.amount ?: 0.0,
+                        status = true,
+                        startDate = rental.startDate,
+                        endDate = rental.endDate,
+                        createdAt = payment?.createdAt
+                    )
+                )
+
+                lockersViewModel.setStatus(locker?.lockerID.orEmpty(), true)
+
+                rentalFirestoreRepository.deleteRental(rental.rentalID)
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }

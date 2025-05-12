@@ -35,7 +35,6 @@ import androidx.navigation.NavHostController
 import com.example.lockerin.presentation.ui.components.DrawerMenu
 import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
-import com.google.rpc.context.AttributeContext
 import org.koin.androidx.compose.koinViewModel
 import kotlin.toString
 
@@ -50,7 +49,7 @@ fun ConfigurationScreen(
     val userState by userViewModel.user.collectAsState()
     val user=userViewModel.getUserById(userId.toString())
     DrawerMenu(
-      textoBar = "Configuración",
+      textoBar = "Información",
         navController=navController,
         authViewModel = viewModel(),
         fullUser = userState,

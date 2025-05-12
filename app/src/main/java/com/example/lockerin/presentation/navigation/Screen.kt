@@ -24,8 +24,8 @@ sealed class Screen(val route: String) {
     object Acount : Screen("lockers/acount/{userID}"){
         fun createRoute(userID: String): String="lockers/acount/$userID"
     }
-    object Configuration: Screen("lockers/configuration/{userID}"){
-        fun createRoute(userID: String): String="lockers/configuration/$userID"
+    object Information: Screen("lockers/information/{userID}"){
+        fun createRoute(userID: String): String="lockers/information/$userID"
     }
     object Cards: Screen("lockers/cards/{userID}"){
         fun createRoute(userID: String): String="lockers/cards/$userID"

@@ -504,6 +504,9 @@ fun Cards(userID: String,
             .padding(8.dp)
             .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp))
             .padding(16.dp)
+            .clickable {
+                navController.navigate(Screen.Cards.createRoute(userID))
+            }
 
     ) {
         Text(

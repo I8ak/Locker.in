@@ -30,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.White
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -65,9 +66,9 @@ fun AddCardScreen(
     cardsViewModel: CardsViewModel = koinViewModel(),
     authViewModel: AuthViewModel = viewModel()
 ) {
-
-    val testKey = remember { generateAesKey() }
-    val testIv = remember { generateIv() }
+//    val context = LocalContext.current
+//    val testKey = remember { generateAesKey(context) }
+//    val testIv = remember { generateIv() }
 
     LaunchedEffect(Unit) {
         userViewModel.getUserById(userID)
@@ -201,16 +202,15 @@ fun AddCardScreen(
                 Button(
                     onClick = {
 
-                        val (encryptedNumber,ivBase64)= encrypt(numberCard,testKey,testIv)
+//                        val (encryptedNumber,ivBase64)= encrypt(numberCard,testKey,testIv)
                         if (numberCard.isNotEmpty() && nameCard.isNotEmpty() && expirationDate.isNotEmpty() && cvv.isNotEmpty()) {
                             val newCard = Tarjeta(
-                                cardNumber = encryptedNumber,
+                                cardNumber = cardsViewModel.encrypt(numberCard),
                                 userId = userID,
                                 cardName = nameCard,
                                 expDate = expirationDate,
                                 cvv = cvv.toInt(),
                                 typeCard = verificationCardType(numberCard),
-                                iv = ivBase64
                             )
                             cardsViewModel.addCard(
                                 newCard
@@ -316,8 +316,3 @@ fun verificationCardType(numberCard: String): String {
 
 }
 
-@Preview
-@Composable
-fun AddCardScreenPreview() {
-    AddCardScreen("1", rememberNavController())
-}

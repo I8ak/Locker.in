@@ -217,7 +217,6 @@ fun ReserveScreen(
                 Log.i("Fecha","hora incio $startTime")
                 Log.i("Fecha","fecha fin $endDate")
                 Log.i("Fecha","hora fin $endTime")
-                // Dentro de tu ReserveScreen, reemplaza la condición actual con esta versión mejorada:
                 if (startDate != null && startTime != null && endDate != null && endTime != null &&
                     !dateStartError && !timeStartError && !dateError && !timeError
                 ) {
@@ -303,8 +302,8 @@ fun DateSelector(
                 .clickable { showPicker = true },
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                disabledTextColor = Color.Black,  // Texto negro
-                disabledBorderColor = if (isError) Color.Red else Color.Black,  // Borde rojo si hay error
+                disabledTextColor = Color.Black,
+                disabledBorderColor = if (isError) Color.Red else Color.Black,
                 disabledLabelColor = Color.Black,  // Label negro
                 disabledLeadingIconColor = Color.Black,  // Icono negro
                 disabledSupportingTextColor = Color.Red  // Color para mensajes de error

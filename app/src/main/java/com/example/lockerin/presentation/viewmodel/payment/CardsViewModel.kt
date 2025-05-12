@@ -49,6 +49,9 @@ class CardsViewModel(
         return "**** ${cardNumber.takeLast(4)}"
     }
 
+    fun encrypt(cardNumber: String): String {
+        return "**** ${cardNumber.takeLast(4)}"
+    }
     fun addCard(card: Tarjeta) {
         viewModelScope.launch {
             addCardUseCase(card)

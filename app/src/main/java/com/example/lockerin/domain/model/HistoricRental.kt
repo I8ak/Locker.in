@@ -12,7 +12,6 @@ data class HistoricRental(
     val size: String = "",
     val dimension: String = "",
     val cardNumber: String = "",
-    val iv:String="",
     val typeCard: String="",
     val amount: Double = 0.0,
     val status: Boolean= false,

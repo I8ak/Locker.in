@@ -47,12 +47,17 @@ import com.example.lockerin.domain.model.Locker
 import com.example.lockerin.domain.model.Payment
 import com.example.lockerin.domain.model.Rental
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.graphics.Color.Companion.White
+import androidx.compose.ui.platform.LocalContext
 import com.example.lockerin.domain.model.HistoricRental
 import com.example.lockerin.presentation.ui.components.DrawerMenu
 import com.example.lockerin.presentation.ui.components.decrypt
 import com.example.lockerin.presentation.ui.components.generateAesKey
 import com.example.lockerin.presentation.ui.theme.BeigeClaro
+import com.example.lockerin.presentation.ui.theme.Primary
 import com.example.lockerin.presentation.viewmodel.lockers.LockersViewModel
 import com.example.lockerin.presentation.viewmodel.lockers.RentalViewModel
 import com.example.lockerin.presentation.viewmodel.payment.CardsViewModel
@@ -80,9 +85,8 @@ fun ReservedLockersScreen(
 ) {
 
 
-
     val userState by usersViewModel.user.collectAsState()
-    val user=usersViewModel.getUserById(userID)
+    val user = usersViewModel.getUserById(userID)
 
     val rentalState by rentalViewModel.rentals.collectAsState()
     val lockers by lockersViewModel.lockers.collectAsState()
@@ -114,14 +118,15 @@ fun ReservedLockersScreen(
                     text = "Reservas activas",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
+                    color = Color.Black,
                     modifier = Modifier.padding(8.dp)
                 )
 
-                LazyColumn (
+                LazyColumn(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxWidth()
-                ){
+                ) {
                     items(rentalState) { rentalLazy ->
                         val lockerMatch = lockers.find { it.lockerID == rentalLazy.lockerID }
                         val paymentMatch = payments.find { it.rentalID == rentalLazy.rentalID }
@@ -146,14 +151,15 @@ fun ReservedLockersScreen(
                     text = "Historial de reservas",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
+                    color = Color.Black,
                     modifier = Modifier.padding(8.dp)
                 )
 
-                LazyColumn (
+                LazyColumn(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxWidth()
-                ){
+                ) {
                     items(
                         historicRentalState
                     ) { historicLazy ->
@@ -177,6 +183,8 @@ fun CardReserved(
     rental: Rental?,
     payment: Payment?,
     cardsViewModel: CardsViewModel = koinViewModel(),
+    rentalViewModel: RentalViewModel = koinViewModel(),
+    lockersViewModel: LockersViewModel = koinViewModel()
 ) {
 
 
@@ -226,7 +234,7 @@ fun CardReserved(
 
                 Column {
                     Text(
-                        text = rental?.rentalID?: "",
+                        text = rental?.rentalID ?: "",
                         fontWeight = FontWeight.Bold,
                         fontSize = 25.sp,
                         color = Color.Black
@@ -237,11 +245,29 @@ fun CardReserved(
                     )
                     if (isSelected) {
                         Spacer(modifier = Modifier.size(8.dp))
-                        Text(text = "Localización: ${locker?.location},${locker?.city} ", color = Color.Black)
+                        Text(
+                            text = "Localización: ${locker?.location},${locker?.city} ",
+                            color = Color.Black
+                        )
                         Spacer(modifier = Modifier.size(8.dp))
                         Text(text = "Precio: ${payment?.amount}€", color = Color.Black)
                         Spacer(modifier = Modifier.size(8.dp))
                         CountDown(rental?.endDate)
+                        Spacer(modifier = Modifier.size(8.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            Button(
+                                onClick = {
+                                    rentalViewModel.finalizeSpecificRental(rental!!)
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = Primary),
+                            ) {
+                                Text(text = "Finalizar reserva", color = White)
+                            }
+
+                        }
 
                     }
 
@@ -310,7 +336,8 @@ fun CardHistoricRents(
 ) {
     var isSelected by remember { mutableStateOf(false) }
 
-    val key= generateAesKey()
+    val context = LocalContext.current
+    val key = remember { generateAesKey(context) }
 
 
     var textStatus: String
@@ -396,7 +423,7 @@ fun CardHistoricRents(
                 )
                 Spacer(modifier = Modifier.padding(4.dp))
                 Text(
-                    text = "Número de tarjeta: ${decrypt(historicRental?.cardNumber.toString(), historicRental?.iv.toString(),key)}",
+                    text = "Número de tarjeta: ${historicRental?.cardNumber.toString()}",
                     color = Color.Black
                 )
 

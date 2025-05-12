@@ -49,6 +49,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.lockerin.domain.model.Payment
 import com.example.lockerin.domain.model.Rental
@@ -267,7 +268,8 @@ fun CardsCard(
     onCardSelected: (cardId: String) -> Unit,
     cardsViewModel: CardsViewModel
 ) {
-    val key= generateAesKey()
+    val context = LocalContext.current
+    val key = remember { generateAesKey(context) }
     val imagen = when (tarjeta.typeCard) {
         "Visa" -> R.drawable.visa
         "MasterCard" -> R.drawable.mastercard
@@ -302,7 +304,7 @@ fun CardsCard(
                 )
                 Spacer(modifier = Modifier.padding(8.dp))
                 Text(
-                    text = decrypt(tarjeta.cardNumber, tarjeta.iv.toString(),key), color = Color.Black,
+                    text = tarjeta.cardNumber, color = Color.Black,
                     modifier = Modifier
                         .weight(1f)
                         .align(Alignment.CenterVertically)

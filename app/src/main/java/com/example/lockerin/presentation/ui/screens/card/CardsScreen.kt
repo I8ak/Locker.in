@@ -18,6 +18,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCard
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -33,8 +36,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.White
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -47,9 +53,13 @@ import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.components.DrawerMenu
 import com.example.lockerin.presentation.ui.components.decrypt
 import com.example.lockerin.presentation.ui.components.generateAesKey
+import com.example.lockerin.presentation.ui.screens.user.ConfirmDeleteAccountDialog
+import com.example.lockerin.presentation.ui.theme.BeigeClaro
+import com.example.lockerin.presentation.ui.theme.Primary
 import com.example.lockerin.presentation.viewmodel.payment.CardsViewModel
 import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
 import org.koin.androidx.compose.koinViewModel
+import javax.crypto.SecretKey
 
 @Composable
 fun CardsScreen(
@@ -60,6 +70,8 @@ fun CardsScreen(
 ) {
     val user by userViewModel.user.collectAsState()
     val cardsState by cardsViewModel.cards.collectAsState()
+    val context = LocalContext.current
+//    val key = remember { generateAesKey(context) }
     LaunchedEffect(userID) {
         cardsViewModel.setUserId(userID)
     }
@@ -85,7 +97,8 @@ fun CardsScreen(
                         key(card.cardID) {
                             CardsCard(
                                 tarjeta = card,
-                                cardsViewModel = cardsViewModel
+                                cardsViewModel = cardsViewModel,
+//                                key
                             )
                         }
                     }
@@ -124,9 +137,10 @@ fun CardsScreen(
 @Composable
 fun CardsCard(
     tarjeta: Tarjeta,
-    cardsViewModel: CardsViewModel
+    cardsViewModel: CardsViewModel,
+//    key: SecretKey
 ) {
-    val key=generateAesKey()
+
     var isSelected by remember { mutableStateOf(false) }
     val imagen = when (tarjeta.typeCard) {
         "Visa" -> R.drawable.visa
@@ -134,6 +148,16 @@ fun CardsCard(
         "American Express" -> R.drawable.american_express
         else -> R.drawable.credit_card
     }
+    var showDialog by remember { mutableStateOf(false) }
+
+//    val last4Digits = remember(tarjeta, key) {
+//        try {
+//            decrypt(tarjeta.cardNumber, tarjeta.iv.toString(), key)
+//        } catch (e: Exception) {
+//            e.printStackTrace()
+//            "**** ERROR"
+//        }
+//    }
     Card(
         modifier = Modifier
             .fillMaxSize()
@@ -163,7 +187,7 @@ fun CardsCard(
                 )
                 Spacer(modifier = Modifier.padding(8.dp))
                 Text(
-                    text = decrypt(tarjeta.cardNumber, tarjeta.iv.toString(),key), color = Color.Black,
+                    text = tarjeta.cardNumber, color = Color.Black,
                     modifier = Modifier
                         .weight(1f)
                         .align(Alignment.CenterVertically)
@@ -186,18 +210,84 @@ fun CardsCard(
                     modifier = Modifier
                         .size(24.dp)
                         .clickable {
-                           cardsViewModel.removeCard(tarjeta)
+                            showDialog=true
                         }
-                        .align(Alignment.End)
+                        .align(Alignment.End),
+                    tint = Color.Black,
                 )
+                if (showDialog) {
+                    ConfirmDeleteCardDialog(
+                        onConfirmation = {
+                            cardsViewModel.removeCard(tarjeta)
+                        },
+                        onDismissRequest = {
+                            showDialog = false
+                        }
+                    )
+                }
             }
 
         }
     }
 }
 
-@Preview
 @Composable
-fun PreviewCardsScreen() {
-    CardsScreen(userID = "1")
+fun ConfirmDeleteCardDialog(
+    onConfirmation: () -> Unit,
+    onDismissRequest: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        containerColor = BeigeClaro,
+        title = {
+            Text(
+                text = "¿Eliminar Tarjeta?",
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp, start = 16.dp, end = 16.dp),
+                color = Color.Black,
+            )
+        },
+        text = {
+            Text(
+                text = "¿Quieres eliminar tu tajeta de forma permanente?",
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp, horizontal = 16.dp),
+                color = Color.Black,
+            )
+        },
+        confirmButton = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Button(
+                    onClick = {
+                        onConfirmation()
+                        onDismissRequest()
+                    },
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 4.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                ) {
+                    Text("Sí", color = White)
+                }
+                Button(
+                    onClick = onDismissRequest,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 4.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                ) {
+                    Text("No", color = White)
+                }
+            }
+        },
+        dismissButton = null
+    )
+
 }

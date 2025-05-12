@@ -252,8 +252,4 @@ fun ResetPass(
 
 }
 
-@Composable
-@Preview
-fun ResetPassPreview(){
-    ResetPass(navController = rememberNavController())
-}
+

@@ -1,7 +1,6 @@
 package com.example.lockerin.data.source.remote
 
 import com.example.lockerin.domain.model.Rental
-import com.example.lockerin.domain.model.Tarjeta
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -60,8 +59,8 @@ class RentalFirestoreRepository(private val firestore: FirebaseFirestore) {
 
         return snapshot.size()
     }
-    suspend fun deleteRental(rental: Rental) {
-        rentalCollection.document(rental.rentalID).delete().await()
+    suspend fun deleteRental(rental: String) {
+        rentalCollection.document(rental).delete().await()
     }
     
     

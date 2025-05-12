@@ -440,9 +440,3 @@ fun RegisterScreen(
     )
 }
 
-@Preview
-@Composable
-fun RegisterScreenPreview() {
-    RegisterScreen(navController =
-        rememberNavController())
-}
