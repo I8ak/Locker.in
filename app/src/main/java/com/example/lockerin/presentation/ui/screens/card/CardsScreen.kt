@@ -70,8 +70,7 @@ fun CardsScreen(
 ) {
     val user by userViewModel.user.collectAsState()
     val cardsState by cardsViewModel.cards.collectAsState()
-    val context = LocalContext.current
-//    val key = remember { generateAesKey(context) }
+
     LaunchedEffect(userID) {
         cardsViewModel.setUserId(userID)
     }
@@ -97,8 +96,7 @@ fun CardsScreen(
                         key(card.cardID) {
                             CardsCard(
                                 tarjeta = card,
-                                cardsViewModel = cardsViewModel,
-//                                key
+                                cardsViewModel = cardsViewModel
                             )
                         }
                     }
@@ -138,7 +136,6 @@ fun CardsScreen(
 fun CardsCard(
     tarjeta: Tarjeta,
     cardsViewModel: CardsViewModel,
-//    key: SecretKey
 ) {
 
     var isSelected by remember { mutableStateOf(false) }
@@ -150,14 +147,6 @@ fun CardsCard(
     }
     var showDialog by remember { mutableStateOf(false) }
 
-//    val last4Digits = remember(tarjeta, key) {
-//        try {
-//            decrypt(tarjeta.cardNumber, tarjeta.iv.toString(), key)
-//        } catch (e: Exception) {
-//            e.printStackTrace()
-//            "**** ERROR"
-//        }
-//    }
     Card(
         modifier = Modifier
             .fillMaxSize()

@@ -1,6 +1,7 @@
 package com.example.lockerin.presentation.viewmodel.users
 
 import android.util.Log
+import androidx.compose.runtime.Composable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.lockerin.domain.model.User
@@ -14,7 +15,8 @@ import kotlinx.coroutines.launch
 import com.google.firebase.auth.FirebaseAuth // Asegúrate de tener esta importación si usas getInstance()
 import com.google.firebase.auth.ktx.auth // Asegúrate de tener esta importación si usas Firebase.auth
 import com.google.firebase.FirebaseException // Importar FirebaseException para logging más detallado
-
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
 
 
 enum class AuthState{
@@ -155,6 +157,40 @@ class AuthViewModel : ViewModel(){
         }else{
             onComplete(false, "Usuario no autenticado")
         }
+    }
+
+    fun sendPasswordResetEmail(
+        email: String,
+        onComplete:  (Boolean, String?) -> Unit
+    ) {
+        if (email.isEmpty()) {
+            onComplete(false, "El correo electrónico no puede estar vacío.")
+            return
+        }
+
+        // Opcional: Validar el formato del email antes de enviar
+        // if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+        //     onComplete(false, "Formato de correo electrónico inválido.")
+        //     return
+        // }
+
+        Log.d("AuthViewModel", "Intentando enviar correo de reseteo a: $email")
+
+        firebaseAuth.sendPasswordResetEmail(email)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Log.d("AuthViewModel", "Correo de reseteo enviado exitosamente a $email")
+                    onComplete(true, null)
+                } else {
+                    Log.e("AuthViewModel", "Error al enviar correo de reseteo a $email: ${task.exception?.message}", task.exception)
+                    val errorMessage = when (task.exception) {
+                        is FirebaseAuthInvalidUserException -> "No hay usuario registrado con este correo."
+                        is FirebaseAuthInvalidCredentialsException -> "El formato del correo es inválido."
+                        else -> task.exception?.message ?: "Error desconocido al enviar correo."
+                    }
+                    onComplete(false, errorMessage)
+                }
+            }
     }
 
 

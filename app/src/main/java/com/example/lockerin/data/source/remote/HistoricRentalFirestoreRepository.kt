@@ -2,6 +2,7 @@ package com.example.lockerin.data.source.remote
 
 import com.example.lockerin.domain.model.HistoricRental
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -21,6 +22,7 @@ class HistoricRentalFirestoreRepository(
     }
     fun getHRbyUserId(userId: String): Flow<List<HistoricRental>> = callbackFlow{
         val query = historicRentalCollection.whereEqualTo("userID", userId)
+            .orderBy("createdAt", Query.Direction.DESCENDING)
 
         val listener = query.addSnapshotListener { snapshot, error ->
             if (error != null) {

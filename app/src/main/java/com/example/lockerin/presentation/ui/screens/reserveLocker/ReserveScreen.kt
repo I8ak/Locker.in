@@ -278,7 +278,7 @@ fun TrasformarFecha(date: LocalDateTime): String {
 fun DateSelector(
     selectedDate: LocalDate?,
     onDateSelected: (LocalDate) -> Unit,
-    isError: Boolean = false,  // Nuevo parámetro para errores
+    isError: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     var showPicker by remember { mutableStateOf(false) }
@@ -291,12 +291,12 @@ fun DateSelector(
             label = { Text("Fecha", color = Color.Black) },
             readOnly = true,
             enabled = false,
-            isError = isError,  // Activa el estado de error
+            isError = isError,
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.DateRange,
                     contentDescription = "Fecha",
-                    tint = Color.Black  // Icono siempre negro
+                    tint = Color.Black
                 )
             },
             modifier = Modifier
@@ -306,9 +306,9 @@ fun DateSelector(
             colors = OutlinedTextFieldDefaults.colors(
                 disabledTextColor = Color.Black,
                 disabledBorderColor = if (isError) Color.Red else Color.Black,
-                disabledLabelColor = Color.Black,  // Label negro
-                disabledLeadingIconColor = Color.Black,  // Icono negro
-                disabledSupportingTextColor = Color.Red  // Color para mensajes de error
+                disabledLabelColor = Color.Black,
+                disabledLeadingIconColor = Color.Black,
+                disabledSupportingTextColor = Color.Red
             )
         )
 

@@ -70,15 +70,13 @@ fun ListLockersScreen(
 ) {
     val isLoading = remember { mutableStateOf(true) }
 
-    // Obtener los datos del usuario y los lockers
     userViewModel.getUserById(userID)
     val user by userViewModel.user.collectAsState()
     val lockers by lockerViewModel.lockers.collectAsState()
 
-    // Simular carga de datos (esto debe ser reemplazado con lógica real)
     LaunchedEffect(lockers) {
         if (lockers.isNotEmpty()) {
-            isLoading.value = false // Cuando los lockers estén cargados, quitar el indicador
+            isLoading.value = false
         }
     }
 
@@ -206,8 +204,8 @@ fun LockersCard(
                 Text(text = "Precio por hora: ${locker.pricePerHour}", color = Color.Black)
             }
             Row(
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically,
+//                horizontalArrangement = Arrangement.End,
+//                verticalAlignment = Alignment.Bottom,
                 modifier = Modifier.padding(8.dp)
             ) {
                 Icon(

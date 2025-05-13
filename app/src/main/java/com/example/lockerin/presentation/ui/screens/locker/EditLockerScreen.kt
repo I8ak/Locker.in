@@ -50,7 +50,7 @@ fun EditLockerScreen(
     lockerViewModel: LockersViewModel = koinViewModel()
 ) {
     userViewModel.getUserById(userID)
-    var locker by remember { mutableStateOf<Locker?>(null) }
+    val locker by lockerViewModel.selectedLocker.collectAsState()
 
     LaunchedEffect(lockerID) {
         lockerViewModel.getLockerById(lockerID)

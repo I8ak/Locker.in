@@ -87,7 +87,7 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.annotation)
     implementation(libs.androidx.constraintlayout)
-    implementation("com.google.accompanist:accompanist-webview:0.30.1") // Esta no parece gestionada por tus BOMs, mantén la versión si la necesitas
+    
 
 
     // Dependencias de prueba 

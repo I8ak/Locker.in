@@ -184,7 +184,6 @@ fun CardReserved(
     payment: Payment?,
     cardsViewModel: CardsViewModel = koinViewModel(),
     rentalViewModel: RentalViewModel = koinViewModel(),
-    lockersViewModel: LockersViewModel = koinViewModel()
 ) {
 
 
@@ -335,9 +334,6 @@ fun CardHistoricRents(
     historicRental: HistoricRental?
 ) {
     var isSelected by remember { mutableStateOf(false) }
-
-    val context = LocalContext.current
-    val key = remember { generateAesKey(context) }
 
 
     var textStatus: String
