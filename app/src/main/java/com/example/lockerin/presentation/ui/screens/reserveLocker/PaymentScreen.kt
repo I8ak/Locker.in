@@ -62,6 +62,7 @@ import com.example.lockerin.presentation.viewmodel.lockers.LockersViewModel
 import com.example.lockerin.presentation.viewmodel.lockers.RentalViewModel
 import com.example.lockerin.presentation.viewmodel.payment.CardsViewModel
 import com.example.lockerin.presentation.viewmodel.payment.PaymentViewModel
+import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
 import com.google.firebase.firestore.FirebaseFirestore
 import org.koin.androidx.compose.koinViewModel
@@ -84,11 +85,14 @@ fun PaymentScreen(
     lockersViewModel: LockersViewModel= koinViewModel(),
     paymentViewModel: PaymentViewModel = koinViewModel(),
     cardsViewModel: CardsViewModel = koinViewModel(),
-    rentalViewModel: RentalViewModel = koinViewModel()
+    rentalViewModel: RentalViewModel = koinViewModel(),
+    authViewModel: AuthViewModel=viewModel()
     ) {
 
 
-    val user by userViewModel.user.collectAsState()
+    val userId = authViewModel.currentUserId
+    val userState by userViewModel.user.collectAsState()
+    val user=userViewModel.getUserById(userId.toString())
     val cardsState by cardsViewModel.cards.collectAsState()
     LaunchedEffect(userID) {
         cardsViewModel.setUserId(userID)
@@ -97,7 +101,7 @@ fun PaymentScreen(
         textoBar = "Medios de pago",
         navController = navController,
         authViewModel = viewModel(),
-        fullUser = user,
+        fullUser = userState,
         content = { paddingValues ->
             Column(
                 modifier = Modifier

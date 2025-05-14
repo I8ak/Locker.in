@@ -57,6 +57,7 @@ import com.example.lockerin.presentation.ui.screens.user.ConfirmDeleteAccountDia
 import com.example.lockerin.presentation.ui.theme.BeigeClaro
 import com.example.lockerin.presentation.ui.theme.Primary
 import com.example.lockerin.presentation.viewmodel.payment.CardsViewModel
+import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
 import org.koin.androidx.compose.koinViewModel
 import javax.crypto.SecretKey
@@ -66,9 +67,12 @@ fun CardsScreen(
     userID: String,
     navController: NavHostController = rememberNavController(),
     userViewModel: UsersViewModel= koinViewModel(),
-    cardsViewModel: CardsViewModel = koinViewModel()
+    cardsViewModel: CardsViewModel = koinViewModel(),
+    authViewModel: AuthViewModel=viewModel()
 ) {
-    val user by userViewModel.user.collectAsState()
+    val userId = authViewModel.currentUserId
+    val userState by userViewModel.user.collectAsState()
+    val user=userViewModel.getUserById(userId.toString())
     val cardsState by cardsViewModel.cards.collectAsState()
 
     LaunchedEffect(userID) {
@@ -79,7 +83,7 @@ fun CardsScreen(
         textoBar = "Mis tarjetas",
         navController = navController,
         authViewModel = viewModel(),
-        fullUser = user,
+        fullUser = userState,
         content = { paddingValues ->
 
             Column(

@@ -55,6 +55,7 @@ import com.example.lockerin.presentation.ui.components.LoadingScreen
 import com.example.lockerin.presentation.ui.theme.BeigeClaro
 import com.example.lockerin.presentation.ui.theme.Primary
 import com.example.lockerin.presentation.viewmodel.lockers.LockersViewModel
+import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
 import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
@@ -66,12 +67,16 @@ fun ListLockersScreen(
     userID: String,
     navController: NavHostController,
     userViewModel: UsersViewModel = koinViewModel(),
-    lockerViewModel: LockersViewModel = koinViewModel()
+    lockerViewModel: LockersViewModel = koinViewModel(),
+    authViewModel: AuthViewModel=viewModel()
 ) {
     val isLoading = remember { mutableStateOf(true) }
 
+    val userId = authViewModel.currentUserId
+    val userState by userViewModel.user.collectAsState()
+    val user=userViewModel.getUserById(userId.toString())
     userViewModel.getUserById(userID)
-    val user by userViewModel.user.collectAsState()
+
     val lockers by lockerViewModel.lockers.collectAsState()
 
     LaunchedEffect(lockers) {
@@ -87,7 +92,7 @@ fun ListLockersScreen(
             textoBar = "Lockers",
             navController = navController,
             authViewModel = viewModel(),
-            fullUser = user!!,
+            fullUser = userState,
             content = { paddingValues ->
                 Scaffold(
                     modifier = Modifier.statusBarsPadding(),
@@ -204,8 +209,8 @@ fun LockersCard(
                 Text(text = "Precio por hora: ${locker.pricePerHour}", color = Color.Black)
             }
             Row(
-//                horizontalArrangement = Arrangement.End,
-//                verticalAlignment = Alignment.Bottom,
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.Bottom,
                 modifier = Modifier.padding(8.dp)
             ) {
                 Icon(

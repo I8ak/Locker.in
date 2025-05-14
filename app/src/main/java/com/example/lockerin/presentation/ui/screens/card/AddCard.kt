@@ -66,14 +66,14 @@ fun AddCardScreen(
     cardsViewModel: CardsViewModel = koinViewModel(),
     authViewModel: AuthViewModel = viewModel()
 ) {
-//    val context = LocalContext.current
-//    val testKey = remember { generateAesKey(context) }
-//    val testIv = remember { generateIv() }
+
+    val userId = authViewModel.currentUserId
+    val userState by userViewModel.user.collectAsState()
+    val user=userViewModel.getUserById(userId.toString())
 
     LaunchedEffect(Unit) {
         userViewModel.getUserById(userID)
     }
-    val userState by userViewModel.user.collectAsState()
     var numberCard by remember { mutableStateOf("") }
     var nameCard by remember { mutableStateOf("") }
     var expirationDate by remember { mutableStateOf("") }
@@ -202,7 +202,6 @@ fun AddCardScreen(
                 Button(
                     onClick = {
 
-//                        val (encryptedNumber,ivBase64)= encrypt(numberCard,testKey,testIv)
                         if (numberCard.isNotEmpty() && nameCard.isNotEmpty() && expirationDate.isNotEmpty() && cvv.isNotEmpty()) {
                             val newCard = Tarjeta(
                                 cardNumber = cardsViewModel.encrypt(numberCard),

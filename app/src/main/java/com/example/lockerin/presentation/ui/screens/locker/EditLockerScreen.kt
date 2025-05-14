@@ -37,6 +37,7 @@ import com.example.lockerin.presentation.ui.components.DrawerMenu
 import com.example.lockerin.presentation.ui.theme.BeigeClaro
 import com.example.lockerin.presentation.ui.theme.Primary
 import com.example.lockerin.presentation.viewmodel.lockers.LockersViewModel
+import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
@@ -47,15 +48,19 @@ fun EditLockerScreen(
     lockerID: String,
     navController: NavHostController,
     userViewModel: UsersViewModel = koinViewModel(),
-    lockerViewModel: LockersViewModel = koinViewModel()
+    lockerViewModel: LockersViewModel = koinViewModel(),
+    authViewModel: AuthViewModel=viewModel()
 ) {
     userViewModel.getUserById(userID)
+
+    val userId = authViewModel.currentUserId
+    val userState by userViewModel.user.collectAsState()
+    val user=userViewModel.getUserById(userId.toString())
     val locker by lockerViewModel.selectedLocker.collectAsState()
 
     LaunchedEffect(lockerID) {
         lockerViewModel.getLockerById(lockerID)
     }
-    val user by userViewModel.user.collectAsState()
     var address by remember { mutableStateOf("") }
     var city by remember { mutableStateOf("") }
     var status by remember { mutableStateOf(true) }
@@ -78,7 +83,7 @@ fun EditLockerScreen(
         textoBar = "Añadir Locker",
         navController = navController,
         authViewModel = viewModel(),
-        fullUser = user,
+        fullUser = userState,
         content = { paddingValues ->
 
             Column(

@@ -52,13 +52,15 @@ import androidx.navigation.compose.rememberNavController
 import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.theme.BeigeClaro
 import com.example.lockerin.presentation.ui.theme.Primary
+import com.example.lockerin.presentation.viewmodel.AppViewModel
 import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 
 
 @Composable
 fun LoginScreen(
     navController: NavHostController,
-    authViewModel: AuthViewModel=viewModel()
+    authViewModel: AuthViewModel=viewModel(),
+    appViewModel: AppViewModel
 ){
     var showDialog by remember { mutableStateOf(false) }
     var dialogMessage by remember { mutableStateOf("") }
@@ -161,6 +163,7 @@ fun LoginScreen(
                                 showDialog = true
                                 return@Button
                             }
+                            appViewModel.setLoading(true)
                             authViewModel.signIn(email, password) { success, errorMessage ->
                                 if (success) {
                                     navController.navigate(Screen.Home.route){
@@ -168,7 +171,9 @@ fun LoginScreen(
                                             inclusive = true
                                         }
                                     }
-                                } else { dialogMessage= errorMessage.toString()
+                                } else {
+                                    appViewModel.setLoading(false)
+                                    dialogMessage= errorMessage.toString()
                                     showDialog = true
                                 }
                             }

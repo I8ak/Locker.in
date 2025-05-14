@@ -67,12 +67,7 @@ fun StatusPayScreen(
     userViewModel: UsersViewModel = koinViewModel(),
     navController: NavHostController = rememberNavController(),
 ) {
-//    val userId = authViewModel.currentUserId
-    val userState by userViewModel.user.collectAsState()
 
-    val user by userViewModel.user.collectAsState()
-    val context = LocalContext.current
-    val key = remember { generateAesKey(context) }
     LaunchedEffect(userID) {
         cardsViewModel.setUserId(userID)
     }

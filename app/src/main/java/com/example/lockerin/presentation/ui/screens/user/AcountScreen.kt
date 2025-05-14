@@ -397,7 +397,7 @@ fun DeleteAcount(authViewModel: AuthViewModel, navController: NavController,user
 
                 },
                 onDismissRequest = {
-                    showDialog = false // Cerrar diálogo al cancelar
+                    showDialog = false
                 }
             )
         }

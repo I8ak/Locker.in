@@ -37,20 +37,24 @@ import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.components.DrawerMenu
 import com.example.lockerin.presentation.ui.theme.Primary
 import com.example.lockerin.presentation.viewmodel.lockers.LockersViewModel
+import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun DetailsScreen(
-    userId: String,
+    userID: String,
     lockerID: String,
     startDate: String,
     endDate: String,
     totalPrice: String,
     navController: NavHostController= rememberNavController(),
-    userViewModel: UsersViewModel= koinViewModel()
+    userViewModel: UsersViewModel= koinViewModel(),
+    authViewModel: AuthViewModel=viewModel()
 ){
-    val user= userViewModel.getUserById(userId)
+    val userId = authViewModel.currentUserId
+    val userState by userViewModel.user.collectAsState()
+    val user=userViewModel.getUserById(userId.toString())
     Log.d("DetailsScreen", totalPrice.toString())
     val lockersViewModel: LockersViewModel= koinViewModel()
     val locker by lockersViewModel.selectedLocker.collectAsState()
@@ -61,7 +65,7 @@ fun DetailsScreen(
         textoBar = "Datos de la Reserva",
         navController = navController,
         authViewModel = viewModel(),
-        fullUser = user,
+        fullUser = userState,
         content = { paddingValues ->
             Column(
                 modifier = Modifier
@@ -232,7 +236,7 @@ fun DetailsScreen(
 
                     Button(
                         onClick = {
-                            navController.navigate(Screen.Payment.createRoute(userId, lockerID, startDate, endDate, totalPrice))
+                            navController.navigate(Screen.Payment.createRoute(userID, lockerID, startDate, endDate, totalPrice))
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Primary)
                     ) {

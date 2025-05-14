@@ -65,6 +65,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CardDefaults
 import androidx.compose.ui.text.font.FontWeight
 import com.example.lockerin.presentation.navigation.Screen
+import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
 import org.koin.androidx.compose.koinViewModel
 import java.util.Date
@@ -79,9 +80,12 @@ fun ReserveScreen(
     navController: NavHostController,
     city: String,
     lockersViewModel: LockersViewModel = koinViewModel(),
-    userViewModel: UsersViewModel= koinViewModel()
+    userViewModel: UsersViewModel= koinViewModel(),
+    authViewModel: AuthViewModel=viewModel()
 ) {
-    val user = userViewModel.getUserById(userID)
+    val userId = authViewModel.currentUserId
+    val userState by userViewModel.user.collectAsState()
+    val user=userViewModel.getUserById(userId.toString())
     val lockers = lockersViewModel.lockers.collectAsState()
     // Estados
     var startDate by remember { mutableStateOf<LocalDate?>(null) }
@@ -118,7 +122,7 @@ fun ReserveScreen(
         textoBar = city,
         navController = navController,
         authViewModel = viewModel(),
-        fullUser = user,
+        fullUser = userState,
         content = { paddingValues ->
             Column(
                 modifier = Modifier

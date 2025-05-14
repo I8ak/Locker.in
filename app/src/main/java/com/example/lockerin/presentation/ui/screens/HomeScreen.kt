@@ -41,28 +41,42 @@ import com.example.lockerin.presentation.viewmodel.lockers.RentalViewModel
 import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
 import androidx.compose.runtime.getValue
+import com.example.lockerin.presentation.viewmodel.AppViewModel
 import org.koin.androidx.compose.koinViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreen(
     navController: NavHostController,
+    appViewModel: AppViewModel,
     authViewModel: AuthViewModel = viewModel(),
     userViewModel: UsersViewModel= koinViewModel(),
     lockersViewModel: LockersViewModel = koinViewModel(),
-    rentalViewModel: RentalViewModel=koinViewModel()
+    rentalViewModel: RentalViewModel=koinViewModel(),
 ) {
 
     val userId = authViewModel.currentUserId
     val userState by userViewModel.user.collectAsState()
-    val user=userViewModel.getUserById(userId.toString())
-
+    val rentalCount by rentalViewModel.rentalCount.collectAsState()
     val counts by lockersViewModel.availableCounts.collectAsState()
     LaunchedEffect(Unit) {
         lockersViewModel.countAvailableLockersByCity("Madrid")
         lockersViewModel.countAvailableLockersByCity("Barcelona")
         userId?.let {
             rentalViewModel.checkAndMoveExpiredRentals(it)
+        }
+        userViewModel.getUserById(userId.toString())
+    }
+
+    LaunchedEffect(userState, counts, rentalCount) { // Observa los estados de los datos
+        // Una lógica más robusta para determinar si la pantalla está lista:
+        val areCountsLoaded = counts.isNotEmpty() // O verifica si contiene ambas ciudades si siempre deben estar
+        val isUserLoaded = userState != null // O verifica un estado de carga en UserViewModel
+        val isRentalCountLoaded = rentalCount != -1 // Asumiendo que -1 es un valor inicial o no válido
+
+        // Considera que la pantalla está lista cuando los datos clave se han cargado
+        if (isUserLoaded && areCountsLoaded && isRentalCountLoaded) {
+            appViewModel.setLoading(false) // Desactivar el loading global
         }
     }
 
@@ -72,7 +86,7 @@ fun HomeScreen(
     DrawerMenu(
         textoBar = "Ciudades",
         navController = navController,
-        authViewModel = viewModel(),
+        authViewModel = authViewModel,
         fullUser = userState,
         content = {
             Column(
@@ -212,9 +226,3 @@ fun CiudadCard(userId: String,nombre: String, cantidad: Int, imagen: Int, navCon
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
-@Preview
-@Composable
-fun HomeScreenPreview() {
-    HomeScreen(navController = rememberNavController())
-}
