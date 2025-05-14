@@ -37,6 +37,7 @@ Se están implementando nuevas funcionalidades relacionadas con el sistema de pa
 
 **Ishak Al Helimi**  
 Desarrollador de software | Kotlin | Firebase | Jetpack Compose  
+https://www.linkedin.com/in/ishak-al-helimi-668521304/
 
 ---
 
