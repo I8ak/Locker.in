@@ -111,7 +111,10 @@ fun CardsScreen(
                         .fillMaxWidth()
                         .padding(8.dp)
                         .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp))
-                        .padding(16.dp),
+                        .padding(16.dp)
+                        .clickable {
+                            navController.navigate(Screen.AddCard.createRoute(userID))
+                        },
                 ) {
                     Text(
                         text = "Añadir una tarjeta nueva",

@@ -14,7 +14,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
@@ -48,10 +52,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -66,6 +74,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.theme.BeigeClaro
+import com.example.lockerin.presentation.viewmodel.AppViewModel
 import com.example.lockerin.presentation.viewmodel.users.AuthState
 import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 import kotlinx.coroutines.launch
@@ -74,7 +83,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun RegisterScreen(
     navController: NavHostController,
-    authViewModel: AuthViewModel= viewModel()
+    authViewModel: AuthViewModel = viewModel(),
 ) {
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -87,16 +96,23 @@ fun RegisterScreen(
     var confirmPassword by remember { mutableStateOf(false) }
     var confirmFieldFocused by remember { mutableStateOf(false) }
 
-    val authenticationState by authViewModel.authState.collectAsState()
-    val isLoading = authenticationState == AuthState.LOADING
+    val focusManager = LocalFocusManager.current
+    val userFocusRequester = remember { FocusRequester() }
+    val emailFocusRequester = remember { FocusRequester() }
+    val passwordFocusRequester = remember { FocusRequester() }
+    val confirmPasswordFocusRequester = remember { FocusRequester() }
 
-    val context = LocalContext.current
+
+    val authenticationState by authViewModel.authState.collectAsState()
+
     Scaffold(
-        modifier = Modifier.statusBarsPadding(),
-        snackbarHost = { SnackbarHost(snackbarHostState)},
+        modifier = Modifier
+            .fillMaxSize(),
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             Box(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
                     .background(BeigeClaro)
                     .padding(horizontal = 16.dp, vertical = 30.dp)
             ) {
@@ -112,301 +128,331 @@ fun RegisterScreen(
             }
         },
         content = { paddingValues ->
-            Box(
+
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(BeigeClaro)
-                    .padding(paddingValues),
-                contentAlignment = Alignment.Center
+                    .padding(paddingValues)
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.Start,
+                verticalArrangement = Arrangement.Center
             ) {
-                Column(
+                Text(
+                    text = "Crear cuenta",
+                    fontSize = 40.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+
+                Spacer(modifier = Modifier.padding(20.dp))
+
+                OutlinedTextField(
+                    value = user,
+                    onValueChange = { user = it },
+                    label = {
+                        Text(
+                            text = "Usuario",
+                            color = Color.Black
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Person Icon",
+                            tint = Color.Black
+                        )
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.Start
-                ) {
-                    Text(
-                        text = "Crear cuenta",
-                        fontSize = 40.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black
-                    )
-
-                    Spacer(modifier = Modifier.padding(20.dp))
-
-                    OutlinedTextField(
-                        value = user,
-                        onValueChange = { user = it },
-                        label = {
-                            Text(
-                                text = "Usuario",
-                                color = Color.Black
-                            )
-                        },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Person,
-                                contentDescription = "Person Icon",
-                                tint = Color.Black
-                            )
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(
-                                Color.Transparent,
-                                RoundedCornerShape(12.dp)
-                            ),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color.Black,
-                            unfocusedBorderColor = Color.Black,
-                            focusedTextColor = Color.Black,
-                            unfocusedTextColor = Color.Black
+                        .background(
+                            Color.Transparent,
+                            RoundedCornerShape(12.dp)
                         )
+                        .focusRequester(userFocusRequester),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        imeAction = ImeAction.Next
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onNext = {
+                            emailFocusRequester.requestFocus()
+                        }
+                    ),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color.Black,
+                        unfocusedBorderColor = Color.Black,
+                        focusedTextColor = Color.Black,
+                        unfocusedTextColor = Color.Black
                     )
-                    Spacer(modifier = Modifier.padding(5.dp))
+                )
+                Spacer(modifier = Modifier.padding(5.dp))
 
-                    OutlinedTextField(
-                        value = email,
-                        onValueChange = { email = it },
-                        label = {
-                            Text(
-                                text = "Email",
-                                color = Color.Black
-                            )
-                        },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Email,
-                                contentDescription = "Email Icon",
-                                tint = Color.Black
-                            )
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(
-                                Color.Transparent,
-                                RoundedCornerShape(12.dp)
-                            ),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color.Black,
-                            unfocusedBorderColor = Color.Black,
-                            focusedTextColor = Color.Black,
-                            unfocusedTextColor = Color.Black
-                        )
-                    )
-                    Spacer(modifier = Modifier.padding(5.dp))
-
-                    OutlinedTextField(
-                        value = password,
-                        onValueChange = { password = it },
-                        label = {
-                            Text(
-                                text = "Contraseña",
-                                color = Color.Black
-                            )
-                        },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Lock,
-                                contentDescription = "Password Icon",
-                                tint = Color.Black
-                            )
-                        },
-                        trailingIcon = {
-                            IconButton(
-                                onClick = { passwordVisible = !passwordVisible }
-                            ) {
-                                Icon(
-                                    imageVector = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                    contentDescription = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña",
-                                    tint = Color.Black
-                                )
-                            }
-                        },
-                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(Color.Transparent, RoundedCornerShape(12.dp)),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color.Black,
-                            unfocusedBorderColor = Color.Black,
-                            focusedTextColor = Color.Black,
-                            unfocusedTextColor = Color.Black
-                        )
-                    )
-                    Spacer(modifier = Modifier.padding(5.dp))
-
-                    OutlinedTextField(
-                        value = passwordConfirm,
-                        onValueChange = { passwordConfirm = it },
-                        label = {
-                            Text(
-                                text = "Confirmar contraseña",
-                                color = Color.Black
-                            )
-                        },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Lock,
-                                contentDescription = "Password Icon",
-                                tint = Color.Black
-                            )
-                        },
-                        trailingIcon = {
-                            IconButton(
-                                onClick = { passwordVisible = !passwordVisible }
-                            ) {
-                                Icon(
-                                    imageVector = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                    contentDescription = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña",
-                                    tint = Color.Black
-                                )
-                            }
-                        },
-                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(Color.Transparent)
-                            .onFocusChanged { focusState ->
-                                confirmFieldFocused = focusState.isFocused
-                                if (!focusState.isFocused) {
-                                    confirmPassword = password == passwordConfirm
-                                }
-                            },
-                        shape = RoundedCornerShape(12.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color.Black,
-                            unfocusedBorderColor = Color.Black,
-                            focusedTextColor = Color.Black,
-                            unfocusedTextColor = Color.Black
-                        )
-                    )
-                    Spacer(modifier = Modifier.padding(5.dp))
-                    if (!confirmFieldFocused && !confirmPassword && passwordConfirm.isNotEmpty()) {
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = {
                         Text(
-                            text = "Las contraseñas no coinciden",
-                            color = Color.Red,
-                            fontSize = 12.sp,
-                            modifier = Modifier.fillMaxWidth(),
-                            textAlign = TextAlign.Center,
-                            fontWeight = FontWeight.Bold
+                            text = "Email",
+                            color = Color.Black
                         )
-                    }
-                    Spacer(modifier = Modifier.padding(5.dp))
-                    var isChecked by remember { mutableStateOf(false) }
-
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Checkbox(
-                            checked = isChecked,
-                            onCheckedChange = { isChecked = it },
-                            Modifier.size(20.dp),
-                            colors = CheckboxDefaults.colors(
-                                checkedColor = Primary,
-                                uncheckedColor = Color.Black
-                            )
-
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Email,
+                            contentDescription = "Email Icon",
+                            tint = Color.Black
                         )
-                        val context = LocalContext.current
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            Color.Transparent,
+                            RoundedCornerShape(12.dp)
+                        )
+                        .focusRequester(emailFocusRequester),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        imeAction = ImeAction.Next
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onNext = {
+                            passwordFocusRequester.requestFocus()
+                        }
+                    ),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color.Black,
+                        unfocusedBorderColor = Color.Black,
+                        focusedTextColor = Color.Black,
+                        unfocusedTextColor = Color.Black
+                    )
+                )
+                Spacer(modifier = Modifier.padding(5.dp))
 
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = {
                         Text(
-                            text = "Acepto los términos y condiciones",
-                            color = Color.Black,
-                            modifier = Modifier
-                                .padding(start = 5.dp)
-                                .clickable {
-                                    val intent = Intent(Intent.ACTION_VIEW,
-                                        "https://www.aepd.es/politica-de-privacidad-y-aviso-legal".toUri())
-                                    context.startActivity(intent)
-                                },
-                            fontSize = 12.sp,
-                            textDecoration = TextDecoration.Underline,
-                            fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.bodyMedium
+                            text = "Contraseña",
+                            color = Color.Black
                         )
-                    }
-
-                    val allFieldsValid = user.isNotEmpty() &&
-                            email.isNotEmpty() &&
-                            password.isNotEmpty() &&
-                            passwordConfirm.isNotEmpty() &&
-                            password == passwordConfirm &&
-                            isChecked
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        Button(
-                            onClick = {
-                                if (allFieldsValid) {
-                                    navController.navigate(Screen.Home.route){
-                                        popUpTo(Screen.Register.route) {
-                                            inclusive = true
-                                        }
-                                    }
-                                } else {
-                                    scope.launch {
-                                        val errorMessage = buildString {
-                                            if (user.isEmpty()) appendLine("• Usuario requerido")
-                                            if (email.isEmpty()) appendLine("• Email requerido")
-                                            if (password.isEmpty()) appendLine("• Contraseña requerida")
-                                            if (passwordConfirm.isEmpty()) appendLine("• Confirmar contraseña")
-                                            if (password != passwordConfirm) appendLine("• Las contraseñas no coinciden")
-                                            if (!isChecked) appendLine("• Debes aceptar los términos")
-                                        }
-                                        snackbarHostState.showSnackbar(
-                                            message = errorMessage.ifEmpty { "Complete todos los campos" },
-                                            duration = SnackbarDuration.Short
-                                        )
-                                    }
-                                }
-
-                                if (!isLoading){
-                                    val userRole="user"
-                                    authViewModel.createUser(user.capitalize(), email, password, userRole){
-                                        success,errorMessage->
-                                        if (success) {
-                                            navController.navigate(Screen.Home.route) {
-                                                popUpTo(Screen.Register.route) {
-                                                    inclusive = true
-                                                }
-                                            }
-                                        }else{
-                                            scope.launch {
-                                                snackbarHostState.showSnackbar(
-                                                    message = "Error al registrar el usuario: $errorMessage",
-                                                    duration = SnackbarDuration.Short
-                                                )
-                                            }
-                                        }
-                                    }
-
-                                }
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = if (allFieldsValid) Primary else Color.Gray.copy(alpha = 0.5f),
-                                disabledContentColor = Color.White.copy(alpha = 0.7f)
-                            ),
-                            enabled = true
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Lock,
+                            contentDescription = "Password Icon",
+                            tint = Color.Black
+                        )
+                    },
+                    trailingIcon = {
+                        IconButton(
+                            onClick = { passwordVisible = !passwordVisible }
                         ) {
-                            if (isLoading) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(24.dp),
-                                    color = Color.White,
-                                    strokeWidth = 2.dp
-                                )
-                            } else {
-                                Text("Registrarse", color = Color.White)
-                                Icon(Icons.Default.ArrowForward, contentDescription = "Registrarse", tint = Color.White)
+                            Icon(
+                                imageVector = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                contentDescription = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña",
+                                tint = Color.Black
+                            )
+                        }
+                    },
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            Color.Transparent,
+                            RoundedCornerShape(12.dp)
+                        )
+                        .focusRequester(passwordFocusRequester),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        imeAction = ImeAction.Next
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onNext = {
+                            confirmPasswordFocusRequester.requestFocus()
+                        }
+                    ),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color.Black,
+                        unfocusedBorderColor = Color.Black,
+                        focusedTextColor = Color.Black,
+                        unfocusedTextColor = Color.Black
+                    )
+                )
+                Spacer(modifier = Modifier.padding(5.dp))
+
+                OutlinedTextField(
+                    value = passwordConfirm,
+                    onValueChange = { passwordConfirm = it },
+                    label = {
+                        Text(
+                            text = "Confirmar contraseña",
+                            color = Color.Black
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Lock,
+                            contentDescription = "Password Icon",
+                            tint = Color.Black
+                        )
+                    },
+                    trailingIcon = {
+                        IconButton(
+                            onClick = { passwordVisible = !passwordVisible }
+                        ) {
+                            Icon(
+                                imageVector = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                contentDescription = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña",
+                                tint = Color.Black
+                            )
+                        }
+                    },
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.Transparent)
+                        .onFocusChanged { focusState ->
+                            confirmFieldFocused = focusState.isFocused
+                            if (!focusState.isFocused) {
+                                confirmPassword = password == passwordConfirm
                             }
                         }
+                        .focusRequester(confirmPasswordFocusRequester),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        imeAction = ImeAction.Done
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onDone = {
+                            focusManager.clearFocus()
+                        }
+                    ),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color.Black,
+                        unfocusedBorderColor = Color.Black,
+                        focusedTextColor = Color.Black,
+                        unfocusedTextColor = Color.Black
+                    )
+                )
+                Spacer(modifier = Modifier.padding(5.dp))
+                if (!confirmFieldFocused && !confirmPassword && passwordConfirm.isNotEmpty()) {
+                    Text(
+                        text = "Las contraseñas no coinciden",
+                        color = Color.Red,
+                        fontSize = 12.sp,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Spacer(modifier = Modifier.padding(5.dp))
+                var isChecked by remember { mutableStateOf(false) }
+
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Checkbox(
+                        checked = isChecked,
+                        onCheckedChange = { isChecked = it },
+                        Modifier.size(20.dp),
+                        colors = CheckboxDefaults.colors(
+                            checkedColor = Primary,
+                            uncheckedColor = Color.Black
+                        )
+
+                    )
+                    val context = LocalContext.current
+
+                    Text(
+                        text = "Acepto los términos y condiciones",
+                        color = Color.Black,
+                        modifier = Modifier
+                            .padding(start = 5.dp)
+                            .clickable {
+                                val intent = Intent(
+                                    Intent.ACTION_VIEW,
+                                    "https://www.aepd.es/politica-de-privacidad-y-aviso-legal".toUri()
+                                )
+                                context.startActivity(intent)
+                            },
+                        fontSize = 12.sp,
+                        textDecoration = TextDecoration.Underline,
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+                val allFieldsValid = user.isNotEmpty() &&
+                        email.isNotEmpty() &&
+                        password.isNotEmpty() &&
+                        passwordConfirm.isNotEmpty() &&
+                        password == passwordConfirm &&
+                        isChecked
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    Button(
+                        onClick = {
+                            val userRole = "user"
+                            if (allFieldsValid) {
+                                authViewModel.createUser(
+                                    user.capitalize(),
+                                    email,
+                                    password,
+                                    userRole
+                                ) { success, errorMessage ->
+                                    if (success) {
+                                        navController.navigate(Screen.Home.route) {
+                                            popUpTo(Screen.Register.route) {
+                                                inclusive = true
+                                            }
+                                        }
+                                    } else {
+                                        scope.launch {
+                                            snackbarHostState.showSnackbar(
+                                                message = "Error al registrar el usuario: $errorMessage",
+                                                duration = SnackbarDuration.Short
+                                            )
+                                        }
+                                    }
+                                }
+                            } else {
+                                scope.launch {
+                                    val errorMessage = buildString {
+                                        if (user.isEmpty()) appendLine("• Usuario requerido")
+                                        if (email.isEmpty()) appendLine("• Email requerido")
+                                        if (password.isEmpty()) appendLine("• Contraseña requerida")
+                                        if (passwordConfirm.isEmpty()) appendLine("• Confirmar contraseña")
+                                        if (password != passwordConfirm) appendLine("• Las contraseñas no coinciden")
+                                        if (!isChecked) appendLine("• Debes aceptar los términos")
+                                    }
+                                    snackbarHostState.showSnackbar(
+                                        message = errorMessage.ifEmpty { "Complete todos los campos" },
+                                        duration = SnackbarDuration.Short
+                                    )
+                                }
+                            }
+                        },
+
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (allFieldsValid) Primary else Color.Gray,
+                            disabledContentColor = Color.White.copy(alpha = 0.7f),
+                            disabledContainerColor = Color.Gray
+                        ),
+                        enabled = true
+                    ) {
+                        Text("Registrarse", color = Color.White)
+                        Icon(
+                            Icons.Default.ArrowForward,
+                            contentDescription = "Registrarse",
+                            tint = Color.White
+                        )
+
                     }
                 }
             }
@@ -416,12 +462,12 @@ fun RegisterScreen(
                 modifier = Modifier.fillMaxWidth(),
                 containerColor = Color.Transparent,
             ) {
-                Row (
+                Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center
-                ){
+                ) {
                     Text(
-                        text = "¿Ya tienes una cuenta?"
+                        text = "¿Ya tienes una cuenta?", color = Color.Black
                     )
                     Spacer(modifier = Modifier.padding(5.dp))
                     Text(
@@ -431,7 +477,6 @@ fun RegisterScreen(
                         modifier = Modifier.clickable {
                             navController.navigate(Screen.Login.route)
                         }
-
                     )
                 }
 

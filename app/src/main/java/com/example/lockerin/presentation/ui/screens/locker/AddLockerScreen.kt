@@ -1,6 +1,8 @@
 package com.example.lockerin.presentation.ui.screens.locker
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,6 +13,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -32,6 +39,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.lockerin.domain.model.Locker
 import com.example.lockerin.presentation.navigation.Screen
+import com.example.lockerin.presentation.ui.components.CityDropdown
 import com.example.lockerin.presentation.ui.components.DrawerMenu
 import com.example.lockerin.presentation.ui.theme.BeigeClaro
 import com.example.lockerin.presentation.ui.theme.Primary
@@ -132,29 +140,9 @@ fun AddLockerScreen(
                             )
                         )
                         Spacer(modifier = Modifier.padding(5.dp))
-                        OutlinedTextField(
-                            value = city,
-                            onValueChange = { city = it },
-                            label = {
-                                Text(
-                                    text = "Ciudad",
-                                    color = Color.Black
-                                )
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(
-                                    Color.Transparent,
-                                    RoundedCornerShape(12.dp)
-                                ),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = Color.Black,
-                                unfocusedBorderColor = Color.Black,
-                                focusedTextColor = Color.Black,
-                                unfocusedTextColor = Color.Black
-                            )
-                        )
+
+                        CityDropdown(selectedCity = city, onCitySelected = { city = it })
+
 
 
                         Spacer(modifier = Modifier.padding(5.dp))
@@ -270,3 +258,5 @@ fun AddLockerScreen(
         },
     )
 }
+
+

@@ -8,11 +8,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -68,83 +70,73 @@ fun ListLockersScreen(
     navController: NavHostController,
     userViewModel: UsersViewModel = koinViewModel(),
     lockerViewModel: LockersViewModel = koinViewModel(),
-    authViewModel: AuthViewModel=viewModel()
+    authViewModel: AuthViewModel = viewModel()
 ) {
-    val isLoading = remember { mutableStateOf(true) }
 
     val userId = authViewModel.currentUserId
     val userState by userViewModel.user.collectAsState()
-    val user=userViewModel.getUserById(userId.toString())
+    val user = userViewModel.getUserById(userId.toString())
     userViewModel.getUserById(userID)
 
     val lockers by lockerViewModel.lockers.collectAsState()
 
-    LaunchedEffect(lockers) {
-        if (lockers.isNotEmpty()) {
-            isLoading.value = false
-        }
-    }
+
 
     Log.d("Locker en Screen", "Mapped Locker: $lockers")
 
-    if (user != null && lockers != null) {
-        DrawerMenu(
-            textoBar = "Lockers",
-            navController = navController,
-            authViewModel = viewModel(),
-            fullUser = userState,
-            content = { paddingValues ->
-                Scaffold(
-                    modifier = Modifier.statusBarsPadding(),
-                    content = { innerPadding ->
-                        Column(
+    DrawerMenu(
+        textoBar = "Lockers",
+        navController = navController,
+        authViewModel = viewModel(),
+        fullUser = userState,
+        content = { paddingValues ->
+            Scaffold(
+                content = { innerPadding ->
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding)
+                            .background(BeigeClaro)
+                    ) {
+                        LazyColumn(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .padding(innerPadding)
-                                .background(BeigeClaro)
+                                .padding(8.dp),
+                            contentPadding = paddingValues
                         ) {
-                            LazyColumn(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(8.dp),
-                                contentPadding = paddingValues
-                            ) {
-                                items(lockers) { locker ->
-                                    key(locker.lockerID) {
-                                        LockersCard(
-                                            user = user!!,
-                                            locker = locker,
-                                            navController = navController,
-                                            lockerViewModel = lockerViewModel
-                                        )
-                                    }
+                            items(lockers) { locker ->
+                                key(locker.lockerID) {
+                                    LockersCard(
+                                        user = user,
+                                        locker = locker,
+                                        navController = navController,
+                                        lockerViewModel = lockerViewModel
+                                    )
                                 }
                             }
                         }
-                    },
-                    floatingActionButton = {
-                        Button(
-                            onClick = {
-                                navController.navigate(Screen.AddLocker.createRoute(userID))
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Primary,
-                                disabledContentColor = Color.White.copy(alpha = 0.7f)
-                            )
-                        ) {
-                            Icon(
-                                Icons.Default.Add,
-                                contentDescription = "AddProduct"
-                            )
-                        }
                     }
-                )
-            }
-        )
-    } else {
-        // Mostrar un estado de carga si los datos aún no están disponibles
-        LoadingScreen(true)
-    }
+                },
+                floatingActionButton = {
+                    Button(
+                        onClick = {
+                            navController.navigate(Screen.AddLocker.createRoute(userID))
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Primary,
+                            disabledContentColor = Color.White.copy(alpha = 0.7f)
+                        )
+                    ) {
+                        Icon(
+                            Icons.Default.Add,
+                            contentDescription = "AddProduct"
+                        )
+                    }
+                }
+            )
+        }
+    )
+
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -165,7 +157,7 @@ fun LockersCard(
     }
     Card(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxWidth()
             .padding(8.dp)
             .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp)),
         shape = RoundedCornerShape(12.dp),
@@ -173,45 +165,41 @@ fun LockersCard(
             containerColor = Color.Transparent
         )
     ) {
-        Row(
-            Modifier.fillMaxSize(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Image(
-                painter = painterResource(id = imagen),
-                contentDescription = "size ${locker.size}",
-                modifier = Modifier
-                    .size(64.dp)
-                    .align(Alignment.CenterVertically)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Column(
-                Modifier
-                    .padding(8.dp)
-                    .weight(1f)
-            ) {
-
-                Text(text = "Locker Id: ${locker.lockerID}", color = Color.Black)
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(text = "Dirección: ${locker.location}", color = Color.Black)
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(text = "Ciudad: ${locker.city}", color = Color.Black)
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Estado: ${if (locker.status) "Disponible" else "No disponible"}",
-                    color = Color.Black
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(text = "Tamaño: ${locker.size}", color = Color.Black)
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(text = "Dimensiones: ${locker.dimension}", color = Color.Black)
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(text = "Precio por hora: ${locker.pricePerHour}", color = Color.Black)
-            }
+        Box(modifier = Modifier.fillMaxSize()) {
             Row(
+                Modifier
+                    .fillMaxSize()
+                    .padding(8.dp)
+            ) {
+                Image(
+                    painter = painterResource(id = imagen),
+                    contentDescription = "size ${locker.size}",
+                    modifier = Modifier
+                        .size(64.dp)
+                        .align(Alignment.Top)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 8.dp)
+                ) {
+                    Text(text = "Locker Id: ${locker.lockerID}", color = Color.Black)
+                    Text(text = "Dirección: ${locker.location}", color = Color.Black)
+                    Text(text = "Ciudad: ${locker.city}", color = Color.Black)
+                    Text(text = "Estado: ${if (locker.status) "Disponible" else "No disponible"}", color = Color.Black)
+                    Text(text = "Tamaño: ${locker.size}", color = Color.Black)
+                    Text(text = "Dimensiones: ${locker.dimension}", color = Color.Black)
+                    Text(text = "Precio por hora: ${locker.pricePerHour}", color = Color.Black)
+                }
+            }
+
+            Row(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(8.dp),
                 horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.Bottom,
-                modifier = Modifier.padding(8.dp)
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
                     Icons.Filled.Edit,
@@ -228,17 +216,20 @@ fun LockersCard(
                     contentDescription = "Editar",
                     tint = Color.Black
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.width(8.dp))
                 Icon(
                     Icons.Filled.Delete,
                     modifier = Modifier
                         .size(40.dp)
-                        .clickable { lockerViewModel.deleteLocker(locker) },
+                        .clickable {
+                            lockerViewModel.deleteLocker(locker)
+                        },
                     contentDescription = "Eliminar",
                     tint = Color.Black
                 )
             }
         }
     }
+
 }
 

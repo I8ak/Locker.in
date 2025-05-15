@@ -63,8 +63,11 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.ui.text.font.FontWeight
 import com.example.lockerin.presentation.navigation.Screen
+import com.example.lockerin.presentation.ui.theme.Primary
+import com.example.lockerin.presentation.viewmodel.AppViewModel
 import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -111,12 +114,24 @@ fun ReserveScreen(
             false
         }
     }
+    var isLoading by remember { mutableStateOf(false) }
 
 
-    // Efectos para validación
-    LaunchedEffect(startDate, endDate, startTime, endTime) {
+    LaunchedEffect(startDate, startTime, endDate, endTime) {
         validate()
+
+        if (startDate != null && startTime != null &&
+            endDate != null && endTime != null &&
+            !dateStartError && !timeStartError && !dateError && !timeError
+        ) {
+            isLoading = true
+
+            kotlinx.coroutines.delay(500)
+
+            isLoading = false
+        }
     }
+
 
     DrawerMenu(
         textoBar = city,
@@ -130,7 +145,6 @@ fun ReserveScreen(
                     .padding(paddingValues)
                     .padding(16.dp)
             ) {
-                // Grupo Inicio
                 Text(
                     "Inicio",
                     style = MaterialTheme.typography.titleMedium,
@@ -238,27 +252,37 @@ fun ReserveScreen(
                     val duration = CalcultaionDuracion(durationstartDateTime!!, durationendDateTime!!)
 
                     Log.i("Duracion","duracion ${duration}")
-                    LazyColumn(
-                        modifier = Modifier
-                            .padding(paddingValues)
-                            .background(Color.Transparent)
-                    ) {
-                        items(lockers.value.filter { it.city.equals(city, ignoreCase = true) }) { locker ->
-                            key(locker.lockerID) {
-                                LockersCard(
-                                    userID = userID,
-                                    locker = locker,
-                                    startDate = startDateAsDate,
-                                    endDate = endDateAsDate,
-                                    rentalViewModel = rentalViewModel,
-                                    navController = navController,
-                                    duration = duration,
-                                    startDateString = TrasformarFecha(durationstartDateTime),
-                                    endDateString = TrasformarFecha(durationendDateTime)
-                                )
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .align(Alignment.CenterHorizontally)
+                                .padding(top = 32.dp),
+                            color = Primary
+                        )
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier
+                                .padding(paddingValues)
+                                .background(Color.Transparent)
+                        ) {
+                            items(lockers.value.filter { it.city.equals(city, ignoreCase = true) }) { locker ->
+                                key(locker.lockerID) {
+                                    LockersCard(
+                                        userID = userID,
+                                        locker = locker,
+                                        startDate = startDateAsDate,
+                                        endDate = endDateAsDate,
+                                        rentalViewModel = rentalViewModel,
+                                        navController = navController,
+                                        duration = duration,
+                                        startDateString = TrasformarFecha(durationstartDateTime),
+                                        endDateString = TrasformarFecha(durationendDateTime),
+                                    )
+                                }
                             }
                         }
                     }
+
                 }
             }
         }
@@ -436,7 +460,9 @@ fun LockersCard(userID: String,
             .fillMaxSize()
             .padding(8.dp)
             .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp))
-            .clickable { if (isAvailable) navController.navigate(Screen.Details.createRoute(userID,locker.lockerID,startDateString,endDateString,(duration*locker.pricePerHour).toString())) },
+            .clickable {
+                if (isAvailable) navController.navigate(Screen.Details.createRoute(userID,locker.lockerID,startDateString,endDateString,(duration*locker.pricePerHour).toString()))
+                       },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color.Transparent

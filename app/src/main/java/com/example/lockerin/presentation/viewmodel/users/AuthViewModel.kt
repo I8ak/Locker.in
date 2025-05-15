@@ -17,6 +17,7 @@ import com.google.firebase.auth.ktx.auth // Asegúrate de tener esta importació
 import com.google.firebase.FirebaseException // Importar FirebaseException para logging más detallado
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
 
 
 enum class AuthState{
@@ -40,7 +41,7 @@ class AuthViewModel : ViewModel(){
     init {
         Log.d("AuthViewModel", "ViewModel init: Estableciendo idioma a 'es'")
         firebaseAuth.setLanguageCode("es")
-        Log.d("AuthViewModel", "ViewModel init: Idioma establecido. Idioma actual reportado por Auth: ${firebaseAuth.languageCode}") // Log para verificar si se estableció
+        Log.d("AuthViewModel", "ViewModel init: Idioma establecido. Idioma actual reportado por Auth: ${firebaseAuth.languageCode}")
 
         firebaseAuth.addAuthStateListener { auth ->
             _authState.value = if (auth.currentUser != null) {
@@ -59,6 +60,10 @@ class AuthViewModel : ViewModel(){
     ){
         _authState.value= AuthState.LOADING
         Log.d("AuthViewModel", "createUser: $name, $email, $password, $role")
+         if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+             onComplete(false, "Formato de correo electrónico inválido.")
+             return
+         }
         firebaseAuth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if(task.isSuccessful){
@@ -88,9 +93,16 @@ class AuthViewModel : ViewModel(){
                         onComplete(false, "Error al obtener el usuario")
                     }
                 }else{
-                    Log.e("AuthViewModel", "Error al crear usuario en Auth: ${task.exception?.message}", task.exception)
+                    val exception = task.exception
+                    val errorMessage = when (exception) {
+                        is FirebaseAuthUserCollisionException -> "Ya existe una cuenta con este correo."
+                        is FirebaseAuthInvalidCredentialsException -> "Correo o contraseña inválidos."
+                        else -> exception?.message ?: "Error desconocido."
+                    }
+
+                    Log.e("AuthViewModel", "Error al crear usuario: $errorMessage", exception)
                     _authState.value = AuthState.LOGGED_OUT
-                    onComplete(false, task.exception?.message)
+                    onComplete(false, errorMessage)
                 }
             }
     }
@@ -168,11 +180,7 @@ class AuthViewModel : ViewModel(){
             return
         }
 
-        // Opcional: Validar el formato del email antes de enviar
-        // if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-        //     onComplete(false, "Formato de correo electrónico inválido.")
-        //     return
-        // }
+
 
         Log.d("AuthViewModel", "Intentando enviar correo de reseteo a: $email")
 

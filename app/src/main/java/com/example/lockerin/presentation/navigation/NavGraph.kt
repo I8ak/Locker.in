@@ -26,7 +26,6 @@ import com.example.lockerin.presentation.ui.components.SplashScreen
 import com.example.lockerin.presentation.ui.screens.locker.EditLockerScreen
 import com.example.lockerin.presentation.ui.screens.reserveLocker.StatusPayScreen
 import com.example.lockerin.presentation.ui.screens.user.ConfigurationScreen
-import com.example.lockerin.presentation.viewmodel.AppViewModel
 import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -35,7 +34,6 @@ fun NavGraph(
     navController: NavHostController,
     startDestination: String = Screen.Splash.route,
     authViewModel: AuthViewModel,
-    appViewModel: AppViewModel
 ) {
     NavHost(
         navController = navController,
@@ -45,15 +43,16 @@ fun NavGraph(
             SplashScreen(navController)
         }
         composable(Screen.Login.route) {
-            LoginScreen(navController,authViewModel,appViewModel)
+            LoginScreen(navController,authViewModel)
         }
         composable(Screen.Register.route) {
             RegisterScreen(
                 navController,
-                authViewModel = authViewModel)
+                authViewModel = authViewModel
+            )
         }
         composable(Screen.Home.route) {
-            HomeScreen(navController,appViewModel)
+            HomeScreen(navController)
         }
         composable(
             route = Screen.Reserve.route,

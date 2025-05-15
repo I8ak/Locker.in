@@ -28,6 +28,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,10 +51,12 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.components.DrawerMenu
+import com.example.lockerin.presentation.ui.components.LoadingScreen
 import com.example.lockerin.presentation.ui.theme.BeigeClaro
 import com.example.lockerin.presentation.ui.theme.Primary
 import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
+import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -67,88 +70,98 @@ fun AcountScreen(
     val userState by userViewModel.user.collectAsState()
     val user=userViewModel.getUserById(userID)
     Log.d("usuario",userID)
-    DrawerMenu(
-        textoBar = "Cuenta",
-        navController=navController,
-        authViewModel = viewModel(),
-        fullUser = userState,
-        content = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(it)
-                    .padding(16.dp)
-            ) {
-                Spacer(modifier = Modifier.padding(8.dp))
-                Row(
+    var isLoading by remember { mutableStateOf(true) }
+    LaunchedEffect(Unit) {
+        delay(1000)
+        isLoading = false
+    }
+    if (isLoading) {
+        LoadingScreen(isLoading = isLoading)
+    }else{
+        DrawerMenu(
+            textoBar = "Cuenta",
+            navController=navController,
+            authViewModel = viewModel(),
+            fullUser = userState,
+            content = {
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(it)
+                        .padding(16.dp)
                 ) {
-                    Text(
-                        text = "Usuario",
-                        fontWeight = FontWeight.Bold,
+                    Spacer(modifier = Modifier.padding(8.dp))
+                    Row(
                         modifier = Modifier
-                            .background(Color.LightGray, shape = RoundedCornerShape(8.dp))
-                            .padding(8.dp)
-                            .weight(0.3f)
-                            .height(30.dp),
-                        fontSize = 20.sp,
-                        color = Color.Black,
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = user?.name.toString() ,
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Usuario",
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .background(Color.LightGray, shape = RoundedCornerShape(8.dp))
+                                .padding(8.dp)
+                                .weight(0.3f)
+                                .height(30.dp),
+                            fontSize = 20.sp,
+                            color = Color.Black,
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = user?.name.toString() ,
+                            modifier = Modifier
+                                .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp))
+                                .padding(8.dp)
+                                .weight(0.7f)
+                                .height(30.dp),
+                            fontSize = 20.sp,
+                            color = Color.Black
+                        )
+                    }
+                    Row(
                         modifier = Modifier
-                            .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp))
-                            .padding(8.dp)
-                            .weight(0.7f)
-                            .height(30.dp),
-                        fontSize = 20.sp,
-                        color = Color.Black
-                    )
-                }
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Email",
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier
-                            .background(Color.LightGray, shape = RoundedCornerShape(8.dp))
-                            .padding(8.dp)
-                            .weight(0.3f)
-                            .height(30.dp),
-                        fontSize = 20.sp,
-                        color = Color.Black,
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = user?.email.toString(),
-                        modifier = Modifier
-                            .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp))
-                            .padding(8.dp)
-                            .weight(0.7f)
-                            .height(30.dp),
-                        fontSize = 20.sp,
-                        color = Color.Black
-                    )
-                }
-                Spacer(modifier = Modifier.padding(8.dp))
-                ChangePass(authViewModel)
-                Spacer(modifier = Modifier.padding(8.dp))
-                DeleteAcount(authViewModel,navController,userViewModel,userId.toString())
-                Spacer(modifier = Modifier.padding(8.dp))
-                Cards(userID,navController)
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Email",
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .background(Color.LightGray, shape = RoundedCornerShape(8.dp))
+                                .padding(8.dp)
+                                .weight(0.3f)
+                                .height(30.dp),
+                            fontSize = 20.sp,
+                            color = Color.Black,
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = user?.email.toString(),
+                            modifier = Modifier
+                                .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp))
+                                .padding(8.dp)
+                                .weight(0.7f)
+                                .height(30.dp),
+                            fontSize = 20.sp,
+                            color = Color.Black
+                        )
+                    }
+                    Spacer(modifier = Modifier.padding(8.dp))
+                    ChangePass(authViewModel)
+                    Spacer(modifier = Modifier.padding(8.dp))
+                    DeleteAcount(authViewModel,navController,userViewModel,userId.toString())
+                    Spacer(modifier = Modifier.padding(8.dp))
+                    Cards(userID,navController)
 
 
+                }
             }
-        }
-    )
+        )
+    }
+
 }
 
 @Composable

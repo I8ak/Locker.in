@@ -37,7 +37,10 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -71,7 +74,6 @@ fun DrawerMenu(
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    val defaultAvatar = painterResource(R.drawable.default_avatar)
     val drawerWidth = with(LocalConfiguration.current) {
         screenWidthDp.dp * 2f / 3f
     }
@@ -93,23 +95,43 @@ fun DrawerMenu(
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(bottom = 16.dp)
+                        modifier = Modifier
+                            .padding(bottom = 16.dp)
+                            .clickable {
+                                navController.navigate(Screen.Acount.createRoute(userID = fullUser?.userID.toString()))
+                            }
                     ) {
-                        Image(
-                            painter = defaultAvatar,
-                            contentDescription = "Avatar",
+                        val name = fullUser?.name.orEmpty()
+                        val initial = name.firstOrNull()?.uppercaseChar() ?: "?"
+                        val avatarColor = remember(fullUser?.userID) { randomColor() }
+
+                        Box(
                             modifier = Modifier
                                 .size(60.dp)
                                 .clip(CircleShape)
-                                .border(1.dp, Color.Transparent, CircleShape),
-                            contentScale = ContentScale.Crop
-                        )
+                                .background(avatarColor),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = initial.toString(),
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 24.sp,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+
                         Text(
-                            text = fullUser?.name ?: "Nombre de Usuario",
-                            modifier = Modifier.padding(start = 8.dp).weight(1f),
-                            color = Color.Black
+                            text = name.ifBlank { "Nombre de Usuario" },
+                            modifier = Modifier
+                                .padding(start = 8.dp)
+                                .weight(1f),
+                            color = Color.Black,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 20.sp
                         )
                     }
+
 
                     // Items del menú
                     DrawerItem(
@@ -264,27 +286,19 @@ fun DrawerItem(
         Spacer(modifier = Modifier.width(16.dp))
         Text(
             text = text,
-            style = MaterialTheme.typography.titleMedium
-            ,color = Color.Black
+            style = MaterialTheme.typography.titleMedium,
+            color = Color.Black
         )
     }
 }
-
-//@Preview
-//@Composable
-//fun PreviewDrawerMenu() {
-//    DrawerMenu(
-//        textoBar = "Drawer Menu",
-//        navController = rememberNavController(),
-//        authViewModel = viewModel(),
-//        content = {
-//            Column(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .padding(it)
-//            ) {
-//                Text(text = "Contenido de la pantalla")
-//            }
-//        }
-//    )
-//}
+fun randomColor(): Color {
+    val colors = listOf(
+        Color(0xFFE57373),
+        Color(0xFF64B5F6),
+        Color(0xFF81C784),
+        Color(0xFF673AB7),
+        Color(0xFFBA68C8),
+        Color(0xFFFF8A65)
+    )
+    return colors.random()
+}

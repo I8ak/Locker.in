@@ -23,6 +23,7 @@ import com.example.lockerin.domain.usecase.rental.IsLockerAvailableUseCase
 import com.example.lockerin.domain.usecase.rental.ListRentalsByUserIdUseCase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -100,6 +101,7 @@ class RentalViewModel(
     fun deleteRental(rental: Rental) {
         viewModelScope.launch {
             deleteRentalUseCase(rental)
+            countRentals(rental.userID)
         }
     }
 
@@ -107,14 +109,21 @@ class RentalViewModel(
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun checkAndMoveExpiredRentals(userID: String) {
-        viewModelScope.launch {
+        viewModelScope.launch (Dispatchers.IO){
+            Log.d("FirestoreDebug", ">>> DEBUG AUTH <<< Current authenticated UID before writes: $userID")
             val rentals = rentalFirestoreRepository.getRentalByUserId(userID).first()
+            Log.d("FirestoreDebug", "Rentals fetched: ${rentals.size}")
+
 
             rentals.forEach { rental ->
 
-                val rentalEndDate = rental.endDate?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalDate()
+                val rentalEndDateTime = rental.endDate?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalDateTime()
 
-                if (rentalEndDate != null && rentalEndDate.isBefore(LocalDate.now())) {
+                Log.d("FirestoreDebug", "Converted to LocalDate: $rentalEndDateTime")
+                Log.d("FirestoreDebug", "Rental ID: ${rental.rentalID} ends at: ${rental.endDate}, converted: $rentalEndDateTime, today: ${LocalDate.now()}")
+
+
+                if (rentalEndDateTime != null && !rentalEndDateTime.isAfter(LocalDateTime.now())) {
                     val locker = lockerRepository.getLockerById(rental.lockerID)
                     val payment = paymentRepository.getPaymentByRentalId(rental.rentalID)
                     val card = cardRepository.getCardById(payment?.cardID ?: "")
@@ -130,28 +139,35 @@ class RentalViewModel(
 
 
                     Log.d("FirestoreDebug", "Attempting SAVE historicRental for rentalID: ${rental.rentalID}, with historicUserID: ${rental.userID}")
-
-                    historicalRentalViewModel.save(
-                        HistoricRental(
-                            historicID = historicRentalID,
-                            userID = rental.userID,
-                            location = locker?.location.orEmpty(),
-                            city = locker?.city.orEmpty(),
-                            size = locker?.size.orEmpty(),
-                            dimension = locker?.dimension.orEmpty(),
-                            cardNumber = card?.cardNumber.orEmpty(),
-                            typeCard = card?.typeCard.orEmpty(),
-                            amount = payment?.amount ?: 0.0,
-                            status = true,
-                            startDate = rental.startDate,
-                            endDate = rental.endDate,
-                            createdAt = payment?.createdAt
+                    try {
+                        historicalRentalViewModel.save(
+                            HistoricRental(
+                                historicID = historicRentalID,
+                                userID = rental.userID,
+                                location = locker?.location.orEmpty(),
+                                city = locker?.city.orEmpty(),
+                                size = locker?.size.orEmpty(),
+                                dimension = locker?.dimension.orEmpty(),
+                                cardNumber = card?.cardNumber.orEmpty(),
+                                typeCard = card?.typeCard.orEmpty(),
+                                amount = payment?.amount ?: 0.0,
+                                status = true,
+                                startDate = rental.startDate,
+                                endDate = rental.endDate,
+                                createdAt = payment?.createdAt
+                            )
                         )
-                    )
+                        Log.d("FirestoreDebug", "Historic rental saved successfully.")
+                    }catch (e: Exception) {
+                        Log.e("FirestoreDebug", "Error saving historic rental: ${e.message}")
+                    }
 
                     Log.d("FirestoreDebug", "Attempting SET_STATUS on lockerID: ${locker?.lockerID}")
                     lockersViewModel.setStatus(locker?.lockerID.orEmpty(), true)
                     Log.d("FirestoreDebug", "Attempting DELETE rental: ${rental.rentalID}, with rentalUserID: ${rental.userID}")
+                    Log.d("FirestoreDebug", "Rental endDate: ${rental.endDate}")
+
+
 
                     deleteRental(rental)
                 }

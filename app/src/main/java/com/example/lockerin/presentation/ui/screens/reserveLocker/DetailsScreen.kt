@@ -35,10 +35,13 @@ import androidx.navigation.compose.rememberNavController
 import com.example.lockerin.domain.model.Locker
 import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.components.DrawerMenu
+import com.example.lockerin.presentation.ui.components.LoadingScreen
 import com.example.lockerin.presentation.ui.theme.Primary
+import com.example.lockerin.presentation.viewmodel.AppViewModel
 import com.example.lockerin.presentation.viewmodel.lockers.LockersViewModel
 import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
+import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -50,7 +53,7 @@ fun DetailsScreen(
     totalPrice: String,
     navController: NavHostController= rememberNavController(),
     userViewModel: UsersViewModel= koinViewModel(),
-    authViewModel: AuthViewModel=viewModel()
+    authViewModel: AuthViewModel=viewModel(),
 ){
     val userId = authViewModel.currentUserId
     val userState by userViewModel.user.collectAsState()
@@ -58,196 +61,205 @@ fun DetailsScreen(
     Log.d("DetailsScreen", totalPrice.toString())
     val lockersViewModel: LockersViewModel= koinViewModel()
     val locker by lockersViewModel.selectedLocker.collectAsState()
+    var isLoading by remember { mutableStateOf(true) }
+    LaunchedEffect(Unit) {
+        delay(1000)
+        isLoading = false
+    }
     LaunchedEffect(lockerID) {
         lockersViewModel.getLockerById(lockerID)
     }
-    DrawerMenu(
-        textoBar = "Datos de la Reserva",
-        navController = navController,
-        authViewModel = viewModel(),
-        fullUser = userState,
-        content = { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
+
+    if (isLoading) {
+        LoadingScreen(isLoading = true)
+    } else {
+        DrawerMenu(
+            textoBar = "Datos de la Reserva",
+            navController = navController,
+            authViewModel = viewModel(),
+            fullUser = userState,
+            content = { paddingValues ->
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
 
 
-
-
-                locker?.let {
-                    // Fecha de inicio
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(4.dp)
-                    ) {
-                        Text(
-                            text = "Fecha de inicio",
-                            fontWeight = FontWeight.Bold,
+                    locker?.let {
+                        // Fecha de inicio
+                        Row(
                             modifier = Modifier
-                                .background(Color.LightGray)
-                                .padding(8.dp)
-                                .height(50.dp)
-                                .weight(1f),
-                            fontSize = 20.sp,
-                            color = Color.Black
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = startDate,
-                            modifier = Modifier
-                                .border(1.dp, Color.Black)
-                                .padding(8.dp)
-                                .height(50.dp)
-                                .weight(1f),
-                            fontSize = 20.sp,
-                            color = Color.Black
-                        )
-                    }
+                                .fillMaxWidth()
+                                .padding(4.dp)
+                        ) {
+                            Text(
+                                text = "Fecha de inicio",
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier
+                                    .background(Color.LightGray)
+                                    .padding(8.dp)
+                                    .height(50.dp)
+                                    .weight(1f),
+                                fontSize = 20.sp,
+                                color = Color.Black
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = startDate,
+                                modifier = Modifier
+                                    .border(1.dp, Color.Black)
+                                    .padding(8.dp)
+                                    .height(50.dp)
+                                    .weight(1f),
+                                fontSize = 20.sp,
+                                color = Color.Black
+                            )
+                        }
 
-                    // Fecha de fin
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(4.dp)
-                    ) {
-                        Text(
-                            text = "Fecha de fin",
-                            fontWeight = FontWeight.Bold,
+                        // Fecha de fin
+                        Row(
                             modifier = Modifier
-                                .background(Color.LightGray)
-                                .padding(8.dp)
-                                .height(50.dp) // Aumenta la altura del Text
-                                .weight(1f), // Centrado vertical
-                            fontSize = 20.sp,
-                            color = Color.Black
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = endDate,
-                            modifier = Modifier
-                                .border(1.dp, Color.Black)
-                                .padding(8.dp)
-                                .weight(1f)
-                                .height(50.dp) ,
-                            fontSize = 20.sp,
-                            color = Color.Black
-                        )
-                    }
+                                .fillMaxWidth()
+                                .padding(4.dp)
+                        ) {
+                            Text(
+                                text = "Fecha de fin",
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier
+                                    .background(Color.LightGray)
+                                    .padding(8.dp)
+                                    .height(50.dp) // Aumenta la altura del Text
+                                    .weight(1f), // Centrado vertical
+                                fontSize = 20.sp,
+                                color = Color.Black
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = endDate,
+                                modifier = Modifier
+                                    .border(1.dp, Color.Black)
+                                    .padding(8.dp)
+                                    .weight(1f)
+                                    .height(50.dp) ,
+                                fontSize = 20.sp,
+                                color = Color.Black
+                            )
+                        }
 
 // Ubicación
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(4.dp)
-                    ) {
-                        Text(
-                            text = "Ubicación",
-                            fontWeight = FontWeight.Bold,
+                        Row(
                             modifier = Modifier
-                                .background(Color.LightGray)
-                                .padding(8.dp)
-                                .height(50.dp) // Aumenta la altura del Text
-                                .weight(1f),
-                            fontSize = 20.sp,
-                            color = Color.Black
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = locker!!.location,
-                            modifier = Modifier
-                                .border(1.dp, Color.Black)
-                                .padding(8.dp)
-                                .weight(1f)
-                                .height(50.dp), // Aumenta la altura del Text
-                            fontSize = 20.sp,
-                            color = Color.Black
-                        )
-                    }
+                                .fillMaxWidth()
+                                .padding(4.dp)
+                        ) {
+                            Text(
+                                text = "Ubicación",
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier
+                                    .background(Color.LightGray)
+                                    .padding(8.dp)
+                                    .height(50.dp) // Aumenta la altura del Text
+                                    .weight(1f),
+                                fontSize = 20.sp,
+                                color = Color.Black
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = locker!!.location,
+                                modifier = Modifier
+                                    .border(1.dp, Color.Black)
+                                    .padding(8.dp)
+                                    .weight(1f)
+                                    .height(50.dp), // Aumenta la altura del Text
+                                fontSize = 20.sp,
+                                color = Color.Black
+                            )
+                        }
 
 // Dimensiones
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(4.dp)
-                            .heightIn(min = 50.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = "Dimensiones",
-                            fontWeight = FontWeight.Bold,
+                        Row(
                             modifier = Modifier
-                                .background(Color.LightGray)
-                                .padding(8.dp)
-                                .height(50.dp) // Aumenta la altura del Text
-                                .weight(1f),
-                            fontSize = 20.sp,
-                            color = Color.Black
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = it.dimension,
+                                .fillMaxWidth()
+                                .padding(4.dp)
+                                .heightIn(min = 50.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "Dimensiones",
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier
+                                    .background(Color.LightGray)
+                                    .padding(8.dp)
+                                    .height(50.dp) // Aumenta la altura del Text
+                                    .weight(1f),
+                                fontSize = 20.sp,
+                                color = Color.Black
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = it.dimension,
+                                modifier = Modifier
+                                    .border(1.dp, Color.Black)
+                                    .padding(8.dp)
+                                    .weight(1f)
+                                    .height(50.dp),
+                                fontSize = 20.sp,
+                                color = Color.Black
+                            )
+                        }
+
+                        // Precio total
+                        Row(
                             modifier = Modifier
-                                .border(1.dp, Color.Black)
-                                .padding(8.dp)
-                                .weight(1f)
-                                .height(50.dp),
-                            fontSize = 20.sp,
-                            color = Color.Black
-                        )
+                                .fillMaxWidth()
+                                .padding(4.dp)
+                        ) {
+                            Text(
+                                text = "Precio total",
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier
+                                    .background(Color.LightGray)
+                                    .padding(8.dp)
+                                    .height(50.dp)
+                                    .weight(1f),
+                                fontSize = 20.sp,
+                                color = Color.Black
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "$totalPrice €",
+                                modifier = Modifier
+                                    .border(1.dp, Color.Black)
+                                    .padding(8.dp)
+                                    .weight(1f)
+                                    .height(50.dp),
+                                fontSize = 20.sp,
+                                color = Color.Black
+                            )
+                        }
+
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Button(
+                            onClick = {
+                                navController.navigate(Screen.Payment.createRoute(userID, lockerID, startDate, endDate, totalPrice))
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                        ) {
+                            Text(text = "Reservar", fontWeight = FontWeight.Bold, color = Color.White)
+                        }
+                    } ?: run {
+                        Text(text = "No se encontró el locker con ID: $lockerID")
                     }
-
-                    // Precio total
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(4.dp)
-                    ) {
-                        Text(
-                            text = "Precio total",
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier
-                                .background(Color.LightGray)
-                                .padding(8.dp)
-                                .height(50.dp) // Aumenta la altura del Text
-                                .weight(1f),
-                            fontSize = 20.sp,
-                            color = Color.Black
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "$totalPrice €",
-                            modifier = Modifier
-                                .border(1.dp, Color.Black)
-                                .padding(8.dp)
-                                .weight(1f)
-                                .height(50.dp), // Aumenta la altura del Text
-                            fontSize = 20.sp,
-                            color = Color.Black
-                        )
-                    }
-
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Button(
-                        onClick = {
-                            navController.navigate(Screen.Payment.createRoute(userID, lockerID, startDate, endDate, totalPrice))
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = Primary)
-                    ) {
-                        Text(text = "Reservar", fontWeight = FontWeight.Bold, color = Color.White)
-                    }
-                } ?: run {
-                    Text(text = "No se encontró el locker con ID: $lockerID")
                 }
             }
-        }
-    )
+        )
+    }
+
 }
 
 //@Composable

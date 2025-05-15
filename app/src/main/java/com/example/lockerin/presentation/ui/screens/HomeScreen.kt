@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -41,14 +42,17 @@ import com.example.lockerin.presentation.viewmodel.lockers.RentalViewModel
 import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import com.example.lockerin.presentation.ui.components.LoadingScreen
 import com.example.lockerin.presentation.viewmodel.AppViewModel
+import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
-
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreen(
     navController: NavHostController,
-    appViewModel: AppViewModel,
     authViewModel: AuthViewModel = viewModel(),
     userViewModel: UsersViewModel= koinViewModel(),
     lockersViewModel: LockersViewModel = koinViewModel(),
@@ -59,7 +63,7 @@ fun HomeScreen(
     val userState by userViewModel.user.collectAsState()
     val rentalCount by rentalViewModel.rentalCount.collectAsState()
     val counts by lockersViewModel.availableCounts.collectAsState()
-    LaunchedEffect(Unit) {
+    LaunchedEffect(userId) {
         lockersViewModel.countAvailableLockersByCity("Madrid")
         lockersViewModel.countAvailableLockersByCity("Barcelona")
         userId?.let {
@@ -67,68 +71,65 @@ fun HomeScreen(
         }
         userViewModel.getUserById(userId.toString())
     }
-
-    LaunchedEffect(userState, counts, rentalCount) { // Observa los estados de los datos
-        // Una lógica más robusta para determinar si la pantalla está lista:
-        val areCountsLoaded = counts.isNotEmpty() // O verifica si contiene ambas ciudades si siempre deben estar
-        val isUserLoaded = userState != null // O verifica un estado de carga en UserViewModel
-        val isRentalCountLoaded = rentalCount != -1 // Asumiendo que -1 es un valor inicial o no válido
-
-        // Considera que la pantalla está lista cuando los datos clave se han cargado
-        if (isUserLoaded && areCountsLoaded && isRentalCountLoaded) {
-            appViewModel.setLoading(false) // Desactivar el loading global
-        }
+    var isLoading by remember { mutableStateOf(true) }
+    LaunchedEffect(Unit) {
+        delay(1000)
+        isLoading = false
     }
+
 
     val cantidadMadrid = counts["Madrid"] ?: 0
     val cantidadBarcelona = counts["Barcelona"] ?: 0
 
-    DrawerMenu(
-        textoBar = "Ciudades",
-        navController = navController,
-        authViewModel = authViewModel,
-        fullUser = userState,
-        content = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(it)
-            ) {
-                userId?.let { nonNullUserId ->
-                    Reservas(userID = nonNullUserId, navController = navController)
-                }
-                Spacer(modifier = Modifier.weight(1f))
-
+    if (isLoading){
+        LoadingScreen(isLoading = isLoading)
+    } else{
+        DrawerMenu(
+            textoBar = "Ciudades",
+            navController = navController,
+            authViewModel = authViewModel,
+            fullUser = userState,
+            content = {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                        .padding(it)
                 ) {
+                    userId?.let { nonNullUserId ->
+                        Reservas(userID = nonNullUserId, navController = navController)
+                    }
+                    Spacer(modifier = Modifier.weight(1f))
 
-                    CiudadCard(
-                        userId = userId.toString(),
-                        nombre = "Madrid",
-                        cantidad = cantidadMadrid,
-                        imagen = R.drawable.madrid,
-                        navController = navController
-                    )
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                        CiudadCard(
+                            userId = userId.toString(),
+                            nombre = "Madrid",
+                            cantidad = cantidadMadrid,
+                            imagen = R.drawable.madrid,
+                            navController = navController
+                        )
 
-                    CiudadCard(
-                        userId = userId.toString(),
-                        nombre = "Barcelona",
-                        cantidad = cantidadBarcelona,
-                        imagen = R.drawable.barcelona,
-                        navController = navController
-                    )
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        CiudadCard(
+                            userId = userId.toString(),
+                            nombre = "Barcelona",
+                            cantidad = cantidadBarcelona,
+                            imagen = R.drawable.barcelona,
+                            navController = navController
+                        )
+                    }
+                    Spacer(modifier = Modifier.weight(2f))
                 }
-                Spacer(modifier = Modifier.weight(2f))
-
             }
-        }
-    )
+        )
+    }
 
 }
 
@@ -225,4 +226,5 @@ fun CiudadCard(userId: String,nombre: String, cantidad: Int, imagen: Int, navCon
         }
     }
 }
+
 

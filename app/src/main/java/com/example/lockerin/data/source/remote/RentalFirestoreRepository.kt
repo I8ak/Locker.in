@@ -64,8 +64,8 @@ class RentalFirestoreRepository(private val firestore: FirebaseFirestore) {
 
         return snapshot.size()
     }
-    suspend fun deleteRental(rental: String) {
-        rentalCollection.document(rental).delete().await()
+    suspend fun deleteRental(rentalId: String) {
+        rentalCollection.document(rentalId).delete().await()
     }
     suspend fun isLockerAvailable(
         lockerId: String,

@@ -7,6 +7,6 @@ class DeleteRentalUseCase(
     private val rentalRepository: RentalFirestoreRepository
 ) {
     suspend operator fun invoke(rental: Rental) {
-        rentalRepository.deleteRental(rental.toString())
+        rentalRepository.deleteRental(rental.rentalID)
     }
 }

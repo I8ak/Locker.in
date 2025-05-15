@@ -33,6 +33,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.lockerin.domain.model.Locker
 import com.example.lockerin.presentation.navigation.Screen
+import com.example.lockerin.presentation.ui.components.CityDropdown
 import com.example.lockerin.presentation.ui.components.DrawerMenu
 import com.example.lockerin.presentation.ui.theme.BeigeClaro
 import com.example.lockerin.presentation.ui.theme.Primary
@@ -49,13 +50,13 @@ fun EditLockerScreen(
     navController: NavHostController,
     userViewModel: UsersViewModel = koinViewModel(),
     lockerViewModel: LockersViewModel = koinViewModel(),
-    authViewModel: AuthViewModel=viewModel()
+    authViewModel: AuthViewModel = viewModel()
 ) {
     userViewModel.getUserById(userID)
 
     val userId = authViewModel.currentUserId
     val userState by userViewModel.user.collectAsState()
-    val user=userViewModel.getUserById(userId.toString())
+    val user = userViewModel.getUserById(userId.toString())
     val locker by lockerViewModel.selectedLocker.collectAsState()
 
     LaunchedEffect(lockerID) {
@@ -118,31 +119,7 @@ fun EditLockerScreen(
                     )
                 )
                 Spacer(modifier = Modifier.padding(5.dp))
-                OutlinedTextField(
-                    value = city,
-                    onValueChange = { city = it },
-                    label = {
-                        Text(
-                            text = "Ciudad",
-                            color = Color.Black
-                        )
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            Color.Transparent,
-                            RoundedCornerShape(12.dp)
-                        ),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color.Black,
-                        unfocusedBorderColor = Color.Black,
-                        focusedTextColor = Color.Black,
-                        unfocusedTextColor = Color.Black
-                    )
-                )
-
-
+                CityDropdown(selectedCity = city, onCitySelected = { city = it })
                 Spacer(modifier = Modifier.padding(5.dp))
                 OutlinedTextField(
                     value = size,

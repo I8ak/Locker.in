@@ -54,6 +54,7 @@ import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.platform.LocalContext
 import com.example.lockerin.domain.model.HistoricRental
 import com.example.lockerin.presentation.ui.components.DrawerMenu
+import com.example.lockerin.presentation.ui.components.LoadingScreen
 import com.example.lockerin.presentation.ui.components.decrypt
 import com.example.lockerin.presentation.ui.components.generateAesKey
 import com.example.lockerin.presentation.ui.theme.BeigeClaro
@@ -99,81 +100,90 @@ fun ReservedLockersScreen(
         historicalRentalViewModel.setUserId(userID)
     }
 
+    var isLoading by remember { mutableStateOf(true) }
+    LaunchedEffect(Unit) {
+        delay(1000)
+        isLoading = false
+    }
 
-
-
-    DrawerMenu(
-        textoBar = "Reservas",
-        navController = navController,
-        authViewModel = viewModel(),
-        fullUser = userState,
-        content = {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(it)
-                    .padding(16.dp)
-            ) {
-                Text(
-                    text = "Reservas activas",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black,
-                    modifier = Modifier.padding(8.dp)
-                )
-
-                LazyColumn(
+    if (isLoading) {
+        LoadingScreen(isLoading = true)
+    } else {
+        DrawerMenu(
+            textoBar = "Reservas",
+            navController = navController,
+            authViewModel = viewModel(),
+            fullUser = userState,
+            content = {
+                Column(
                     modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
+                        .fillMaxSize()
+                        .padding(it)
+                        .padding(16.dp)
                 ) {
-                    items(rentalState) { rentalLazy ->
-                        val lockerMatch = lockers.find { it.lockerID == rentalLazy.lockerID }
-                        val paymentMatch = payments.find { it.rentalID == rentalLazy.rentalID }
+                    Text(
+                        text = "Reservas activas",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black,
+                        modifier = Modifier.padding(8.dp)
+                    )
 
-                        Log.d("locker", lockerMatch.toString())
-                        Log.d("rental", rentalLazy.toString())
-                        Log.d("payment", paymentMatch.toString())
+                    LazyColumn(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                    ) {
+                        items(rentalState) { rentalLazy ->
+                            val lockerMatch = lockers.find { it.lockerID == rentalLazy.lockerID }
+                            val paymentMatch = payments.find { it.rentalID == rentalLazy.rentalID }
 
-                        key(rentalLazy.lockerID) {
-                            Spacer(modifier = Modifier.size(8.dp))
-                            CardReserved(
-                                locker = lockerMatch,
-                                rental = rentalLazy,
-                                payment = paymentMatch
-                            )
+                            Log.d("locker", lockerMatch.toString())
+                            Log.d("rental", rentalLazy.toString())
+                            Log.d("payment", paymentMatch.toString())
+
+                            key(rentalLazy.lockerID) {
+                                Spacer(modifier = Modifier.size(8.dp))
+                                CardReserved(
+                                    locker = lockerMatch,
+                                    rental = rentalLazy,
+                                    payment = paymentMatch
+                                )
+                            }
                         }
                     }
-                }
 
-                Spacer(modifier = Modifier.size(20.dp))
-                Text(
-                    text = "Historial de reservas",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black,
-                    modifier = Modifier.padding(8.dp)
-                )
+                    Spacer(modifier = Modifier.size(20.dp))
+                    Text(
+                        text = "Historial de reservas",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black,
+                        modifier = Modifier.padding(8.dp)
+                    )
 
-                LazyColumn(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                ) {
-                    items(
-                        historicRentalState
-                    ) { historicLazy ->
-                        key(historicLazy.historicID) {
-                            Spacer(modifier = Modifier.size(8.dp))
-                            CardHistoricRents(
-                                historicLazy
-                            )
+                    LazyColumn(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                    ) {
+                        items(
+                            historicRentalState
+                        ) { historicLazy ->
+                            key(historicLazy.historicID) {
+                                Spacer(modifier = Modifier.size(8.dp))
+                                CardHistoricRents(
+                                    historicLazy
+                                )
+                            }
                         }
                     }
                 }
             }
-        }
-    )
+        )
+    }
+
+
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
