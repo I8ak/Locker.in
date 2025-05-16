@@ -1,11 +1,10 @@
-package com.example.lockerin.presentation.viewmodel.lockers
+package com.example.lockerin.presentation.viewmodel.rentals
 
 import android.annotation.SuppressLint
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.flow.first
 import androidx.lifecycle.viewModelScope
 import com.example.lockerin.data.source.remote.CardFirestoreRepository
 import com.example.lockerin.data.source.remote.HistoricRentalFirestoreRepository
@@ -21,6 +20,7 @@ import com.example.lockerin.domain.usecase.rental.DeleteRentalUseCase
 import com.example.lockerin.domain.usecase.rental.GetRentalUseCase
 import com.example.lockerin.domain.usecase.rental.IsLockerAvailableUseCase
 import com.example.lockerin.domain.usecase.rental.ListRentalsByUserIdUseCase
+import com.example.lockerin.presentation.viewmodel.lockers.LockersViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
@@ -29,12 +29,12 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.LocalTime
 import java.time.ZoneId
 import java.util.Date
 
@@ -60,7 +60,7 @@ class RentalViewModel(
         .flatMapLatest { userId: String ->
             listRentalsByUserIdUseCase(userId)
         }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        .stateIn(viewModelScope, SharingStarted.Companion.WhileSubscribed(5000), emptyList())
     @SuppressLint("SimpleDateFormat")
 
     fun setUserId(userId: String) {
@@ -231,6 +231,14 @@ class RentalViewModel(
                 put(lockerId, isAvailable)
             }
 
+        }
+    }
+    suspend fun getCurrentUserRentals(): List<Rental> {
+        val user = FirebaseAuth.getInstance().currentUser
+        return if (user != null) {
+            rentalFirestoreRepository.getRentalByUserId(user.uid).first()
+        } else {
+            emptyList()
         }
     }
 

@@ -87,7 +87,7 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.annotation)
     implementation(libs.androidx.constraintlayout)
-    
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
 
 
     // Dependencias de prueba 

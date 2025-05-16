@@ -140,7 +140,8 @@ fun LoginScreen(
                         unfocusedBorderColor = Color.Black,
                         focusedTextColor = Color.Black,
                         unfocusedTextColor = Color.Black
-                    )
+                    ),
+                    singleLine = true
                 )
                 Spacer(modifier = Modifier.padding(5.dp))
                 var password by remember { mutableStateOf("") }
@@ -195,7 +196,8 @@ fun LoginScreen(
                         unfocusedBorderColor = Color.Black,
                         focusedTextColor = Color.Black,
                         unfocusedTextColor = Color.Black
-                    )
+                    ),
+                    singleLine = true
                 )
                 Spacer(modifier = Modifier.padding(5.dp))
                 Text(

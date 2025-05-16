@@ -31,7 +31,7 @@ import com.example.lockerin.domain.usecase.rental.ListRentalsByUserIdUseCase
 import com.example.lockerin.domain.usecase.user.DeleteUserUseCase
 import com.example.lockerin.domain.usecase.user.GetUserUseCase
 import com.example.lockerin.presentation.viewmodel.lockers.LockersViewModel
-import com.example.lockerin.presentation.viewmodel.lockers.RentalViewModel
+import com.example.lockerin.presentation.viewmodel.rentals.RentalViewModel
 import com.example.lockerin.presentation.viewmodel.payment.CardsViewModel
 import com.example.lockerin.presentation.viewmodel.payment.HistoricalRentalViewModel
 import com.example.lockerin.presentation.viewmodel.payment.PaymentViewModel

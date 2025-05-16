@@ -1,5 +1,7 @@
 package com.example.lockerin.presentation.ui.screens.card
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -11,6 +13,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -28,10 +32,15 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -57,7 +66,7 @@ import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import java.util.Calendar
 import java.util.Date
-
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AddCardScreen(
     userID: String,
@@ -69,7 +78,7 @@ fun AddCardScreen(
 
     val userId = authViewModel.currentUserId
     val userState by userViewModel.user.collectAsState()
-    val user=userViewModel.getUserById(userId.toString())
+    val user = userViewModel.getUserById(userId.toString())
 
     LaunchedEffect(Unit) {
         userViewModel.getUserById(userID)
@@ -85,6 +94,13 @@ fun AddCardScreen(
         else -> R.drawable.credit_card
     }
     var showDialog by remember { mutableStateOf(false) }
+    var isValid by remember { mutableStateOf(true) }
+
+    val focusManager = LocalFocusManager.current
+    val numCardFocusRequest = remember { FocusRequester() }
+    val nameCardFocusRequest = remember { FocusRequester() }
+    val expDateCardFocusRequest = remember { FocusRequester() }
+    val cvvCardFocusRequest = remember { FocusRequester() }
 
     DrawerMenu(
         textoBar = "Agregar tarjeta",
@@ -110,7 +126,9 @@ fun AddCardScreen(
                 Spacer(modifier = Modifier.padding(8.dp))
                 OutlinedTextField(
                     value = numberCard,
-                    onValueChange = { numberCard = it },
+                    onValueChange = {
+                        if (it.length <= 16) numberCard = it
+                    },
                     label = {
                         Text(
                             text = "Numero de la tarjeta",
@@ -119,14 +137,25 @@ fun AddCardScreen(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color.Transparent, RoundedCornerShape(12.dp)),
+                        .background(Color.Transparent, RoundedCornerShape(12.dp))
+                        .focusRequester(numCardFocusRequest),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        imeAction = ImeAction.Next,
+                        keyboardType = KeyboardType.Number
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onNext = {
+                            nameCardFocusRequest.requestFocus()
+                        }
+                    ),
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color.Black,
                         unfocusedBorderColor = Color.Black,
                         focusedTextColor = Color.Black,
                         unfocusedTextColor = Color.Black
-                    )
+                    ),
+                    singleLine = true
                 )
                 Spacer(modifier = Modifier.padding(8.dp))
                 OutlinedTextField(
@@ -140,14 +169,24 @@ fun AddCardScreen(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color.Transparent, RoundedCornerShape(12.dp)),
+                        .background(Color.Transparent, RoundedCornerShape(12.dp))
+                        .focusRequester(nameCardFocusRequest),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        imeAction = ImeAction.Next
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onNext = {
+                            expDateCardFocusRequest.requestFocus()
+                        }
+                    ),
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color.Black,
                         unfocusedBorderColor = Color.Black,
                         focusedTextColor = Color.Black,
                         unfocusedTextColor = Color.Black
-                    )
+                    ),
+                    singleLine = true
                 )
                 Spacer(modifier = Modifier.padding(8.dp))
                 Row(
@@ -156,29 +195,45 @@ fun AddCardScreen(
                 ) {
                     OutlinedTextField(
                         value = expirationDate,
-                        onValueChange = { expirationDate = it },
+                        onValueChange = {
+                            if (it.length<=5){
+                                expirationDate = it
+                                isValid=isExpirationDateValid(it)
+                            }
+                        },
                         label = {
                             Text(
                                 text = "Fecha expiración",
                                 color = Color.Black
                             )
                         },
+                        isError = !isValid,
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(0.7f)
-                            .background(Color.Transparent, RoundedCornerShape(12.dp)),
+                            .background(Color.Transparent, RoundedCornerShape(12.dp))
+                            .focusRequester(expDateCardFocusRequest),
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            imeAction = ImeAction.Next
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onNext = {
+                                cvvCardFocusRequest.requestFocus()
+                            }
+                        ),
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color.Black,
                             unfocusedBorderColor = Color.Black,
                             focusedTextColor = Color.Black,
                             unfocusedTextColor = Color.Black
-                        )
+                        ),
+                        singleLine = true
                     )
                     Spacer(modifier = Modifier.padding(8.dp))
                     OutlinedTextField(
                         value = cvv,
-                        onValueChange = { cvv = it },
+                        onValueChange = { if (it.length<=4)  cvv = it },
                         label = {
                             Text(
                                 text = "CVV",
@@ -188,21 +243,31 @@ fun AddCardScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(0.3f)
-                            .background(Color.Transparent, RoundedCornerShape(12.dp)),
+                            .background(Color.Transparent, RoundedCornerShape(12.dp))
+                            .focusRequester(cvvCardFocusRequest),
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            imeAction = ImeAction.Next
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onNext = {
+                                focusManager.clearFocus()
+                            }
+                        ),
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color.Black,
                             unfocusedBorderColor = Color.Black,
                             focusedTextColor = Color.Black,
                             unfocusedTextColor = Color.Black
-                        )
+                        ),
+                        singleLine = true
                     )
                 }
                 Spacer(modifier = Modifier.padding(8.dp))
                 Button(
                     onClick = {
 
-                        if (numberCard.isNotEmpty() && nameCard.isNotEmpty() && expirationDate.isNotEmpty() && cvv.isNotEmpty()) {
+                        if (numberCard.isNotEmpty() && nameCard.isNotEmpty() && expirationDate.isNotEmpty() && cvv.isNotEmpty() && isValid) {
                             val newCard = Tarjeta(
                                 cardNumber = cardsViewModel.encrypt(numberCard),
                                 userId = userID,
@@ -301,7 +366,7 @@ fun verificationCardType(numberCard: String): String {
                 return "MasterCard"
             }
 
-            return "Unknown Type"
+            return "Tarjeta"
         }
 
         (cleanedNumber.startsWith("34") || cleanedNumber.startsWith("37")) && length == 15 -> {
@@ -309,9 +374,29 @@ fun verificationCardType(numberCard: String): String {
         }
 
         else -> {
-            return "Unknown Type"
+            return "Tarjeta"
         }
     }
 
 }
+
+@RequiresApi(Build.VERSION_CODES.O)
+fun isExpirationDateValid(input: String): Boolean {
+    if (!Regex("^\\d{2}/\\d{2}$").matches(input)) return false
+
+    val (monthStr, yearStr) = input.split("/")
+    val month = monthStr.toIntOrNull() ?: return false
+    val year = yearStr.toIntOrNull() ?: return false
+
+    if (month !in 1..12) return false
+
+    val fullYear = 2000 + year
+
+    // Obtener fecha actual
+    val now = java.time.YearMonth.now()
+    val inputDate = java.time.YearMonth.of(fullYear, month)
+
+    return inputDate >= now
+}
+
 

@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.DeleteForever
@@ -36,9 +38,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.White
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -63,13 +69,13 @@ import org.koin.androidx.compose.koinViewModel
 fun AcountScreen(
     userID: String,
     navController: NavHostController,
-    userViewModel: UsersViewModel= koinViewModel(),
+    userViewModel: UsersViewModel = koinViewModel(),
     authViewModel: AuthViewModel = viewModel()
-){
-    val userId= authViewModel.currentUserId
+) {
+    val userId = authViewModel.currentUserId
     val userState by userViewModel.user.collectAsState()
-    val user=userViewModel.getUserById(userID)
-    Log.d("usuario",userID)
+    val user = userViewModel.getUserById(userID)
+    Log.d("usuario", userID)
     var isLoading by remember { mutableStateOf(true) }
     LaunchedEffect(Unit) {
         delay(1000)
@@ -77,10 +83,10 @@ fun AcountScreen(
     }
     if (isLoading) {
         LoadingScreen(isLoading = isLoading)
-    }else{
+    } else {
         DrawerMenu(
             textoBar = "Cuenta",
-            navController=navController,
+            navController = navController,
             authViewModel = viewModel(),
             fullUser = userState,
             content = {
@@ -110,7 +116,7 @@ fun AcountScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = user?.name.toString() ,
+                            text = user?.name.toString(),
                             modifier = Modifier
                                 .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp))
                                 .padding(8.dp)
@@ -152,9 +158,9 @@ fun AcountScreen(
                     Spacer(modifier = Modifier.padding(8.dp))
                     ChangePass(authViewModel)
                     Spacer(modifier = Modifier.padding(8.dp))
-                    DeleteAcount(authViewModel,navController,userViewModel,userId.toString())
+                    DeleteAcount(authViewModel, navController, userViewModel, userId.toString())
                     Spacer(modifier = Modifier.padding(8.dp))
-                    Cards(userID,navController)
+                    Cards(userID, navController)
 
 
                 }
@@ -171,9 +177,14 @@ fun ChangePass(authViewModel: AuthViewModel) {
     var newPassw by remember { mutableStateOf("") }
     var confirmPass by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
-    var passwordsMatch by remember { mutableStateOf(true) } // Estado para verificar si las contraseñas coinciden
-    var showDialog by remember { mutableStateOf(false) } // Estado para mostrar el diálogo
+    var passwordsMatch by remember { mutableStateOf(true) }
+    var showDialog by remember { mutableStateOf(false) }
     var texto by remember { mutableStateOf("Contraseña cambiada") }
+
+    val focusManager = LocalFocusManager.current
+    val oldPassFocusRequester = remember { FocusRequester() }
+    val newPasswordFocusRequester = remember { FocusRequester() }
+    val confirmPasswordFocusRequester = remember { FocusRequester() }
 
     Column(
         modifier = Modifier
@@ -181,7 +192,7 @@ fun ChangePass(authViewModel: AuthViewModel) {
             .padding(8.dp)
             .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp))
             .padding(16.dp)
-            .clickable{
+            .clickable {
                 isSelected = !isSelected
             }
     ) {
@@ -226,14 +237,24 @@ fun ChangePass(authViewModel: AuthViewModel) {
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.Transparent, RoundedCornerShape(12.dp)),
+                    .background(Color.Transparent, RoundedCornerShape(12.dp))
+                    .focusRequester(oldPassFocusRequester),
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    imeAction = ImeAction.Next
+                ),
+                keyboardActions = KeyboardActions(
+                    onNext = {
+                        newPasswordFocusRequester.requestFocus()
+                    }
+                ),
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color.Black,
-                            unfocusedBorderColor = Color.Black,
-                            focusedTextColor = Color.Black,
-                            unfocusedTextColor = Color.Black
-                )
+                    focusedBorderColor = Color.Black,
+                    unfocusedBorderColor = Color.Black,
+                    focusedTextColor = Color.Black,
+                    unfocusedTextColor = Color.Black
+                ),
+                singleLine = true
             )
             OutlinedTextField(
                 value = newPassw,
@@ -265,16 +286,25 @@ fun ChangePass(authViewModel: AuthViewModel) {
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.Transparent, RoundedCornerShape(12.dp)),
+                    .background(Color.Transparent, RoundedCornerShape(12.dp))
+                    .focusRequester(newPasswordFocusRequester),
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    imeAction = ImeAction.Next
+                ),
+                keyboardActions = KeyboardActions(
+                    onNext = {
+                        confirmPasswordFocusRequester.requestFocus()
+                    }
+                ),
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color.Black,
-                            unfocusedBorderColor = Color.Black,
-                            focusedTextColor = Color.Black,
-                            unfocusedTextColor = Color.Black
-                )
+                    focusedBorderColor = Color.Black,
+                    unfocusedBorderColor = Color.Black,
+                    focusedTextColor = Color.Black,
+                    unfocusedTextColor = Color.Black
+                ),
+                singleLine = true
             )
-            Spacer(modifier = Modifier.padding(5.dp))
 
             OutlinedTextField(
                 value = confirmPass,
@@ -306,14 +336,24 @@ fun ChangePass(authViewModel: AuthViewModel) {
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.Transparent),
+                    .background(Color.Transparent)
+                    .focusRequester(confirmPasswordFocusRequester),
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    imeAction = ImeAction.Next
+                ),
+                keyboardActions = KeyboardActions(
+                    onNext = {
+                        focusManager.clearFocus()
+                    }
+                ),
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color.Black,
-                            unfocusedBorderColor = Color.Black,
-                            focusedTextColor = Color.Black,
-                            unfocusedTextColor = Color.Black
-                )
+                    focusedBorderColor = Color.Black,
+                    unfocusedBorderColor = Color.Black,
+                    focusedTextColor = Color.Black,
+                    unfocusedTextColor = Color.Black
+                ),
+                singleLine = true
             )
             Spacer(modifier = Modifier.padding(5.dp))
             if (newPassw != confirmPass) {
@@ -329,25 +369,26 @@ fun ChangePass(authViewModel: AuthViewModel) {
                 Button(
                     onClick = {
                         showDialog = true
-                        if (oldPassword.isEmpty() && newPassw.isEmpty() && confirmPass.isEmpty() ){
-                            texto="Los campos estan vacios"
-                        }else {
-                            if (passwordsMatch){
-                                authViewModel.updatePassword(newPassw) { success, errorMessage ->
-                                    if (success) {
-                                        texto = "Contraseña cambiada exitosamente."
-                                        oldPassword = ""
-                                        newPassw = ""
-                                        confirmPass = ""
+                        if (newPassw.length < 6 && confirmPass.length < 6) {
+                            texto = "La contraseña nueva tiene menos de 6 dijitos"
+                        } else {
+                            if (oldPassword.isEmpty() && newPassw.isEmpty() && confirmPass.isEmpty()) {
+                                texto = "Los campos estan vacios"
+                            } else {
+                                if (passwordsMatch) {
+                                    authViewModel.updatePassword(newPassw) { success, errorMessage ->
+                                        if (success) {
+                                            texto = "Contraseña cambiada exitosamente."
+                                            oldPassword = ""
+                                            newPassw = ""
+                                            confirmPass = ""
+                                        }
                                     }
+                                } else {
+                                    texto = "Las contraseñas no coinciden"
                                 }
-                            }else {
-                                texto="Las contraseñas no coinciden"
                             }
                         }
-
-
-
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Primary),
                 ) {
@@ -366,7 +407,12 @@ fun ChangePass(authViewModel: AuthViewModel) {
 }
 
 @Composable
-fun DeleteAcount(authViewModel: AuthViewModel, navController: NavController,userViewModel: UsersViewModel,userId:String){
+fun DeleteAcount(
+    authViewModel: AuthViewModel,
+    navController: NavController,
+    userViewModel: UsersViewModel,
+    userId: String
+) {
     var showDialog by remember { mutableStateOf(false) }
     var deleteErrorMessage by remember { mutableStateOf<String?>(null) }
     Row(
@@ -388,7 +434,7 @@ fun DeleteAcount(authViewModel: AuthViewModel, navController: NavController,user
             contentDescription = "delete",
             tint = Color.Black,
             modifier = Modifier.clickable {
-                showDialog=true
+                showDialog = true
             }
         )
         if (showDialog) {
@@ -422,66 +468,66 @@ fun ConfirmDeleteAccountDialog(
     onConfirmation: () -> Unit,
     onDismissRequest: () -> Unit,
 ) {
-        AlertDialog(
-            onDismissRequest = onDismissRequest,
-            containerColor = BeigeClaro,
-            title = {
-                Text(
-                    text = "¿Eliminar cuenta?",
-                    textAlign = TextAlign.Center,
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        containerColor = BeigeClaro,
+        title = {
+            Text(
+                text = "¿Eliminar cuenta?",
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp, start = 16.dp, end = 16.dp),
+                color = Color.Black,
+            )
+        },
+        text = {
+            Text(
+                text = "¿Quieres eliminar tu cuenta de forma permanente?",
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp, horizontal = 16.dp),
+                color = Color.Black,
+            )
+        },
+        confirmButton = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Button(
+                    onClick = {
+                        onConfirmation()
+                        onDismissRequest()
+                    },
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp, start = 16.dp, end = 16.dp),
-                    color = Color.Black,
-                )
-            },
-            text = {
-                Text(
-                    text = "¿Quieres eliminar tu cuenta de forma permanente?",
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 16.dp, horizontal = 16.dp),
-                    color = Color.Black,
-                )
-            },
-            confirmButton = {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                        .weight(1f)
+                        .padding(end = 4.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Primary)
                 ) {
-                    Button(
-                        onClick = {
-                            onConfirmation()
-                            onDismissRequest()
-                        },
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(end = 4.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Primary)
-                    ) {
-                        Text("Sí", color = White)
-                    }
-                    Button(
-                        onClick = onDismissRequest,
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(start = 4.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Primary)
-                    ) {
-                        Text("No", color = White)
-                    }
+                    Text("Sí", color = White)
                 }
-            },
-            dismissButton = null
-        )
+                Button(
+                    onClick = onDismissRequest,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 4.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                ) {
+                    Text("No", color = White)
+                }
+            }
+        },
+        dismissButton = null
+    )
 
 }
 
 @Composable
 fun PasswordChangeConfirmationDialog(
     onDismissRequest: () -> Unit,
-    texto:String
+    texto: String
 ) {
     AlertDialog(
         onDismissRequest = onDismissRequest,
@@ -509,8 +555,10 @@ fun PasswordChangeConfirmationDialog(
 }
 
 @Composable
-fun Cards(userID: String,
-          navController: NavHostController){
+fun Cards(
+    userID: String,
+    navController: NavHostController
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -540,10 +588,12 @@ fun Cards(userID: String,
     }
 
 }
+
 @Preview
 @Composable
-fun CountScreenPReview(){
-    AcountScreen("1",
+fun CountScreenPReview() {
+    AcountScreen(
+        "1",
         navController = rememberNavController()
     )
 }

@@ -43,6 +43,7 @@ import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
 import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
+import java.math.RoundingMode
 
 @Composable
 fun DetailsScreen(
@@ -69,6 +70,10 @@ fun DetailsScreen(
     LaunchedEffect(lockerID) {
         lockersViewModel.getLockerById(lockerID)
     }
+
+    val priceToDouble = totalPrice.toBigDecimal().setScale(2, RoundingMode.HALF_UP).toDouble()
+
+
 
     if (isLoading) {
         LoadingScreen(isLoading = true)
@@ -230,7 +235,7 @@ fun DetailsScreen(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "$totalPrice €",
+                                text = "$priceToDouble €",
                                 modifier = Modifier
                                     .border(1.dp, Color.Black)
                                     .padding(8.dp)
@@ -244,13 +249,24 @@ fun DetailsScreen(
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        Button(
-                            onClick = {
-                                navController.navigate(Screen.Payment.createRoute(userID, lockerID, startDate, endDate, totalPrice))
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = Primary)
-                        ) {
-                            Text(text = "Reservar", fontWeight = FontWeight.Bold, color = Color.White)
+                        Row {
+                            Button(
+                                onClick = {
+                                    navController.navigate(Screen.Payment.createRoute(userID, lockerID, startDate, endDate, priceToDouble.toString()))
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                            ) {
+                                Text(text = "Reservar", fontWeight = FontWeight.Bold, color = Color.White)
+                            }
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Button(
+                                onClick = {
+                                    navController.popBackStack()
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                            ) {
+                                Text(text = "Cancelar", fontWeight = FontWeight.Bold, color = Color.White)
+                            }
                         }
                     } ?: run {
                         Text(text = "No se encontró el locker con ID: $lockerID")

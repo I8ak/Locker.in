@@ -60,7 +60,7 @@ import com.example.lockerin.presentation.ui.components.decrypt
 import com.example.lockerin.presentation.ui.components.generateAesKey
 import com.example.lockerin.presentation.ui.theme.Primary
 import com.example.lockerin.presentation.viewmodel.lockers.LockersViewModel
-import com.example.lockerin.presentation.viewmodel.lockers.RentalViewModel
+import com.example.lockerin.presentation.viewmodel.rentals.RentalViewModel
 import com.example.lockerin.presentation.viewmodel.payment.CardsViewModel
 import com.example.lockerin.presentation.viewmodel.payment.PaymentViewModel
 import com.example.lockerin.presentation.viewmodel.users.AuthViewModel

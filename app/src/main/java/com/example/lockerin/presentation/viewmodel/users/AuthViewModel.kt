@@ -110,19 +110,48 @@ class AuthViewModel : ViewModel(){
         email: String,
         password: String,
         onComplete: (Boolean, String?) -> Unit
-    ){
-        _authState.value= AuthState.LOADING
+    ) {
+        if (email.isEmpty()) {
+            onComplete(false, "El correo electrónico no puede estar vacío.")
+            return
+        }
+
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            onComplete(false, "Formato de correo electrónico inválido.")
+            return
+        }
+
+        _authState.value = AuthState.LOADING
+
         firebaseAuth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
-                if(task.isSuccessful){
+                if (task.isSuccessful) {
                     _authState.value = AuthState.LOGGED_IN
                     onComplete(true, null)
-                }else{
+                } else {
                     _authState.value = AuthState.LOGGED_OUT
-                    onComplete(false, task.exception?.message)
+
+                    val errorMessage = when {
+                        task.exception?.message?.contains("The supplied auth credential is incorrect", ignoreCase = true) == true ||
+                                task.exception?.message?.contains("INVALID_LOGIN_CREDENTIALS", ignoreCase = true) == true -> {
+                            "La cuentano no existe o la contraseña y email son incorrectos."
+                        }
+
+                        task.exception?.message?.contains("network error", ignoreCase = true) == true ||
+                                task.exception?.message?.contains("A network error", ignoreCase = true) == true -> {
+                            "No hay conexión a internet."
+                        }
+
+                        else -> {
+                            "Ocurrió un error inesperado: ${task.exception?.localizedMessage ?: "desconocido"}"
+                        }
+                    }
+
+                    onComplete(false, errorMessage)
                 }
             }
     }
+
     fun signOut(){
         viewModelScope.launch {
             firebaseAuth.signOut()
@@ -180,7 +209,10 @@ class AuthViewModel : ViewModel(){
             return
         }
 
-
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            onComplete(false, "Formato de correo electrónico inválido.")
+            return
+        }
 
         Log.d("AuthViewModel", "Intentando enviar correo de reseteo a: $email")
 

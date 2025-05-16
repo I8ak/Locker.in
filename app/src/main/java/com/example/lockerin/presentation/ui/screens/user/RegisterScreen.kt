@@ -95,6 +95,7 @@ fun RegisterScreen(
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPassword by remember { mutableStateOf(false) }
     var confirmFieldFocused by remember { mutableStateOf(false) }
+    var lengthPass by remember { mutableStateOf(false) }
 
     val focusManager = LocalFocusManager.current
     val userFocusRequester = remember { FocusRequester() }
@@ -185,7 +186,8 @@ fun RegisterScreen(
                         unfocusedBorderColor = Color.Black,
                         focusedTextColor = Color.Black,
                         unfocusedTextColor = Color.Black
-                    )
+                    ),
+                    singleLine = true
                 )
                 Spacer(modifier = Modifier.padding(5.dp))
 
@@ -226,7 +228,8 @@ fun RegisterScreen(
                         unfocusedBorderColor = Color.Black,
                         focusedTextColor = Color.Black,
                         unfocusedTextColor = Color.Black
-                    )
+                    ),
+                    singleLine = true
                 )
                 Spacer(modifier = Modifier.padding(5.dp))
 
@@ -279,7 +282,8 @@ fun RegisterScreen(
                         unfocusedBorderColor = Color.Black,
                         focusedTextColor = Color.Black,
                         unfocusedTextColor = Color.Black
-                    )
+                    ),
+                    singleLine = true
                 )
                 Spacer(modifier = Modifier.padding(5.dp))
 
@@ -335,12 +339,23 @@ fun RegisterScreen(
                         unfocusedBorderColor = Color.Black,
                         focusedTextColor = Color.Black,
                         unfocusedTextColor = Color.Black
-                    )
+                    ),
+                    singleLine = true
                 )
                 Spacer(modifier = Modifier.padding(5.dp))
                 if (!confirmFieldFocused && !confirmPassword && passwordConfirm.isNotEmpty()) {
                     Text(
                         text = "Las contraseñas no coinciden",
+                        color = Color.Red,
+                        fontSize = 12.sp,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                if (!confirmFieldFocused && !confirmPassword && password.length<6 && passwordConfirm.length<6){
+                    Text(
+                        text = "Las contraseñas tienen menos de 6 dígitos",
                         color = Color.Red,
                         fontSize = 12.sp,
                         modifier = Modifier.fillMaxWidth(),
@@ -429,6 +444,7 @@ fun RegisterScreen(
                                         if (password.isEmpty()) appendLine("• Contraseña requerida")
                                         if (passwordConfirm.isEmpty()) appendLine("• Confirmar contraseña")
                                         if (password != passwordConfirm) appendLine("• Las contraseñas no coinciden")
+                                        if (lengthPass) appendLine("• Las contraseñas tiene menos de 6 dígitos")
                                         if (!isChecked) appendLine("• Debes aceptar los términos")
                                     }
                                     snackbarHostState.showSnackbar(
@@ -475,11 +491,14 @@ fun RegisterScreen(
                         color = Primary,
                         textDecoration = TextDecoration.Underline,
                         modifier = Modifier.clickable {
-                            navController.navigate(Screen.Login.route)
+                            navController.navigate(Screen.Login.route){
+                                popUpTo(Screen.Register.route) {
+                                    inclusive = true
+                                }
+                            }
                         }
                     )
                 }
-
             }
         }
     )

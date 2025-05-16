@@ -311,7 +311,7 @@ fun StatusPayScreen(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = payment?.amount.toString(),
+                        text = "${payment?.amount.toString()} €",
                         modifier = Modifier
                             .border(1.dp, Color.Black)
                             .padding(8.dp)

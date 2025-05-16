@@ -55,7 +55,7 @@ import com.example.lockerin.R
 import com.example.lockerin.domain.model.Locker
 import com.example.lockerin.presentation.ui.components.DrawerMenu
 import com.example.lockerin.presentation.viewmodel.lockers.LockersViewModel
-import com.example.lockerin.presentation.viewmodel.lockers.RentalViewModel
+import com.example.lockerin.presentation.viewmodel.rentals.RentalViewModel
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime

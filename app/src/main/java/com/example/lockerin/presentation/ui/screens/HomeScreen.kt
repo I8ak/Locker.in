@@ -38,7 +38,7 @@ import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.components.DrawerMenu
 import com.example.lockerin.presentation.ui.theme.BeigeClaro
 import com.example.lockerin.presentation.viewmodel.lockers.LockersViewModel
-import com.example.lockerin.presentation.viewmodel.lockers.RentalViewModel
+import com.example.lockerin.presentation.viewmodel.rentals.RentalViewModel
 import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
 import androidx.compose.runtime.getValue
