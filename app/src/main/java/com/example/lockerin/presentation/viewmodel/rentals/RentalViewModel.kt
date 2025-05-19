@@ -41,7 +41,6 @@ import java.util.Date
 class RentalViewModel(
     val addRentalUseCase: AddRentalUseCase,
     val listRentalsByUserIdUseCase: ListRentalsByUserIdUseCase,
-    val getRentalUseCase: GetRentalUseCase,
     val countLockersUseCase: CountRentalsByUserUseCase,
     val deleteRentalUseCase: DeleteRentalUseCase,
     val lockerRepository: LockerFirestoreRepository,
@@ -76,18 +75,6 @@ class RentalViewModel(
         }
     }
 
-
-
-
-
-    private val _selectedRental = MutableStateFlow<Rental?>(null)
-    val selectedRental: StateFlow<Rental?> = _selectedRental.asStateFlow()
-    fun getRentalById(rentalId: String) {
-        viewModelScope.launch {
-            val rental = getRentalUseCase(rentalId)
-            _selectedRental.value = rental
-        }
-    }
 
     private val _rentalCount = MutableStateFlow(0)
     val rentalCount: StateFlow<Int> = _rentalCount.asStateFlow()
@@ -231,14 +218,6 @@ class RentalViewModel(
                 put(lockerId, isAvailable)
             }
 
-        }
-    }
-    suspend fun getCurrentUserRentals(): List<Rental> {
-        val user = FirebaseAuth.getInstance().currentUser
-        return if (user != null) {
-            rentalFirestoreRepository.getRentalByUserId(user.uid).first()
-        } else {
-            emptyList()
         }
     }
 

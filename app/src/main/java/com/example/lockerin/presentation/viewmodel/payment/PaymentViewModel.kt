@@ -34,9 +34,7 @@ class PaymentViewModel(
             listPaymentsUseCase(userId)
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-    fun getPaymentByUserId(userId: String): Payment? {
-        return payments.value.find { it.userID == userId }
-    }
+
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun addPayment(payment: Payment) {

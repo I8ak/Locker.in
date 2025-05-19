@@ -17,6 +17,7 @@ import com.example.lockerin.data.utils.RentalReminderWorker
 import com.example.lockerin.presentation.navigation.NavGraph
 
 import com.example.lockerin.presentation.ui.theme.LockerinTheme
+import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 import java.util.concurrent.TimeUnit
 
 
@@ -43,9 +44,15 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             LockerinTheme {
+                val navController = rememberNavController()
+                val authViewModel = viewModel<AuthViewModel>()
+
+                val startDestinationFromNotification = intent?.getStringExtra("navigate_to")
+
                 NavGraph(
-                    navController = rememberNavController(),
-                    authViewModel = viewModel()
+                    navController = navController,
+                    authViewModel = authViewModel,
+                    startDestinationFromNotification = startDestinationFromNotification
                 )
             }
         }

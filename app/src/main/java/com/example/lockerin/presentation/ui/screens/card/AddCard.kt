@@ -207,6 +207,9 @@ fun AddCardScreen(
                                 color = Color.Black
                             )
                         },
+                        placeholder = {
+                            Text("MM/YY", color = Color.Gray)
+                        },
                         isError = !isValid,
                         modifier = Modifier
                             .fillMaxWidth()

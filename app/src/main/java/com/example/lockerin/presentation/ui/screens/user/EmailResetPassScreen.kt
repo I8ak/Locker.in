@@ -144,12 +144,9 @@ fun EmailResetPassScreen(
                             if (isSuccess) {
                                 showDialog = true
                                 dialogMessage = "Enlace enviado, revisa tu correo"
-
                             } else {
-
                                 showDialog = true
-                                dialogMessage = "Eroor al enviar el enlace"
-
+                                dialogMessage = "Error al enviar el enlace"
                             }
                         }
                     }
@@ -158,11 +155,11 @@ fun EmailResetPassScreen(
             ) {
                 Text(
                     text = "Enviar enlace",
-                    color = Color.White
+                    color = White
                 )
                 Icon(
                     imageVector = Icons.Default.ArrowForward, contentDescription = "Row Icon",
-                    tint = Color.White
+                    tint = White
                 )
             }
 

@@ -1,6 +1,7 @@
 package com.example.lockerin.presentation.ui.screens.user
 
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -17,8 +18,8 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CreditCard
-import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.PersonRemove
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.AlertDialog
@@ -66,12 +67,25 @@ import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun AcountScreen(
+fun AccountScreen(
     userID: String,
     navController: NavHostController,
     userViewModel: UsersViewModel = koinViewModel(),
     authViewModel: AuthViewModel = viewModel()
 ) {
+    BackHandler {
+        navController.navigate(Screen.Home.route) {
+            popUpTo(Screen.Home.route) { inclusive = true }
+        }
+    }
+    if (userID == null) {
+        LaunchedEffect(Unit) {
+            navController.navigate(Screen.Login.route) {
+                popUpTo(0)
+            }
+        }
+        return
+    }
     val userId = authViewModel.currentUserId
     val userState by userViewModel.user.collectAsState()
     val user = userViewModel.getUserById(userID)
@@ -430,7 +444,7 @@ fun DeleteAcount(
             modifier = Modifier.weight(1f)
         )
         Icon(
-            imageVector = Icons.Default.DeleteForever,
+            imageVector = Icons.Default.PersonRemove,
             contentDescription = "delete",
             tint = Color.Black,
             modifier = Modifier.clickable {
@@ -443,11 +457,16 @@ fun DeleteAcount(
                     userViewModel.deleteAccount(userId) { success, errorMessage ->
                         if (success) {
                             authViewModel.deleteUser { success, errorMessage ->
-                                authViewModel.signOut()
-                                navController.navigate(Screen.Login.route) {
-                                    popUpTo(Screen.Login.route) { inclusive = true }
+                                if (success) {
+                                    authViewModel.signOut()
+                                    navController.navigate(Screen.Login.route) {
+                                        popUpTo(Screen.Login.route) { inclusive = true }
+                                    }
+                                } else {
+                                    deleteErrorMessage = errorMessage
                                 }
                             }
+
                         } else {
                             deleteErrorMessage = errorMessage
                         }
@@ -589,11 +608,3 @@ fun Cards(
 
 }
 
-@Preview
-@Composable
-fun CountScreenPReview() {
-    AcountScreen(
-        "1",
-        navController = rememberNavController()
-    )
-}

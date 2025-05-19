@@ -1,5 +1,6 @@
 package com.example.lockerin.presentation.ui.screens.user
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -32,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.components.DrawerMenu
 import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
@@ -43,8 +45,13 @@ fun ConfigurationScreen(
     userId: String,
     navController: NavHostController,
     userViewModel: UsersViewModel= koinViewModel(),
-    authViewModel: AuthViewModel=viewModel()
+    authViewModel: AuthViewModel=koinViewModel()
 ){
+    BackHandler {
+        navController.navigate(Screen.Home.route) {
+            popUpTo(Screen.Home.route) { inclusive = true }
+        }
+    }
     val userId = authViewModel.currentUserId
     val userState by userViewModel.user.collectAsState()
     val user=userViewModel.getUserById(userId.toString())
@@ -106,10 +113,7 @@ fun PrivacitySecurity(){
             Icon(
                 imageVector = Icons.Default.PrivacyTip,
                 contentDescription = "Privacidad y seguridad",
-                tint = Color.Black,
-                modifier = Modifier.clickable {
-                    isSelected = !isSelected
-                }
+                tint = Color.Black
             )
         }
 
@@ -151,9 +155,6 @@ fun Help(){
         ) {
             Text(
                 text = "Ayuda",
-                modifier = Modifier.clickable {
-                    isSelected = !isSelected
-                },
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
@@ -162,9 +163,6 @@ fun Help(){
                 imageVector = Icons.Default.Help,
                 contentDescription = "Ayuda",
                 tint = Color.Black,
-                modifier = Modifier.clickable {
-                    isSelected = !isSelected
-                }
             )
         }
 
@@ -206,9 +204,6 @@ fun AboutUs(){
         ) {
             Text(
                 text = "Sobre nosotros",
-                modifier = Modifier.clickable {
-                    isSelected = !isSelected
-                },
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
@@ -217,9 +212,6 @@ fun AboutUs(){
                 imageVector = Icons.Default.Info,
                 contentDescription = "Informacion",
                 tint = Color.Black,
-                modifier = Modifier.clickable {
-                    isSelected = !isSelected
-                }
             )
         }
 
@@ -261,9 +253,6 @@ fun ContactUs(){
         ) {
             Text(
                 text = "Contactanos",
-                modifier = Modifier.clickable {
-                    isSelected = !isSelected
-                },
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
@@ -271,10 +260,7 @@ fun ContactUs(){
             Icon(
                 imageVector = Icons.Default.ContactSupport,
                 contentDescription = "Contact us",
-                tint = Color.Black,
-                modifier = Modifier.clickable {
-                    isSelected = !isSelected
-                }
+                tint = Color.Black
             )
         }
 
@@ -307,9 +293,4 @@ fun ContactUs(){
     }
 }
 
-//@Preview
-//@Composable
-//fun ConfigurationScreenPreview(){
-//    ConfigurationScreen(navController = rememberNavController())
-//}
 

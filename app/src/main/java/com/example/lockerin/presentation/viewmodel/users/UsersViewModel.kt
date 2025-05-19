@@ -1,12 +1,10 @@
 package com.example.lockerin.presentation.viewmodel.users
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.lockerin.domain.model.User
 import com.example.lockerin.domain.usecase.user.DeleteUserUseCase
 import com.example.lockerin.domain.usecase.user.GetUserUseCase
-import com.google.firebase.FirebaseException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch

@@ -74,7 +74,6 @@ import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.theme.BeigeClaro
-import com.example.lockerin.presentation.viewmodel.AppViewModel
 import com.example.lockerin.presentation.viewmodel.users.AuthState
 import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 import kotlinx.coroutines.launch
@@ -104,7 +103,6 @@ fun RegisterScreen(
     val confirmPasswordFocusRequester = remember { FocusRequester() }
 
 
-    val authenticationState by authViewModel.authState.collectAsState()
 
     Scaffold(
         modifier = Modifier
@@ -353,7 +351,7 @@ fun RegisterScreen(
                         fontWeight = FontWeight.Bold
                     )
                 }
-                if (!confirmFieldFocused && !confirmPassword && password.length<6 && passwordConfirm.length<6){
+                if (!confirmFieldFocused && !confirmPassword && password.length < 6 && passwordConfirm.length < 6) {
                     Text(
                         text = "Las contraseñas tienen menos de 6 dígitos",
                         color = Color.Red,
@@ -491,10 +489,8 @@ fun RegisterScreen(
                         color = Primary,
                         textDecoration = TextDecoration.Underline,
                         modifier = Modifier.clickable {
-                            navController.navigate(Screen.Login.route){
-                                popUpTo(Screen.Register.route) {
-                                    inclusive = true
-                                }
+                            navController.navigate(Screen.Login.route) {
+                                popUpTo(0)
                             }
                         }
                     )

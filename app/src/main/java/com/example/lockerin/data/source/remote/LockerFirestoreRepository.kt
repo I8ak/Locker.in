@@ -49,7 +49,6 @@ class LockerFirestoreRepository(val firestore: FirebaseFirestore) {
 
     suspend fun countAvailableLockersByCity(city: String): Int {
         val snapshot = firestore.collection("lockers")
-            .whereEqualTo("status", true)
             .whereEqualTo("city", city)
             .get()
             .await()

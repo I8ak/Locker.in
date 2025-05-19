@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.dp
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
 @Composable
 fun CityDropdown(
-    selectedCity: String = "Madrid",
+    selectedCity: String,
     onCitySelected: (String) -> Unit = {}
 ) {
     val cities = listOf("Madrid", "Barcelona")
@@ -50,6 +50,7 @@ fun CityDropdown(
                 unfocusedTextColor = Color.Black
             )
         )
+
 
         ExposedDropdownMenu(
             expanded = expanded,

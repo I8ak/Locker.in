@@ -88,19 +88,16 @@ fun PaymentScreen(
     paymentViewModel: PaymentViewModel = koinViewModel(),
     cardsViewModel: CardsViewModel = koinViewModel(),
     rentalViewModel: RentalViewModel = koinViewModel(),
-    authViewModel: AuthViewModel=viewModel(),
+    authViewModel: AuthViewModel=koinViewModel(),
     ) {
 
 
     val userId = authViewModel.currentUserId
     val userState by userViewModel.user.collectAsState()
-    val user=userViewModel.getUserById(userId.toString())
     val cardsState by cardsViewModel.cards.collectAsState()
+    var isLoading by remember { mutableStateOf(true) }
     LaunchedEffect(userID) {
         cardsViewModel.setUserId(userID)
-    }
-    var isLoading by remember { mutableStateOf(true) }
-    LaunchedEffect(Unit) {
         delay(1000)
         isLoading = false
     }
@@ -145,8 +142,6 @@ fun PaymentScreen(
                                     tarjeta = card,
                                     isSelected = card.cardID == selectedCardId,
                                     onCardSelected = { selectedCardId = it },
-                                    cardsViewModel = cardsViewModel,
-
                                     )
                             }
 
@@ -292,10 +287,7 @@ fun CardsCard(
     tarjeta: Tarjeta,
     isSelected: Boolean,
     onCardSelected: (cardId: String) -> Unit,
-    cardsViewModel: CardsViewModel
 ) {
-    val context = LocalContext.current
-    val key = remember { generateAesKey(context) }
     val imagen = when (tarjeta.typeCard) {
         "Visa" -> R.drawable.visa
         "MasterCard" -> R.drawable.mastercard
@@ -304,7 +296,7 @@ fun CardsCard(
     }
     Card(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxWidth()
             .padding(8.dp)
             .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp)),
         shape = RoundedCornerShape(12.dp),

@@ -3,7 +3,9 @@ package com.example.lockerin.data.utils
 import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationCompat
@@ -15,7 +17,6 @@ object Notifications {
     fun showNotification(context: Context, title: String, message: String) {
         val channelId = "reservation_channel"
 
-        // Crear el canal solo si es Android 8 o superior
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = "Reservas"
             val descriptionText = "Notificaciones de reservas"
@@ -27,17 +28,28 @@ object Notifications {
                 context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
+        val intent = Intent(context, Class.forName("com.example.lockerin.presentation.MainActivity")).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            putExtra("navigate_to", "active_rental")
+        }
 
 
-        // Crear la notificación
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
         val builder = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(R.mipmap.logo_foreground)
             .setContentTitle(title)
             .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setContentIntent(pendingIntent) // 👈 aquí se asocia
+            .setAutoCancel(true)
 
-        with(receiver = NotificationManagerCompat.from(context))
-         {
+        with(NotificationManagerCompat.from(context)) {
             notify(System.currentTimeMillis().toInt(), builder.build())
         }
     }

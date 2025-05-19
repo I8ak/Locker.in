@@ -3,12 +3,12 @@ package com.example.lockerin.presentation.navigation
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.example.lockerin.presentation.ui.screens.user.AcountScreen
 import com.example.lockerin.presentation.ui.screens.card.AddCardScreen
 import com.example.lockerin.presentation.ui.screens.locker.AddLockerScreen
 import com.example.lockerin.presentation.ui.screens.card.CardsScreen
@@ -21,10 +21,10 @@ import com.example.lockerin.presentation.ui.screens.reserveLocker.PaymentScreen
 import com.example.lockerin.presentation.ui.screens.user.RegisterScreen
 import com.example.lockerin.presentation.ui.screens.reserveLocker.ReserveScreen
 import com.example.lockerin.presentation.ui.screens.reserveLocker.ReservedLockersScreen
-import com.example.lockerin.presentation.ui.screens.user.ResetPass
 import com.example.lockerin.presentation.ui.components.SplashScreen
 import com.example.lockerin.presentation.ui.screens.locker.EditLockerScreen
 import com.example.lockerin.presentation.ui.screens.reserveLocker.StatusPayScreen
+import com.example.lockerin.presentation.ui.screens.user.AccountScreen
 import com.example.lockerin.presentation.ui.screens.user.ConfigurationScreen
 import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 
@@ -34,7 +34,18 @@ fun NavGraph(
     navController: NavHostController,
     startDestination: String = Screen.Splash.route,
     authViewModel: AuthViewModel,
+    startDestinationFromNotification: String? = null
 ) {
+    LaunchedEffect(startDestinationFromNotification) {
+        if (startDestinationFromNotification == "active_rental") {
+            val userId = authViewModel.currentUserId
+            if (userId != null) {
+                navController.navigate(Screen.ResrvedLockers.createRoute(userId))
+            } else {
+                navController.navigate(Screen.Login.route)
+            }
+        }
+    }
     NavHost(
         navController = navController,
         startDestination = startDestination
@@ -117,13 +128,13 @@ fun NavGraph(
             StatusPayScreen( userID,cardID,paymentID,rentalID, navController = navController)
         }
         composable(
-            route = Screen.Acount.route,
+            route = Screen.Account.route,
             arguments = listOf(
                 navArgument("userID") { type = NavType.StringType }
             )
         ) { backStackEntry ->
             val userID = backStackEntry.arguments?.getString("userID")!!
-            AcountScreen(userID, navController)
+            AccountScreen(userID, navController)
         }
         composable(
             route = Screen.Information.route,
@@ -166,9 +177,6 @@ fun NavGraph(
         }
         composable(Screen.EmailResetPass.route) {
             EmailResetPassScreen(navController)
-        }
-        composable(Screen.ResetPass.route) {
-            ResetPass(navController)
         }
 
         composable(

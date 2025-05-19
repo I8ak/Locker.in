@@ -3,6 +3,7 @@ package com.example.lockerin.presentation.ui.screens.reserveLocker
 import android.annotation.SuppressLint
 import android.os.Build
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -51,12 +52,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.graphics.Color.Companion.White
-import androidx.compose.ui.platform.LocalContext
 import com.example.lockerin.domain.model.HistoricRental
+import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.components.DrawerMenu
 import com.example.lockerin.presentation.ui.components.LoadingScreen
-import com.example.lockerin.presentation.ui.components.decrypt
-import com.example.lockerin.presentation.ui.components.generateAesKey
 import com.example.lockerin.presentation.ui.theme.BeigeClaro
 import com.example.lockerin.presentation.ui.theme.Primary
 import com.example.lockerin.presentation.viewmodel.lockers.LockersViewModel
@@ -85,7 +84,11 @@ fun ReservedLockersScreen(
     historicalRentalViewModel: HistoricalRentalViewModel = koinViewModel(),
 ) {
 
-
+    BackHandler {
+        navController.navigate(Screen.Home.route) {
+            popUpTo(Screen.Home.route) { inclusive = true }
+        }
+    }
     val userState by usersViewModel.user.collectAsState()
     val user = usersViewModel.getUserById(userID)
 
@@ -269,7 +272,9 @@ fun CardReserved(
                         ) {
                             Button(
                                 onClick = {
-                                    rentalViewModel.finalizeSpecificRental(rental!!)
+                                    rental?.let {
+                                        rentalViewModel.finalizeSpecificRental(it)
+                                    }
                                 },
                                 colors = ButtonDefaults.buttonColors(containerColor = Primary),
                             ) {
@@ -288,7 +293,6 @@ fun CardReserved(
 
 
 @RequiresApi(Build.VERSION_CODES.O)
-@Composable
 fun convertDateToString(endDate: Date?): String {
     val instant: Instant = endDate?.toInstant() ?: Date().toInstant()
     val localDateTime = instant.atZone(ZoneId.systemDefault()).toLocalDateTime()

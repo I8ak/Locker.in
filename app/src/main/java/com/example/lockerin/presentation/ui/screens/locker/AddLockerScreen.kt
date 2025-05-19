@@ -56,7 +56,7 @@ fun AddLockerScreen(
     navController: NavHostController,
     userViewModel: UsersViewModel = koinViewModel(),
     lockerViewModel: LockersViewModel = koinViewModel(),
-    authViewModel: AuthViewModel=viewModel()
+    authViewModel: AuthViewModel=koinViewModel()
 ) {
     userViewModel.getUserById(userID)
     val userId = authViewModel.currentUserId

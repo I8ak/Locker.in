@@ -67,7 +67,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.ui.text.font.FontWeight
 import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.theme.Primary
-import com.example.lockerin.presentation.viewmodel.AppViewModel
 import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -84,7 +83,7 @@ fun ReserveScreen(
     city: String,
     lockersViewModel: LockersViewModel = koinViewModel(),
     userViewModel: UsersViewModel= koinViewModel(),
-    authViewModel: AuthViewModel=viewModel()
+    authViewModel: AuthViewModel=koinViewModel()
 ) {
     val userId = authViewModel.currentUserId
     val userState by userViewModel.user.collectAsState()
@@ -249,7 +248,7 @@ fun ReserveScreen(
 
                     val durationstartDateTime = startDate?.atTime(startTime ?: LocalTime.MIDNIGHT)
                     val durationendDateTime = endDate?.atTime(endTime ?: LocalTime.MIDNIGHT)
-                    val duration = CalcultaionDuracion(durationstartDateTime!!, durationendDateTime!!)
+                    val duration = calcultaionDuracion(durationstartDateTime!!, durationendDateTime!!)
 
                     Log.i("Duracion","duracion ${duration}")
                     if (isLoading) {
@@ -275,8 +274,8 @@ fun ReserveScreen(
                                         rentalViewModel = rentalViewModel,
                                         navController = navController,
                                         duration = duration,
-                                        startDateString = TrasformarFecha(durationstartDateTime),
-                                        endDateString = TrasformarFecha(durationendDateTime),
+                                        startDateString = trasformarFecha(durationstartDateTime),
+                                        endDateString = trasformarFecha(durationendDateTime),
                                     )
                                 }
                             }
@@ -289,13 +288,13 @@ fun ReserveScreen(
     )
 }
 @RequiresApi(Build.VERSION_CODES.O)
-fun CalcultaionDuracion(startDate: LocalDateTime, endDate: LocalDateTime): Double {
+fun calcultaionDuracion(startDate: LocalDateTime, endDate: LocalDateTime): Double {
     val duration = Duration.between(startDate, endDate)
     return duration.toMinutes().toDouble()/60
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
-fun TrasformarFecha(date: LocalDateTime): String {
+fun trasformarFecha(date: LocalDateTime): String {
     val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
     return date.format(formatter)
 }
@@ -497,14 +496,5 @@ fun LockersCard(userID: String,
 }
 
 
-//@RequiresApi(Build.VERSION_CODES.O)
-//@Preview
-//@Composable
-//fun ReserveScreenPreview() {
-//    val navController = rememberNavController()
-//    ReserveScreen(
-//        navController = navController,
-//        city = "Madrid"
-//    )
-//}
+
 

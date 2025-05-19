@@ -50,10 +50,10 @@ import com.example.lockerin.presentation.viewmodel.payment.PaymentViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import com.example.lockerin.presentation.navigation.Screen
+import com.example.lockerin.presentation.ui.components.InfoRow
 import com.example.lockerin.presentation.ui.components.LoadingScreen
 import com.example.lockerin.presentation.ui.components.decrypt
 import com.example.lockerin.presentation.ui.components.generateAesKey
-import com.example.lockerin.presentation.viewmodel.AppViewModel
 import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
 import kotlinx.coroutines.delay
@@ -69,8 +69,6 @@ fun StatusPayScreen(
     rentalID: String,
     paymentViewModel: PaymentViewModel = koinViewModel(),
     cardsViewModel: CardsViewModel = koinViewModel(),
-    authViewModel: AuthViewModel = koinViewModel(),
-    userViewModel: UsersViewModel = koinViewModel(),
     navController: NavHostController = rememberNavController(),
 ) {
 
@@ -79,26 +77,23 @@ fun StatusPayScreen(
         cardsViewModel.setUserId(userID)
     }
 
+    var isLoading by remember { mutableStateOf(true) }
     Log.d("Payment", "ID: $cardID")
-    LaunchedEffect(paymentID) {
+    LaunchedEffect(cardID,paymentID) {
+        cardsViewModel.getCardById(cardID)
         paymentViewModel.getPaymentByPaymentId(paymentID)
+        delay(1000)
+        isLoading = false
     }
 
     val payment by paymentViewModel.selectedPayment.collectAsState()
 
-    LaunchedEffect(cardID) {
-        cardsViewModel.getCardById(cardID)
-    }
+
     val card by cardsViewModel.selectedCard.collectAsState()
     val startDate = Date()
     val format = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     Log.d("Payment", "ID: $paymentID")
 
-    var isLoading by remember { mutableStateOf(true) }
-    LaunchedEffect(Unit) {
-        delay(1000)
-        isLoading = false
-    }
     BackHandler {
         navController.navigate(Screen.Home.route) {
             popUpTo(Screen.Home.route) { inclusive = true }
@@ -172,156 +167,16 @@ fun StatusPayScreen(
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.size(16.dp))
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(4.dp)
-                ) {
-                    Text(
-                        text = "Codigo de la reserva",
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier
-                            .background(Color.LightGray)
-                            .padding(8.dp)
-                            .height(50.dp)
-                            .weight(1f),
-                        fontSize = 20.sp,
-                        color = Color.Black
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = rentalID,
-                        modifier = Modifier
-                            .border(1.dp, Color.Black)
-                            .padding(8.dp)
-                            .height(50.dp)
-                            .weight(1f),
-                        fontSize = 20.sp,
-                        color = Color.Black
-                    )
-                }
 
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(4.dp)
-                ) {
-                    Text(
-                        text = "Fecha de pago",
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier
-                            .background(Color.LightGray)
-                            .padding(8.dp)
-                            .height(50.dp)
-                            .weight(1f),
-                        fontSize = 20.sp,
-                        color = Color.Black
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = format.format(startDate),
-                        modifier = Modifier
-                            .border(1.dp, Color.Black)
-                            .padding(8.dp)
-                            .height(50.dp)
-                            .weight(1f),
-                        fontSize = 20.sp,
-                        color = Color.Black
-                    )
-                }
+                InfoRow("Código de reserva", rentalID)
 
-                // Fecha de fin
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(4.dp)
-                ) {
-                    Text(
-                        text = "Tarjeta",
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier
-                            .background(Color.LightGray)
-                            .padding(8.dp)
-                            .height(50.dp)
-                            .weight(1f),
-                        fontSize = 20.sp,
-                        color = Color.Black
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = card?.cardNumber.toString(),
-                        modifier = Modifier
-                            .border(1.dp, Color.Black)
-                            .padding(8.dp)
-                            .weight(1f)
-                            .height(50.dp),
-                        fontSize = 20.sp,
-                        color = Color.Black
-                    )
-                }
+                InfoRow("Fecha de pago", format.format(startDate))
 
-// Ubicación
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(4.dp)
-                ) {
-                    Text(
-                        text = "ID pago",
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier
-                            .background(Color.LightGray)
-                            .padding(8.dp)
-                            .height(50.dp)
-                            .weight(1f),
-                        fontSize = 20.sp,
-                        color = Color.Black
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Log.d("Payment", "PaymentID: $paymentID")
-                    Text(
-                        text = paymentID,
-                        modifier = Modifier
-                            .border(1.dp, Color.Black)
-                            .padding(8.dp)
-                            .weight(1f)
-                            .height(50.dp),
-                        fontSize = 20.sp,
-                        color = Color.Black
-                    )
-                }
+                InfoRow("Tarjeta", card?.cardNumber ?: "No disponible")
 
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(4.dp)
-                        .heightIn(min = 50.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = "Precio total",
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier
-                            .background(Color.LightGray)
-                            .padding(8.dp)
-                            .height(50.dp)
-                            .weight(1f),
-                        fontSize = 20.sp,
-                        color = Color.Black
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "${payment?.amount.toString()} €",
-                        modifier = Modifier
-                            .border(1.dp, Color.Black)
-                            .padding(8.dp)
-                            .weight(1f)
-                            .height(50.dp),
-                        fontSize = 20.sp,
-                        color = Color.Black
-                    )
-                }
+                InfoRow("ID pago", paymentID)
 
+                InfoRow("Precio total", "${payment?.amount.toString()} €")
 
             }
         }
@@ -329,8 +184,6 @@ fun StatusPayScreen(
 
 }
 
-//@Preview(showBackground = true)
-//@Composable
-//fun StatusPayScreenPreview() {
-//    StatusPayScreen(cardID = "1", paymentID = "1")
-//}
+
+
+

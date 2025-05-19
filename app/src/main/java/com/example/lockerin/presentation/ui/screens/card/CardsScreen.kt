@@ -37,11 +37,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.White
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -51,16 +49,12 @@ import com.example.lockerin.R
 import com.example.lockerin.domain.model.Tarjeta
 import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.components.DrawerMenu
-import com.example.lockerin.presentation.ui.components.decrypt
-import com.example.lockerin.presentation.ui.components.generateAesKey
-import com.example.lockerin.presentation.ui.screens.user.ConfirmDeleteAccountDialog
 import com.example.lockerin.presentation.ui.theme.BeigeClaro
 import com.example.lockerin.presentation.ui.theme.Primary
 import com.example.lockerin.presentation.viewmodel.payment.CardsViewModel
 import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
 import org.koin.androidx.compose.koinViewModel
-import javax.crypto.SecretKey
 
 @Composable
 fun CardsScreen(
@@ -68,7 +62,7 @@ fun CardsScreen(
     navController: NavHostController = rememberNavController(),
     userViewModel: UsersViewModel= koinViewModel(),
     cardsViewModel: CardsViewModel = koinViewModel(),
-    authViewModel: AuthViewModel=viewModel()
+    authViewModel: AuthViewModel=koinViewModel()
 ) {
     val userId = authViewModel.currentUserId
     val userState by userViewModel.user.collectAsState()
@@ -106,6 +100,7 @@ fun CardsScreen(
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -114,7 +109,7 @@ fun CardsScreen(
                         .padding(16.dp)
                         .clickable {
                             navController.navigate(Screen.AddCard.createRoute(userID))
-                        },
+                        }
                 ) {
                     Text(
                         text = "Añadir una tarjeta nueva",
@@ -126,10 +121,7 @@ fun CardsScreen(
                     Icon(
                         imageVector = Icons.Default.AddCard,
                         contentDescription = "AddCard",
-                        tint = Color.Black,
-                        modifier = Modifier.clickable {
-                            navController.navigate(Screen.AddCard.createRoute(userID))
-                        }
+                        tint = Color.Black
                     )
                 }
             }
@@ -156,7 +148,7 @@ fun CardsCard(
 
     Card(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxWidth()
             .padding(8.dp)
             .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp))
         .clickable { isSelected = !isSelected },

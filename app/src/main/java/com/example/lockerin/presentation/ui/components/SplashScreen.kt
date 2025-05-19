@@ -16,6 +16,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.lockerin.R
 import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.theme.BeigeClaro
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
 
 @Composable
@@ -37,16 +38,20 @@ fun SplashScreen(
     }
     LaunchedEffect(Unit) {
         delay(1000)
-        navController.navigate(Screen.Login.route){
-            popUpTo(Screen.Splash.route) {
-                inclusive = true
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser != null) {
+            navController.navigate(Screen.Home.route) {
+                popUpTo(Screen.Splash.route) {
+                    inclusive = true
+                }
+            }
+        } else {
+            navController.navigate(Screen.Login.route) {
+                popUpTo(Screen.Splash.route) {
+                    inclusive = true
+                }
             }
         }
     }
 }
 
-@Preview
-@Composable
-fun SplashScreenPreview() {
-    SplashScreen(navController = rememberNavController())
-}

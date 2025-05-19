@@ -21,8 +21,8 @@ sealed class Screen(val route: String) {
         fun createRoute(userID: String,cardId: String, paymentID: String,rentalID: String): String =
             "lockers/statuaPay/$userID/$cardId/$paymentID/$rentalID"
     }
-    object Acount : Screen("lockers/acount/{userID}"){
-        fun createRoute(userID: String): String="lockers/acount/$userID"
+    object Account : Screen("lockers/account/{userID}"){
+        fun createRoute(userID: String): String="lockers/account/$userID"
     }
     object Information: Screen("lockers/information/{userID}"){
         fun createRoute(userID: String): String="lockers/information/$userID"
@@ -37,7 +37,6 @@ sealed class Screen(val route: String) {
         fun createRoute(userID: String): String="lockers/reservedLockers/$userID"
     }
     object EmailResetPass: Screen("emailResetPass")
-    object ResetPass: Screen("resetPass")
     object ListLockers: Screen("lockers/listLockers/{userID}"){
         fun createRoute(userID: String): String="lockers/listLockers/$userID"
     }

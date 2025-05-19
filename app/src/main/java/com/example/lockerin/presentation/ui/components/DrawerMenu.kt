@@ -1,9 +1,7 @@
 package com.example.lockerin.presentation.ui.components
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,15 +35,13 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -68,15 +64,17 @@ fun DrawerMenu(
     textoBar: String,
     navController: NavHostController,
     content: @Composable (PaddingValues) -> Unit,
-    authViewModel: AuthViewModel=viewModel(),
-    fullUser:User?
+    authViewModel: AuthViewModel = viewModel(),
+    fullUser: User?
 ) {
+
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val drawerWidth = with(LocalConfiguration.current) {
         screenWidthDp.dp * 2f / 3f
     }
+
 
     ModalNavigationDrawer(
         modifier = Modifier.statusBarsPadding(),
@@ -98,7 +96,7 @@ fun DrawerMenu(
                         modifier = Modifier
                             .padding(bottom = 16.dp)
                             .clickable {
-                                navController.navigate(Screen.Acount.createRoute(userID = fullUser?.userID.toString()))
+                                navController.navigate(Screen.Account.createRoute(userID = fullUser?.userID.toString()))
                             }
                     ) {
                         val name = fullUser?.name.orEmpty()
@@ -135,19 +133,48 @@ fun DrawerMenu(
 
                     // Items del menú
                     DrawerItem(
-                        icon = { Icon(Icons.Default.Home, "Inicio", tint = Color.Black) },
+                        icon = {
+                            Icon(Icons.Default.Home, "Inicio"
+                            ,tint = Color.Black) },
                         text = "Inicio",
-                        onClick = { navController.navigate(Screen.Home.route) }
+                        onClick = {
+                            scope.launch {
+                                drawerState.close()
+                                navController.navigate(Screen.Home.route) {
+                                    launchSingleTop = true
+                                }
+                            }
+                        }
                     )
                     DrawerItem(
-                        icon = { Icon(Icons.Default.ViewCompactAlt, "Reservas", tint = Color.Black) },
+                        icon = {
+                            Icon(
+                                Icons.Default.ViewCompactAlt,
+                                "Reservas",
+                                tint = Color.Black
+                            )
+                        },
                         text = "Reservas",
-                        onClick = { navController.navigate(Screen.ResrvedLockers.createRoute(userID = fullUser?.userID.toString())) }
+                        onClick = {
+                            scope.launch {
+                                drawerState.close()
+                                navController.navigate(Screen.ResrvedLockers.createRoute(userID = fullUser?.userID.toString())) {
+                                    launchSingleTop = true
+                                }
+                            }
+                        }
                     )
                     DrawerItem(
                         icon = { Icon(Icons.Default.Person, "Cuenta", tint = Color.Black) },
                         text = "Cuenta",
-                        onClick = { navController.navigate(Screen.Acount.createRoute(userID = fullUser?.userID.toString())) }
+                        onClick = {
+                            scope.launch {
+                                drawerState.close()
+                                navController.navigate(Screen.Account.createRoute(userID = fullUser?.userID.toString())) {
+                                    launchSingleTop = true
+                                }
+                            }
+                        }
                     )
                     DrawerItem(
                         icon = {
@@ -158,14 +185,29 @@ fun DrawerMenu(
                             )
                         },
                         text = "Información",
-                        onClick = { navController.navigate(Screen.Information.route) }
+                        onClick = {
+                            scope.launch {
+                                drawerState.close()
+                                navController.navigate(Screen.Information.route) {
+                                    launchSingleTop = true
+                                }
+                            }
+                        }
                     )
-                    if (fullUser?.role == "administrator"){
+                    if (fullUser?.role == "administrator") {
                         DrawerItem(
                             icon = { Icon(Icons.Default.ShopTwo, "Lockers", tint = Color.Black) },
                             text = "Lockers",
-                            onClick = { navController.navigate(Screen.ListLockers.createRoute(
-                                fullUser.userID.toString())) }
+                            onClick = {
+                                scope.launch {
+                                    drawerState.close()
+                                    navController.navigate(
+                                        Screen.ListLockers.createRoute(fullUser.userID.toString())
+                                    ) {
+                                        launchSingleTop = true
+                                    }
+                                }
+                            }
                         )
 
                     }
@@ -186,9 +228,7 @@ fun DrawerMenu(
                                     drawerState.close()
                                     authViewModel.signOut()
                                     navController.navigate(Screen.Login.route) {
-                                        popUpTo(Screen.Login.route) {
-                                            inclusive = true
-                                        }
+                                        popUpTo(0)
                                     }
                                 }
                             }
@@ -215,12 +255,13 @@ fun DrawerMenu(
     ) {
         Scaffold(
             modifier = Modifier
-            .statusBarsPadding()
-            .fillMaxSize(),
+                .statusBarsPadding()
+                .fillMaxSize(),
             topBar = {
-                Box(modifier = Modifier
-                    .fillMaxWidth()
-                    .background(BeigeClaro)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(BeigeClaro)
                 ) {
                     TopAppBar(
                         modifier = Modifier.align(Alignment.TopCenter),
@@ -229,7 +270,7 @@ fun DrawerMenu(
                             titleContentColor = Color.Black,
                             navigationIconContentColor = Color.Black
                         ),
-                        title={
+                        title = {
                             Text(
                                 text = textoBar,
                                 fontSize = 30.sp,
@@ -241,12 +282,14 @@ fun DrawerMenu(
                         },
                         navigationIcon = {
                             IconButton(
-                                onClick = {  scope.launch { drawerState.open() } }
+                                onClick = { scope.launch { drawerState.open() } }
                             ) {
-                                Icon(imageVector = Icons.Default.Menu
-                                    ,contentDescription = "Menu"
-                                    ,tint = Color.Black,
-                                    modifier = Modifier.size(30.dp))
+                                Icon(
+                                    imageVector = Icons.Default.Menu,
+                                    contentDescription = "Menu",
+                                    tint = Color.Black,
+                                    modifier = Modifier.size(30.dp)
+                                )
                             }
 
                         },
@@ -291,6 +334,7 @@ fun DrawerItem(
         )
     }
 }
+
 fun randomColor(): Color {
     val colors = listOf(
         Color(0xFFE57373),

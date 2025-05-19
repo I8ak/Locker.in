@@ -44,10 +44,6 @@ class HistoricalRentalViewModel(
         _userId.value = userId
     }
 
-    fun addHistoricRental(historicRental: HistoricRental) {
-        viewModelScope.launch {
-            addHistoricRentalUseCase(historicRental)
-        }
-    }
+
 
 }

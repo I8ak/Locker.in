@@ -37,16 +37,8 @@ class CardsViewModel(
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    fun getCardByUserId(userId: String): Tarjeta? {
-        return cards.value.find { it.userId == userId }
-    }
     fun setUserId(userId: String) {
         _userId.value = userId
-    }
-
-
-    fun decrypt(cardNumber: String): String {
-        return "**** ${cardNumber.takeLast(4)}"
     }
 
     fun encrypt(cardNumber: String): String {
@@ -63,10 +55,6 @@ class CardsViewModel(
         }
     }
 
-    fun countCardsByUserId(userId: String): Int {
-        return cards.value.count { it.userId == userId }
-    }
-
     private val _selectedCard = MutableStateFlow<Tarjeta?>(null)
     val selectedCard: StateFlow<Tarjeta?> = _selectedCard.asStateFlow()
     fun getCardById(cardId: String) {
@@ -75,6 +63,5 @@ class CardsViewModel(
             _selectedCard.value = card
         }
     }
-
 
 }
