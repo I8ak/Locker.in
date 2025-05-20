@@ -276,7 +276,7 @@ fun AddCardScreen(
                                 userId = userID,
                                 cardName = nameCard,
                                 expDate = expirationDate,
-                                cvv = cvv.toInt(),
+                                cvv = cvv,
                                 typeCard = verificationCardType(numberCard),
                             )
                             cardsViewModel.addCard(

@@ -228,11 +228,12 @@ fun PaymentScreen(
                                     amount = totalPrice.toDouble(),
                                     status = true,
                                 )
-                                lockersViewModel.setStatus(lockerID,false)
-                                rentalViewModel.addRental(
-                                    rental
-                                )
-                                paymentViewModel.addPayment(payment)
+                                if (payment.status==true){
+                                    lockersViewModel.setStatus(lockerID,false)
+                                    rentalViewModel.addRental(rental)
+                                }
+                                    paymentViewModel.addPayment(payment)
+
                                 Log.d("Rental", "Alquiler agregado: $rental")
                                 Log.d("Payment", "Pago agregado: $payment")
                                 navController.navigate(

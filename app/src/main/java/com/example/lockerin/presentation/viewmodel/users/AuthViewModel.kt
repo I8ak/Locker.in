@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import com.google.firebase.auth.FirebaseAuth // Asegúrate de tener esta importación si usas getInstance()
 import com.google.firebase.auth.ktx.auth // Asegúrate de tener esta importación si usas Firebase.auth
 import com.google.firebase.FirebaseException // Importar FirebaseException para logging más detallado
+import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
@@ -134,7 +135,7 @@ class AuthViewModel : ViewModel(){
                     val errorMessage = when {
                         task.exception?.message?.contains("The supplied auth credential is incorrect", ignoreCase = true) == true ||
                                 task.exception?.message?.contains("INVALID_LOGIN_CREDENTIALS", ignoreCase = true) == true -> {
-                            "La cuentano no existe o la contraseña y email son incorrectos."
+                            "La cuenta no existe o la contraseña y/o el email son incorrectos."
                         }
 
                         task.exception?.message?.contains("network error", ignoreCase = true) == true ||
@@ -160,23 +161,36 @@ class AuthViewModel : ViewModel(){
     }
 
     fun updatePassword(
+        oldPassword: String,
         newPassword: String,
         onComplete: (Boolean, String?) -> Unit
-    ){
+    ) {
         val user = firebaseAuth.currentUser
-        if(user != null){
-            user.updatePassword(newPassword)
-                .addOnCompleteListener { task ->
-                    if(task.isSuccessful){
-                        onComplete(true, null)
-                    }else{
-                        onComplete(false, task.exception?.message)
+        val email = user?.email
+
+        if (user != null && email != null) {
+            val credential = EmailAuthProvider.getCredential(email, oldPassword)
+
+            user.reauthenticate(credential)
+                .addOnCompleteListener { authTask ->
+                    if (authTask.isSuccessful) {
+                        user.updatePassword(newPassword)
+                            .addOnCompleteListener { task ->
+                                if (task.isSuccessful) {
+                                    onComplete(true, null)
+                                } else {
+                                    onComplete(false, task.exception?.message)
+                                }
+                            }
+                    } else {
+                        onComplete(false, "Contraseña actual incorrecta")
                     }
                 }
-        }else{
+        } else {
             onComplete(false, "Usuario no autenticado")
         }
     }
+
 
     fun deleteUser(onComplete: (Boolean, String?) -> Unit){
         val user = firebaseAuth.currentUser

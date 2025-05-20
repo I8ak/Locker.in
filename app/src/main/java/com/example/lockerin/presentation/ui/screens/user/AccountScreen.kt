@@ -193,7 +193,7 @@ fun ChangePass(authViewModel: AuthViewModel) {
     var passwordVisible by remember { mutableStateOf(false) }
     var passwordsMatch by remember { mutableStateOf(true) }
     var showDialog by remember { mutableStateOf(false) }
-    var texto by remember { mutableStateOf("Contraseña cambiada") }
+    var texto by remember { mutableStateOf("") }
 
     val focusManager = LocalFocusManager.current
     val oldPassFocusRequester = remember { FocusRequester() }
@@ -382,25 +382,27 @@ fun ChangePass(authViewModel: AuthViewModel) {
             ) {
                 Button(
                     onClick = {
-                        showDialog = true
-                        if (newPassw.length < 6 && confirmPass.length < 6) {
-                            texto = "La contraseña nueva tiene menos de 6 dijitos"
+
+                        if (newPassw.length < 6 || confirmPass.length < 6) {
+                            texto = "La contraseña nueva tiene menos de 6 dígitos"
+                            showDialog = true
+                        } else if (oldPassword.isEmpty() || newPassw.isEmpty() || confirmPass.isEmpty()) {
+                            texto = "Los campos están vacíos"
+                            showDialog = true
+                        } else if (!passwordsMatch) {
+                            texto = "Las contraseñas no coinciden"
+                            showDialog = true
                         } else {
-                            if (oldPassword.isEmpty() && newPassw.isEmpty() && confirmPass.isEmpty()) {
-                                texto = "Los campos estan vacios"
-                            } else {
-                                if (passwordsMatch) {
-                                    authViewModel.updatePassword(newPassw) { success, errorMessage ->
-                                        if (success) {
-                                            texto = "Contraseña cambiada exitosamente."
-                                            oldPassword = ""
-                                            newPassw = ""
-                                            confirmPass = ""
-                                        }
-                                    }
+                            authViewModel.updatePassword(oldPassword, newPassw) { success, errorMessage ->
+                                texto = if (success) {
+                                    oldPassword = ""
+                                    newPassw = ""
+                                    confirmPass = ""
+                                    "Contraseña cambiada exitosamente."
                                 } else {
-                                    texto = "Las contraseñas no coinciden"
+                                    errorMessage ?: "Error al cambiar la contraseña"
                                 }
+                                showDialog = true
                             }
                         }
                     },

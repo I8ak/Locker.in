@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -19,6 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShopTwo
@@ -194,6 +196,18 @@ fun DrawerMenu(
                             }
                         }
                     )
+                    DrawerItem(
+                        icon = { Icon(Icons.Default.Map, "Mapa", tint = Color.Black) },
+                        text = "Mapa",
+                        onClick = {
+                            scope.launch {
+                                drawerState.close()
+                                navController.navigate(Screen.MapScreen.route) {
+                                    launchSingleTop = true
+                                }
+                            }
+                        }
+                    )
                     if (fullUser?.role == "administrator") {
                         DrawerItem(
                             icon = { Icon(Icons.Default.ShopTwo, "Lockers", tint = Color.Black) },
@@ -219,6 +233,7 @@ fun DrawerMenu(
                         .fillMaxWidth()
                         .background(BeigeClaro)
                         .padding(16.dp)
+                        .navigationBarsPadding()
                 ) {
                     Row(
                         modifier = Modifier

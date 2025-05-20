@@ -84,7 +84,8 @@ fun LoginScreen(
 
     Surface(
         modifier = Modifier
-            .fillMaxSize(), color = BeigeClaro
+            .fillMaxSize()
+            .statusBarsPadding(), color = BeigeClaro
     ) {
         var email by remember { mutableStateOf("") }
         Column(
@@ -109,7 +110,9 @@ fun LoginScreen(
                 )
             }
             Column(
-                modifier = Modifier.weight(1f).offset(y = (-90).dp),
+                modifier = Modifier
+                    .weight(1f)
+                    .offset(y = (-90).dp),
                 verticalArrangement = Arrangement.Center
             ) {
 
@@ -143,7 +146,7 @@ fun LoginScreen(
                             Color.Transparent,
                             RoundedCornerShape(12.dp)
                         )
-                    .focusRequester(emailFocusRequester),
+                        .focusRequester(emailFocusRequester),
                     keyboardOptions = KeyboardOptions.Default.copy(
                         imeAction = ImeAction.Next
                     ),
@@ -199,7 +202,7 @@ fun LoginScreen(
                             Color.Transparent,
                             RoundedCornerShape(12.dp)
                         )
-                    .focusRequester(passwordFocusRequester),
+                        .focusRequester(passwordFocusRequester),
                     keyboardOptions = KeyboardOptions.Default.copy(
                         imeAction = ImeAction.Done
                     ),

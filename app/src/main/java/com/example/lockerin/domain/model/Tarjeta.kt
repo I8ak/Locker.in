@@ -9,8 +9,8 @@ data class  Tarjeta(
     val userId: String="",
     val cardName: String="",
     val expDate: String="",
-    val cvv: Int=0,
+    val cvv: String="",
     val typeCard: String="",
 ) {
-    constructor() : this("","", "", "", "", 0, "")
+    constructor() : this("","", "", "", "", "", "")
 }

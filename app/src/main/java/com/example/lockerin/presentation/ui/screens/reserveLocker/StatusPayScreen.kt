@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.RemoveCircle
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -30,6 +31,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -78,13 +80,26 @@ fun StatusPayScreen(
     }
 
     var isLoading by remember { mutableStateOf(true) }
+    var secondsRemaining by remember { mutableIntStateOf(10) }
+
     Log.d("Payment", "ID: $cardID")
-    LaunchedEffect(cardID,paymentID) {
+    LaunchedEffect(cardID, paymentID) {
         cardsViewModel.getCardById(cardID)
         paymentViewModel.getPaymentByPaymentId(paymentID)
         delay(1000)
         isLoading = false
     }
+
+    LaunchedEffect(key1 = "countdown") {
+        while (secondsRemaining > 0) {
+            delay(1000)
+            secondsRemaining--
+        }
+        navController.navigate(Screen.Home.route) {
+            popUpTo(Screen.Home.route) { inclusive = true }
+        }
+    }
+
 
     val payment by paymentViewModel.selectedPayment.collectAsState()
 
@@ -92,7 +107,9 @@ fun StatusPayScreen(
     val card by cardsViewModel.selectedCard.collectAsState()
     val startDate = Date()
     val format = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-    Log.d("Payment", "ID: $paymentID")
+    var icono = Icons.Default.CheckCircle
+    var color = myGreenColor
+    var texto = "Pago realizado con éxito"
 
     BackHandler {
         navController.navigate(Screen.Home.route) {
@@ -149,18 +166,24 @@ fun StatusPayScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
+                if (payment?.status == false) {
+                    icono = Icons.Default.RemoveCircle
+                    color = Color.Red
+                    texto = "Pago rechazado"
+                }
                 Icon(
-                    imageVector = Icons.Default.CheckCircle,
-                    contentDescription = "Pago realizado con éxito",
+                    imageVector = icono,
+                    contentDescription = "Pago",
                     modifier = Modifier
                         .size(200.dp),
-                    tint = myGreenColor
+                    tint = color
                 )
 
                 Spacer(modifier = Modifier.size(32.dp))
 
+
                 Text(
-                    text = "Pago realizado con éxito",
+                    text = texto,
                     fontSize = 20.sp,
                     color = Color.Black,
                     fontWeight = FontWeight.Bold,
@@ -168,16 +191,26 @@ fun StatusPayScreen(
                 )
                 Spacer(modifier = Modifier.size(16.dp))
 
-                InfoRow("Código de reserva", rentalID)
+                Text(
+                    text = "Volviendo al inicio en $secondsRemaining segundos...",
+                    fontSize = 16.sp,
+                    color = Color.DarkGray,
+                    textAlign = TextAlign.Center
+                )
 
-                InfoRow("Fecha de pago", format.format(startDate))
+                Spacer(modifier = Modifier.size(16.dp))
 
-                InfoRow("Tarjeta", card?.cardNumber ?: "No disponible")
+                if (payment?.status == true) {
+                    InfoRow("Código de reserva", rentalID)
 
-                InfoRow("ID pago", paymentID)
+                    InfoRow("Fecha de pago", format.format(startDate))
 
-                InfoRow("Precio total", "${payment?.amount.toString()} €")
+                    InfoRow("Tarjeta", card?.cardNumber ?: "No disponible")
 
+                    InfoRow("ID pago", paymentID)
+
+                    InfoRow("Precio total", "${payment?.amount.toString()} €")
+                }
             }
         }
     }

@@ -1,5 +1,6 @@
 package com.example.lockerin.presentation.navigation
 
+import MapScreen
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
@@ -207,6 +208,9 @@ fun NavGraph(
             val userID = backStackEntry.arguments?.getString("userID")!!
             val lockerID = backStackEntry.arguments?.getString("lockerID")!!
             EditLockerScreen(userID,lockerID,navController )
+        }
+        composable(Screen.MapScreen.route) {
+            MapScreen(navController)
         }
     }
 }

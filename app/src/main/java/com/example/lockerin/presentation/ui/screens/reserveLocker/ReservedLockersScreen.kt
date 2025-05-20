@@ -18,6 +18,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -52,6 +54,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.graphics.Color.Companion.White
+import androidx.compose.ui.text.style.TextAlign
 import com.example.lockerin.domain.model.HistoricRental
 import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.components.DrawerMenu
@@ -267,18 +270,45 @@ fun CardReserved(
                         CountDown(rental?.endDate)
                         Spacer(modifier = Modifier.size(8.dp))
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.End
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxWidth()
                         ) {
                             Button(
                                 onClick = {
                                     rental?.let {
-                                        rentalViewModel.finalizeSpecificRental(it)
+                                        rentalViewModel.finalizeSpecificRental(it, false)
                                     }
                                 },
                                 colors = ButtonDefaults.buttonColors(containerColor = Primary),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(8.dp)
                             ) {
-                                Text(text = "Finalizar reserva", color = White)
+                                Text(
+                                    text = "Cancelar reserva",
+                                    color = White,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+
+                            Button(
+                                onClick = {
+                                    rental?.let {
+                                        rentalViewModel.finalizeSpecificRental(it, true)
+                                    }
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = Primary),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(8.dp)
+                            ) {
+                                Text(
+                                    text = "Finalizar reserva",
+                                    color = White,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    textAlign = TextAlign.Center
+                                )
                             }
 
                         }
@@ -383,7 +413,7 @@ fun CardHistoricRents(
                 colorStatus = Color.Green
 
             } else {
-                textStatus = "Pendiente"
+                textStatus = "Cancelado"
                 colorStatus = Color.Red
             }
             Row(

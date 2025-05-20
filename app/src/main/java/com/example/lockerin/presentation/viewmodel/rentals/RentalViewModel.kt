@@ -162,7 +162,7 @@ class RentalViewModel(
         }
     }
 
-    fun finalizeSpecificRental(rental: Rental) {
+    fun finalizeSpecificRental(rental: Rental,status: Boolean) {
         viewModelScope.launch {
             try {
                 val locker = lockerRepository.getLockerById(rental.lockerID)
@@ -184,7 +184,7 @@ class RentalViewModel(
                         cardNumber = card?.cardNumber.orEmpty(),
                         typeCard = card?.typeCard.orEmpty(),
                         amount = payment?.amount ?: 0.0,
-                        status = true,
+                        status = status,
                         startDate = rental.startDate,
                         endDate = rental.endDate,
                         createdAt = payment?.createdAt

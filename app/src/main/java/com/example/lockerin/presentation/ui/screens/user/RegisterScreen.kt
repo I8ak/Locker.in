@@ -106,7 +106,8 @@ fun RegisterScreen(
 
     Scaffold(
         modifier = Modifier
-            .fillMaxSize(),
+            .fillMaxSize()
+            .statusBarsPadding(),
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             Box(
