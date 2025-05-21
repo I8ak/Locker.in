@@ -12,8 +12,10 @@ import com.example.lockerin.domain.usecase.card.GetCardByIdUseCase
 import com.example.lockerin.domain.usecase.card.GetCardByUserIdUseCase
 import com.example.lockerin.domain.usecase.card.ListCardUseCase
 import com.example.lockerin.domain.usecase.historicRental.AddHistoricRentalUseCase
+import com.example.lockerin.domain.usecase.historicRental.EditHistoricRentalUseCase
 import com.example.lockerin.domain.usecase.historicRental.ListHistoricRentalUseCase
 import com.example.lockerin.domain.usecase.locker.AddLockerUseCase
+import com.example.lockerin.domain.usecase.locker.AddPuntuacionUseCase
 import com.example.lockerin.domain.usecase.locker.CountAvalibleLockerByCityUseCase
 import com.example.lockerin.domain.usecase.locker.DeleteLockerUseCase
 import com.example.lockerin.domain.usecase.locker.EditLockerUseCase
@@ -33,7 +35,7 @@ import com.example.lockerin.domain.usecase.user.GetUserUseCase
 import com.example.lockerin.presentation.viewmodel.lockers.LockersViewModel
 import com.example.lockerin.presentation.viewmodel.rentals.RentalViewModel
 import com.example.lockerin.presentation.viewmodel.payment.CardsViewModel
-import com.example.lockerin.presentation.viewmodel.payment.HistoricalRentalViewModel
+import com.example.lockerin.presentation.viewmodel.rentals.HistoricalRentalViewModel
 import com.example.lockerin.presentation.viewmodel.payment.PaymentViewModel
 import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
@@ -62,6 +64,7 @@ val appModule = module  {
     factory { GetLockerByIdUseCase(get()) }
     factory { EditLockerUseCase(get()) }
     factory { CountAvalibleLockerByCityUseCase(get()) }
+    factory { AddPuntuacionUseCase(get()) }
 
     //Cards
     factory { ListCardUseCase(get()) }
@@ -86,12 +89,13 @@ val appModule = module  {
     //HisoricalRentals
     factory { ListHistoricRentalUseCase(get()) }
     factory { AddHistoricRentalUseCase(get()) }
+    factory { EditHistoricRentalUseCase(get()) }
 
 
     //ViewModels
     viewModel { UsersViewModel(get(),get()) }
     viewModel { AuthViewModel() }
-    viewModel { LockersViewModel(get(),get(),get(),get(),get(),get()) }
+    viewModel { LockersViewModel(get(),get(),get(),get(),get(),get(),get()) }
     viewModel { CardsViewModel(get(),get(),get(),get(),get()) }
     viewModel { RentalViewModel(get(),get(),get(),get(),get(),get(),get(),get(),get(),get(),get()) }
     viewModel { PaymentViewModel(get(),get(),get()) }

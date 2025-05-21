@@ -6,6 +6,7 @@ import java.util.Date
 
 data class HistoricRental(
     @DocumentId val historicID: String = "",
+    val lockerId: String="",
     val userID: String = "",
     val location: String = "",
     val city: String = "",
@@ -17,6 +18,7 @@ data class HistoricRental(
     val status: Boolean= false,
     val startDate: Date? = null,
     val endDate: Date? = null,
-    val createdAt: Date? = null
+    val createdAt: Date? = null,
+    val calificado: Boolean=false
 )
 

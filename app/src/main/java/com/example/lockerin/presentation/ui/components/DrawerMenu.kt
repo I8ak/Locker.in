@@ -179,6 +179,18 @@ fun DrawerMenu(
                         }
                     )
                     DrawerItem(
+                        icon = { Icon(Icons.Default.Map, "Mapa", tint = Color.Black) },
+                        text = "Mapa",
+                        onClick = {
+                            scope.launch {
+                                drawerState.close()
+                                navController.navigate(Screen.MapScreen.route) {
+                                    launchSingleTop = true
+                                }
+                            }
+                        }
+                    )
+                    DrawerItem(
                         icon = {
                             Icon(
                                 painter = painterResource(id = R.drawable.informatioi),
@@ -196,18 +208,7 @@ fun DrawerMenu(
                             }
                         }
                     )
-                    DrawerItem(
-                        icon = { Icon(Icons.Default.Map, "Mapa", tint = Color.Black) },
-                        text = "Mapa",
-                        onClick = {
-                            scope.launch {
-                                drawerState.close()
-                                navController.navigate(Screen.MapScreen.route) {
-                                    launchSingleTop = true
-                                }
-                            }
-                        }
-                    )
+
                     if (fullUser?.role == "administrator") {
                         DrawerItem(
                             icon = { Icon(Icons.Default.ShopTwo, "Lockers", tint = Color.Black) },

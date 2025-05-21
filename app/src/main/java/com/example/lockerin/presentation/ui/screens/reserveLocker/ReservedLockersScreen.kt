@@ -18,8 +18,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -50,8 +48,10 @@ import com.example.lockerin.domain.model.Locker
 import com.example.lockerin.domain.model.Payment
 import com.example.lockerin.domain.model.Rental
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.text.style.TextAlign
@@ -64,7 +64,7 @@ import com.example.lockerin.presentation.ui.theme.Primary
 import com.example.lockerin.presentation.viewmodel.lockers.LockersViewModel
 import com.example.lockerin.presentation.viewmodel.rentals.RentalViewModel
 import com.example.lockerin.presentation.viewmodel.payment.CardsViewModel
-import com.example.lockerin.presentation.viewmodel.payment.HistoricalRentalViewModel
+import com.example.lockerin.presentation.viewmodel.rentals.HistoricalRentalViewModel
 import com.example.lockerin.presentation.viewmodel.payment.PaymentViewModel
 import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
 import kotlinx.coroutines.delay
@@ -73,6 +73,7 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Date
+import com.gowtham.ratingbar.RatingBar
 
 @SuppressLint("StateFlowValueCalledInComposition")
 @RequiresApi(Build.VERSION_CODES.O)
@@ -179,7 +180,9 @@ fun ReservedLockersScreen(
                             key(historicLazy.historicID) {
                                 Spacer(modifier = Modifier.size(8.dp))
                                 CardHistoricRents(
-                                    historicLazy
+                                    historicLazy,
+                                    lockersViewModel,
+                                    historicalRentalViewModel
                                 )
                             }
                         }
@@ -375,10 +378,12 @@ fun CountDown(endDate: Date?) {
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun CardHistoricRents(
-    historicRental: HistoricRental?
+    historicRental: HistoricRental?,
+    lockersViewModel: LockersViewModel,
+    historicalRentalViewModel: HistoricalRentalViewModel
 ) {
     var isSelected by remember { mutableStateOf(false) }
-
+    var showDialog by remember { mutableStateOf(false) }
 
     var textStatus: String
     var colorStatus: Color
@@ -466,6 +471,29 @@ fun CardHistoricRents(
                     text = "Número de tarjeta: ${historicRental?.cardNumber.toString()}",
                     color = Color.Black
                 )
+                if (historicRental?.calificado == false) {
+                    Button(
+                        onClick = { showDialog = true },
+                        colors = ButtonDefaults.buttonColors(containerColor = Primary),
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(8.dp)
+                    ) {
+                        Text("Valorar Locker", color = White)
+                    }
+
+                    RatingDialog(
+                        showDialog = showDialog,
+                        onDismiss = { showDialog = false },
+                        onSubmit = { puntuacion ->
+                            lockersViewModel.guardarPuntuacionEnFirestore(
+                                lockerId = historicRental.lockerId,
+                                nuevaPuntuacion = puntuacion
+                            )
+                            historicalRentalViewModel.setStatus(historicRental, true)
+                        }
+                    )
+                }
 
             }
         }
@@ -474,3 +502,62 @@ fun CardHistoricRents(
     }
 
 }
+
+@Composable
+fun RatingDialog(
+    showDialog: Boolean,
+    onDismiss: () -> Unit,
+    onSubmit: (Float) -> Unit
+) {
+    var rating by remember { mutableStateOf(0f) }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { onDismiss() },
+            containerColor = BeigeClaro,
+            title = {
+                Text(
+                    "¿Qué te pareció este locker?",
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp, start = 16.dp, end = 16.dp),
+                    color = Color.Black
+                )
+            },
+            text = {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    RatingBar(
+                        value = rating,
+                        onValueChange = { rating = it },
+                        onRatingChanged = { rating = it }
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onSubmit(rating)
+                        onDismiss()
+                    },
+                    modifier = Modifier
+                        .padding(end = 4.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                ) {
+                    Text("Enviar puntuación", color = White)
+                }
+            },
+            dismissButton = {
+                OutlinedButton(
+                    onClick = onDismiss,
+                    modifier = Modifier
+                        .padding(end = 4.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                ) {
+                    Text("Cancelar", color = White)
+                }
+            }
+        )
+    }
+}
+

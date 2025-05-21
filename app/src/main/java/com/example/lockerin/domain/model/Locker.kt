@@ -9,7 +9,9 @@ data class Locker (
     val status: Boolean = true,
     val size: String = "",
     val dimension: String = "",
-    val pricePerHour: Double = 0.0
+    val pricePerHour: Double = 0.0,
+    val puntuacion: Double = 0.0,
+    val numValoraciones: Int =0
 ){
 //    constructor() : this("", "","", true, "", 0.0)
 }

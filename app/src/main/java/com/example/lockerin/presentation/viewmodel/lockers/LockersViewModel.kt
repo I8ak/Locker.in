@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.lockerin.domain.model.Locker
 import com.example.lockerin.domain.usecase.locker.AddLockerUseCase
+import com.example.lockerin.domain.usecase.locker.AddPuntuacionUseCase
 import com.example.lockerin.domain.usecase.locker.CountAvalibleLockerByCityUseCase
 import com.example.lockerin.domain.usecase.locker.DeleteLockerUseCase
 import com.example.lockerin.domain.usecase.locker.EditLockerUseCase
@@ -22,7 +23,8 @@ class LockersViewModel(
     val deleteLockerUseCase: DeleteLockerUseCase,
     val getLockerByIdUseCase: GetLockerByIdUseCase,
     val editLockerUseCase: EditLockerUseCase,
-    val countAvalibleLockerByCityUseCase: CountAvalibleLockerByCityUseCase
+    val countAvalibleLockerByCityUseCase: CountAvalibleLockerByCityUseCase,
+    val addPuntuacionUseCase: AddPuntuacionUseCase
 ):ViewModel() {
     private val _lockers =listLockersUseCase()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -85,6 +87,12 @@ class LockersViewModel(
                 val updatedLocker = locker.copy(status = status)
                 editLockerUseCase(updatedLocker)
             }
+        }
+    }
+
+    fun guardarPuntuacionEnFirestore(lockerId: String, nuevaPuntuacion: Float){
+        viewModelScope.launch {
+            addPuntuacionUseCase(lockerId,nuevaPuntuacion)
         }
     }
 

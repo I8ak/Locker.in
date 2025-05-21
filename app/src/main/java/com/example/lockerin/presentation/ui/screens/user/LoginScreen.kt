@@ -1,5 +1,10 @@
 package com.example.lockerin.presentation.ui.screens.user
 
+import android.content.Intent
+import android.util.Log
+import androidx.activity.compose.ManagedActivityResultLauncher
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -9,6 +14,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -29,9 +35,10 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
@@ -47,6 +54,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.White
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 
@@ -57,17 +65,22 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.example.lockerin.R
 import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.theme.BeigeClaro
 import com.example.lockerin.presentation.ui.theme.Primary
 import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.firestore.firestore
 
 
 @Composable
@@ -88,6 +101,30 @@ fun LoginScreen(
             .statusBarsPadding(), color = BeigeClaro
     ) {
         var email by remember { mutableStateOf("") }
+        val context = LocalContext.current
+        val launcher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+            try {
+                val account = task.getResult(ApiException::class.java)
+                val idToken = account.idToken
+
+                if (idToken != null) {
+                    authViewModel.signInWithGoogle(idToken) { success, error ->
+                        if (success) {
+                            navController.navigate(Screen.Home.route)
+                        } else {
+                            Log.e("LoginScreen", error ?: "Error desconocido")
+                        }
+                    }
+                } else {
+                    Log.e("LoginScreen", "El ID Token es nulo")
+                }
+            } catch (e: ApiException) {
+                Log.e("LoginScreen", "Error al obtener cuenta de Google: ${e.statusCode}", e)
+            }
+        }
+
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -266,6 +303,10 @@ fun LoginScreen(
                         )
                     }
                 }
+                OrDivider()
+
+                GoogleSignInButton(launcher)
+
             }
             BottomAppBar(
                 modifier = Modifier.fillMaxWidth(),
@@ -330,3 +371,71 @@ fun UserConfirmationDialog(
     )
 }
 
+@Composable
+fun GoogleSignInButton(launcher: ManagedActivityResultLauncher<Intent, androidx.activity.result.ActivityResult>) {
+    val context = LocalContext.current
+
+    Button(
+        onClick = {
+            val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken("6498666863-43gut27a2d6v86vsgi6fu8vgc8abucge.apps.googleusercontent.com")
+                .requestEmail()
+                .build()
+
+            val googleSignInClient = GoogleSignIn.getClient(context, gso)
+            launcher.launch(googleSignInClient.signInIntent)
+
+            googleSignInClient.signOut().addOnCompleteListener {
+                val signInIntent = googleSignInClient.signInIntent
+                launcher.launch(signInIntent)
+            }
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+            .height(64.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = Primary),
+        shape = RoundedCornerShape(12.dp),
+        elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
+    ) {
+        Icon(
+            painter = painterResource(id = R.mipmap.ic_google_foreground),
+            contentDescription = "Google Icon",
+            tint = Color.Unspecified,
+            modifier = Modifier.size(28.dp)
+        )
+        Spacer(modifier = Modifier.padding(4.dp))
+        Text(
+            text = "Continuar con Google",
+            color = White,
+            fontSize = 18.sp
+        )
+    }
+}
+
+
+@Composable
+fun OrDivider(text: String = "o") {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 16.dp)
+    ) {
+        HorizontalDivider(
+            modifier = Modifier.weight(1f),
+            thickness = 1.dp,
+            color = Primary
+        )
+        Text(
+            text = "  $text  ",
+            style = MaterialTheme.typography.bodyMedium,
+            color = Primary
+        )
+        HorizontalDivider(
+            modifier = Modifier.weight(1f),
+            thickness = 1.dp,
+            color = Primary
+        )
+    }
+}

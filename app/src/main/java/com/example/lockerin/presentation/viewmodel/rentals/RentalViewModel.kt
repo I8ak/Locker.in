@@ -141,7 +141,8 @@ class RentalViewModel(
                                 status = true,
                                 startDate = rental.startDate,
                                 endDate = rental.endDate,
-                                createdAt = payment?.createdAt
+                                createdAt = payment?.createdAt,
+                                calificado = false
                             )
                         )
                         Log.d("FirestoreDebug", "Historic rental saved successfully.")
@@ -176,6 +177,7 @@ class RentalViewModel(
                 historicalRentalViewModel.save(
                     HistoricRental(
                         historicID = historicRentalID,
+                        lockerId = locker?.lockerID.toString(),
                         userID = rental.userID,
                         location = locker?.location.orEmpty(),
                         city = locker?.city.orEmpty(),

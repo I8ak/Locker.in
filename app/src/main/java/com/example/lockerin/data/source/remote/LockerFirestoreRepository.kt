@@ -66,4 +66,32 @@ class LockerFirestoreRepository(val firestore: FirebaseFirestore) {
         return snapshot.size() > 0
     }
 
+    fun guardarPuntuacionEnFirestore(lockerId: String, nuevaPuntuacion: Float) {
+        val firestore = FirebaseFirestore.getInstance()
+        val lockerRef = firestore.collection("lockers").document(lockerId)
+
+        firestore.runTransaction { transaction ->
+            val snapshot = transaction.get(lockerRef)
+
+            val puntuacionActual = snapshot.getDouble("puntuacion") ?: 0.0
+            val numeroActual = snapshot.getLong("numValoraciones") ?: 0
+
+            val totalPuntos = puntuacionActual * numeroActual
+            val nuevoTotal = totalPuntos + nuevaPuntuacion
+            val nuevoNumero = numeroActual + 1
+
+            val nuevaMedia = nuevoTotal / nuevoNumero
+
+            transaction.update(lockerRef, mapOf(
+                "puntuacion" to nuevaMedia,
+                "numValoraciones" to nuevoNumero
+            ))
+        }.addOnSuccessListener {
+            Log.d("Rating", "Puntuación guardada con éxito")
+        }.addOnFailureListener {
+            Log.e("Rating", "Error al guardar puntuación", it)
+        }
+    }
+
+
 }

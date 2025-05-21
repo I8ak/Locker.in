@@ -19,6 +19,7 @@ import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import com.google.firebase.auth.GoogleAuthProvider
 
 
 enum class AuthState{
@@ -152,6 +153,55 @@ class AuthViewModel : ViewModel(){
                 }
             }
     }
+
+    fun signInWithGoogle(idToken: String, onComplete: (Boolean, String?) -> Unit) {
+        val credential = GoogleAuthProvider.getCredential(idToken, null)
+
+        _authState.value = AuthState.LOADING
+
+        firebaseAuth.signInWithCredential(credential)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val user = firebaseAuth.currentUser
+                    if (user != null) {
+                        val userRef = firestore.collection("users").document(user.uid)
+
+                        userRef.get().addOnSuccessListener { document ->
+                            if (!document.exists()) {
+                                val newUser = User(
+                                    userID = user.uid,
+                                    name = user.displayName ?: "",
+                                    email = user.email ?: "",
+                                    role = "user"
+                                )
+                                userRef.set(newUser)
+                                    .addOnSuccessListener {
+                                        _authState.value = AuthState.LOGGED_IN
+                                        onComplete(true, null)
+                                    }
+                                    .addOnFailureListener { e ->
+                                        _authState.value = AuthState.LOGGED_OUT
+                                        onComplete(false, "Error al guardar usuario: ${e.message}")
+                                    }
+                            } else {
+                                _authState.value = AuthState.LOGGED_IN
+                                onComplete(true, null)
+                            }
+                        }.addOnFailureListener { e ->
+                            _authState.value = AuthState.LOGGED_OUT
+                            onComplete(false, "Error al verificar usuario: ${e.message}")
+                        }
+                    } else {
+                        _authState.value = AuthState.LOGGED_OUT
+                        onComplete(false, "No se pudo obtener el usuario de Firebase.")
+                    }
+                } else {
+                    _authState.value = AuthState.LOGGED_OUT
+                    onComplete(false, "Error de autenticación con Google: ${task.exception?.localizedMessage}")
+                }
+            }
+    }
+
 
     fun signOut(){
         viewModelScope.launch {

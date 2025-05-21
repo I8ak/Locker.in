@@ -51,4 +51,8 @@ class HistoricRentalFirestoreRepository(
             null
         }
     }
+
+    suspend fun editHistoricalRental(historicRental: HistoricRental){
+        historicRentalCollection.document(historicRental.historicID).set(historicRental).await()
+    }
 }

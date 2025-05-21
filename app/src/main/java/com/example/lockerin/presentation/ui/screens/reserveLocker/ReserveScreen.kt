@@ -485,6 +485,8 @@ fun LockersCard(userID: String,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
+                Text(text = "Puntiación: ${locker.puntuacion} / ${locker.numValoraciones} ", color = Color.Black)
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(text = "Dirección: ${locker.location}", color = Color.Black)
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(text = "Dimensiones: ${locker.dimension}", color = Color.Black)
