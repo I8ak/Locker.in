@@ -47,6 +47,9 @@ sealed class Screen(val route: String) {
         fun createRoute(userID: String, lockerID: String): String="lockers/editLocker/$userID/$lockerID"
     }
     object MapScreen: Screen("map")
+    object ChooseAvatar: Screen("lockers/chooseColor/{userID}"){
+        fun createRoute(userID: String): String="lockers/chooseColor/$userID"
+    }
 
 
 }

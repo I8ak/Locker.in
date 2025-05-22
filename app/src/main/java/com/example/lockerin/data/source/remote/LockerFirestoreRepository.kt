@@ -7,6 +7,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
+import java.math.RoundingMode
 import java.sql.Date
 
 class LockerFirestoreRepository(val firestore: FirebaseFirestore) {
@@ -82,8 +83,10 @@ class LockerFirestoreRepository(val firestore: FirebaseFirestore) {
 
             val nuevaMedia = nuevoTotal / nuevoNumero
 
+            val mediaToDouble = nuevaMedia.toBigDecimal().setScale(2, RoundingMode.HALF_UP).toDouble()
+
             transaction.update(lockerRef, mapOf(
-                "puntuacion" to nuevaMedia,
+                "puntuacion" to mediaToDouble,
                 "numValoraciones" to nuevoNumero
             ))
         }.addOnSuccessListener {

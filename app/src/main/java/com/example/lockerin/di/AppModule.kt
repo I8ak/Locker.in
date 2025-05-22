@@ -12,6 +12,7 @@ import com.example.lockerin.domain.usecase.card.GetCardByIdUseCase
 import com.example.lockerin.domain.usecase.card.GetCardByUserIdUseCase
 import com.example.lockerin.domain.usecase.card.ListCardUseCase
 import com.example.lockerin.domain.usecase.historicRental.AddHistoricRentalUseCase
+import com.example.lockerin.domain.usecase.historicRental.CountHistoricUseCase
 import com.example.lockerin.domain.usecase.historicRental.EditHistoricRentalUseCase
 import com.example.lockerin.domain.usecase.historicRental.ListHistoricRentalUseCase
 import com.example.lockerin.domain.usecase.locker.AddLockerUseCase
@@ -90,6 +91,7 @@ val appModule = module  {
     factory { ListHistoricRentalUseCase(get()) }
     factory { AddHistoricRentalUseCase(get()) }
     factory { EditHistoricRentalUseCase(get()) }
+    factory { CountHistoricUseCase(get()) }
 
 
     //ViewModels
@@ -99,7 +101,7 @@ val appModule = module  {
     viewModel { CardsViewModel(get(),get(),get(),get(),get()) }
     viewModel { RentalViewModel(get(),get(),get(),get(),get(),get(),get(),get(),get(),get(),get()) }
     viewModel { PaymentViewModel(get(),get(),get()) }
-    viewModel { HistoricalRentalViewModel(get(),get()) }
+    viewModel { HistoricalRentalViewModel(get(),get(),get()) }
     viewModel { AuthViewModel() }
 
 

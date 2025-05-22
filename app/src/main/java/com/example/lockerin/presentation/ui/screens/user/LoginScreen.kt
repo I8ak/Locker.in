@@ -425,17 +425,17 @@ fun OrDivider(text: String = "o") {
         HorizontalDivider(
             modifier = Modifier.weight(1f),
             thickness = 1.dp,
-            color = Primary
+            color = Color.Black
         )
         Text(
             text = "  $text  ",
             style = MaterialTheme.typography.bodyMedium,
-            color = Primary
+            color = Color.Black
         )
         HorizontalDivider(
             modifier = Modifier.weight(1f),
             thickness = 1.dp,
-            color = Primary
+            color = Color.Black
         )
     }
 }

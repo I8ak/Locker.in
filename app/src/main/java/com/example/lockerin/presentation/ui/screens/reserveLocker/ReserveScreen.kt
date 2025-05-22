@@ -62,6 +62,8 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.filled.CreditCard
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.ui.text.font.FontWeight
@@ -82,12 +84,12 @@ fun ReserveScreen(
     navController: NavHostController,
     city: String,
     lockersViewModel: LockersViewModel = koinViewModel(),
-    userViewModel: UsersViewModel= koinViewModel(),
-    authViewModel: AuthViewModel=koinViewModel()
+    userViewModel: UsersViewModel = koinViewModel(),
+    authViewModel: AuthViewModel = koinViewModel()
 ) {
     val userId = authViewModel.currentUserId
     val userState by userViewModel.user.collectAsState()
-    val user=userViewModel.getUserById(userId.toString())
+    val user = userViewModel.getUserById(userId.toString())
     val lockers = lockersViewModel.lockers.collectAsState()
     // Estados
     var startDate by remember { mutableStateOf<LocalDate?>(null) }
@@ -113,6 +115,7 @@ fun ReserveScreen(
             false
         }
     }
+
     var isLoading by remember { mutableStateOf(false) }
 
 
@@ -230,10 +233,10 @@ fun ReserveScreen(
                         modifier = Modifier.padding(top = 4.dp)
                     )
                 }
-                Log.i("Fecha","fecha incio $startDate")
-                Log.i("Fecha","hora incio $startTime")
-                Log.i("Fecha","fecha fin $endDate")
-                Log.i("Fecha","hora fin $endTime")
+                Log.i("Fecha", "fecha incio $startDate")
+                Log.i("Fecha", "hora incio $startTime")
+                Log.i("Fecha", "fecha fin $endDate")
+                Log.i("Fecha", "hora fin $endTime")
                 if (startDate != null && startTime != null && endDate != null && endTime != null &&
                     !dateStartError && !timeStartError && !dateError && !timeError
                 ) {
@@ -242,15 +245,18 @@ fun ReserveScreen(
 
                     // Convertir LocalDate a Date para usar en isLockerAvailable
                     val startDateTime = startDate!!.atTime(startTime!!)
-                    val startDateAsDate = Date.from(startDateTime.atZone(ZoneId.systemDefault()).toInstant())
+                    val startDateAsDate =
+                        Date.from(startDateTime.atZone(ZoneId.systemDefault()).toInstant())
                     val endDateTime = endDate!!.atTime(endTime!!)
-                    val endDateAsDate = Date.from(endDateTime.atZone(ZoneId.systemDefault()).toInstant())
+                    val endDateAsDate =
+                        Date.from(endDateTime.atZone(ZoneId.systemDefault()).toInstant())
 
                     val durationstartDateTime = startDate?.atTime(startTime ?: LocalTime.MIDNIGHT)
                     val durationendDateTime = endDate?.atTime(endTime ?: LocalTime.MIDNIGHT)
-                    val duration = calcultaionDuracion(durationstartDateTime!!, durationendDateTime!!)
+                    val duration =
+                        calcultaionDuracion(durationstartDateTime!!, durationendDateTime!!)
 
-                    Log.i("Duracion","duracion ${duration}")
+                    Log.i("Duracion", "duracion ${duration}")
                     if (isLoading) {
                         CircularProgressIndicator(
                             modifier = Modifier
@@ -264,7 +270,12 @@ fun ReserveScreen(
                                 .padding(paddingValues)
                                 .background(Color.Transparent)
                         ) {
-                            items(lockers.value.filter { it.city.equals(city, ignoreCase = true) }) { locker ->
+                            items(lockers.value.filter {
+                                it.city.equals(
+                                    city,
+                                    ignoreCase = true
+                                )
+                            }) { locker ->
                                 key(locker.lockerID) {
                                     LockersCard(
                                         userID = userID,
@@ -287,10 +298,11 @@ fun ReserveScreen(
         }
     )
 }
+
 @RequiresApi(Build.VERSION_CODES.O)
 fun calcultaionDuracion(startDate: LocalDateTime, endDate: LocalDateTime): Double {
     val duration = Duration.between(startDate, endDate)
-    return duration.toMinutes().toDouble()/60
+    return duration.toMinutes().toDouble() / 60
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -432,15 +444,17 @@ fun TimeSelector(
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun LockersCard(userID: String,
-                locker: Locker,
-                startDate: Date,
-                endDate: Date,
-                rentalViewModel: RentalViewModel,
-                navController: NavHostController,
-                duration: Double,
-                startDateString: String,
-                endDateString: String) {
+fun LockersCard(
+    userID: String,
+    locker: Locker,
+    startDate: Date,
+    endDate: Date,
+    rentalViewModel: RentalViewModel,
+    navController: NavHostController,
+    duration: Double,
+    startDateString: String,
+    endDateString: String
+) {
     val imagen = when (locker.size) {
         "Small" -> R.drawable.personal_bag
         "Medium" -> R.drawable.luggage
@@ -460,8 +474,16 @@ fun LockersCard(userID: String,
             .padding(8.dp)
             .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp))
             .clickable {
-                if (isAvailable) navController.navigate(Screen.Details.createRoute(userID,locker.lockerID,startDateString,endDateString,(duration*locker.pricePerHour).toString()))
-                       },
+                if (isAvailable) navController.navigate(
+                    Screen.Details.createRoute(
+                        userID,
+                        locker.lockerID,
+                        startDateString,
+                        endDateString,
+                        (duration * locker.pricePerHour).toString()
+                    )
+                )
+            },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color.Transparent
@@ -475,23 +497,42 @@ fun LockersCard(userID: String,
                     .size(64.dp)
                     .align(Alignment.CenterVertically)
             )
-            Column (Modifier.padding(8.dp).fillMaxHeight()) {
+            Column(Modifier
+                .padding(8.dp)
+                .fillMaxHeight()) {
 
-                Log.i("Fecha","isAvailable $isAvailable")
-                Text(
-                    text = if (isAvailable) "Disponible" else "No disponible",
-                    color = if (isAvailable) Color.Green else Color.Red,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(text = "Puntiación: ${locker.puntuacion} / ${locker.numValoraciones} ", color = Color.Black)
+                Log.i("Fecha", "isAvailable $isAvailable")
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                ) {
+                    Text(
+                        text = if (isAvailable) "Disponible" else "No disponible",
+                        color = if (isAvailable) Color.Green else Color.Red,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = "${locker.puntuacion}",
+                        color = Color.Black,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = "Star",
+                        tint = Primary,
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+
+                }
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(text = "Dirección: ${locker.location}", color = Color.Black)
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(text = "Dimensiones: ${locker.dimension}", color = Color.Black)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(text = "Precio por hora: ${locker.pricePerHour}", color = Color.Black)
+                Text(text = "Precio por hora: ${locker.pricePerHour} €", color = Color.Black)
             }
         }
     }

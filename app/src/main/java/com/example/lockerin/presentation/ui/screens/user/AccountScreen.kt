@@ -19,6 +19,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person4
 import androidx.compose.material.icons.filled.PersonRemove
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -175,6 +176,9 @@ fun AccountScreen(
                     DeleteAcount(authViewModel, navController, userViewModel, userId.toString())
                     Spacer(modifier = Modifier.padding(8.dp))
                     Cards(userID, navController)
+                    Spacer(modifier = Modifier.padding(8.dp))
+                    ChoseAvatar(userID, navController)
+
 
 
                 }
@@ -610,3 +614,34 @@ fun Cards(
 
 }
 
+@Composable
+fun ChoseAvatar(
+    userID: String,
+    navController: NavHostController
+){
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp))
+            .padding(16.dp)
+            .clickable {
+                navController.navigate(Screen.ChooseAvatar.createRoute(userID))
+            }
+
+    ) {
+        Text(
+            text = "Elegir avatar",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.Black,
+            modifier = Modifier.weight(1f)
+        )
+        Icon(
+            imageVector = Icons.Default.Person4,
+            contentDescription = "person",
+            tint = Color.Black
+        )
+    }
+
+}

@@ -10,6 +10,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -48,9 +49,13 @@ import com.example.lockerin.domain.model.Locker
 import com.example.lockerin.domain.model.Payment
 import com.example.lockerin.domain.model.Rental
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.graphics.Color.Companion.White
@@ -61,6 +66,7 @@ import com.example.lockerin.presentation.ui.components.DrawerMenu
 import com.example.lockerin.presentation.ui.components.LoadingScreen
 import com.example.lockerin.presentation.ui.theme.BeigeClaro
 import com.example.lockerin.presentation.ui.theme.Primary
+import com.example.lockerin.presentation.ui.theme.Secondary
 import com.example.lockerin.presentation.viewmodel.lockers.LockersViewModel
 import com.example.lockerin.presentation.viewmodel.rentals.RentalViewModel
 import com.example.lockerin.presentation.viewmodel.payment.CardsViewModel
@@ -74,6 +80,8 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Date
 import com.gowtham.ratingbar.RatingBar
+import com.gowtham.ratingbar.RatingBarConfig
+import java.nio.file.WatchEvent
 
 @SuppressLint("StateFlowValueCalledInComposition")
 @RequiresApi(Build.VERSION_CODES.O)
@@ -100,11 +108,14 @@ fun ReservedLockersScreen(
     val lockers by lockersViewModel.lockers.collectAsState()
     val payments by paymentViewModel.payments.collectAsState()
     val historicRentalState by historicalRentalViewModel.historicalRental.collectAsState()
+    val payed by historicalRentalViewModel.payedCount.collectAsState()
+    val canceled by historicalRentalViewModel.canceledCount.collectAsState()
 
     LaunchedEffect(userID) {
         rentalViewModel.setUserId(userID)
         paymentViewModel.setUserId(userID)
         historicalRentalViewModel.setUserId(userID)
+        historicalRentalViewModel.countHistoricRentals(userID)
     }
 
     var isLoading by remember { mutableStateOf(true) }
@@ -161,13 +172,21 @@ fun ReservedLockersScreen(
                     }
 
                     Spacer(modifier = Modifier.size(20.dp))
-                    Text(
-                        text = "Historial de reservas",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black,
-                        modifier = Modifier.padding(8.dp)
-                    )
+                    Row (
+                        modifier = Modifier.fillMaxWidth()
+                    ){
+                        Text(
+                            text = "Historial de reservas",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black,
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(8.dp)
+                        )
+                        IconDesplegable(historicRentalState.size,payed,canceled)
+                    }
+
 
                     LazyColumn(
                         modifier = Modifier
@@ -191,8 +210,6 @@ fun ReservedLockersScreen(
             }
         )
     }
-
-
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -204,8 +221,6 @@ fun CardReserved(
     cardsViewModel: CardsViewModel = koinViewModel(),
     rentalViewModel: RentalViewModel = koinViewModel(),
 ) {
-
-
     var isSelected by remember { mutableStateOf(false) }
     val imagen = when (locker?.size) {
         "Small" -> R.drawable.personal_bag
@@ -285,7 +300,7 @@ fun CardReserved(
                                 colors = ButtonDefaults.buttonColors(containerColor = Primary),
                                 modifier = Modifier
                                     .weight(1f)
-                                    .padding(8.dp)
+                                    .padding(end = 4.dp)
                             ) {
                                 Text(
                                     text = "Cancelar reserva",
@@ -304,7 +319,6 @@ fun CardReserved(
                                 colors = ButtonDefaults.buttonColors(containerColor = Primary),
                                 modifier = Modifier
                                     .weight(1f)
-                                    .padding(8.dp)
                             ) {
                                 Text(
                                     text = "Finalizar reserva",
@@ -313,11 +327,8 @@ fun CardReserved(
                                     textAlign = TextAlign.Center
                                 )
                             }
-
                         }
-
                     }
-
                 }
             }
         }
@@ -406,6 +417,7 @@ fun CardHistoricRents(
             containerColor = Color.Transparent
         )
     ) {
+        Log.e("HistoricRental", historicRental.toString())
 
         Column(
             modifier = Modifier
@@ -430,7 +442,7 @@ fun CardHistoricRents(
                 Text(text = textStatus, color = colorStatus, fontSize = 20.sp)
                 Icon(
                     imageVector = arrowIcon,
-                    contentDescription = "Ayuda",
+                    contentDescription = "flecha",
                     tint = Color.Black,
                     modifier = Modifier
                         .clickable {
@@ -471,17 +483,17 @@ fun CardHistoricRents(
                     text = "Número de tarjeta: ${historicRental?.cardNumber.toString()}",
                     color = Color.Black
                 )
-                if (historicRental?.calificado == false) {
+                if (historicRental?.calificado != true && historicRental?.status == true) {
+
                     Button(
                         onClick = { showDialog = true },
                         colors = ButtonDefaults.buttonColors(containerColor = Primary),
                         modifier = Modifier
-                            .weight(1f)
+                            .align(Alignment.End)
                             .padding(8.dp)
                     ) {
                         Text("Valorar Locker", color = White)
                     }
-
                     RatingDialog(
                         showDialog = showDialog,
                         onDismiss = { showDialog = false },
@@ -493,12 +505,10 @@ fun CardHistoricRents(
                             historicalRentalViewModel.setStatus(historicRental, true)
                         }
                     )
-                }
 
+                }
             }
         }
-
-
     }
 
 }
@@ -530,34 +540,76 @@ fun RatingDialog(
                     RatingBar(
                         value = rating,
                         onValueChange = { rating = it },
-                        onRatingChanged = { rating = it }
+                        onRatingChanged = { rating = it },
+                        config = RatingBarConfig()
+                            .activeColor(Primary)
+                            .inactiveColor(Secondary)
                     )
                 }
             },
             confirmButton = {
-                Button(
-                    onClick = {
-                        onSubmit(rating)
-                        onDismiss()
-                    },
-                    modifier = Modifier
-                        .padding(end = 4.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Enviar puntuación", color = White)
+                    Button(
+                        onClick = {
+                            onSubmit(rating)
+                            onDismiss()
+                        },
+                        modifier = Modifier
+                            .padding(end = 4.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                    ) {
+                        Text("Enviar puntuación", color = White)
+                    }
+                    Button(
+                        onClick = onDismiss,
+                        modifier = Modifier,
+                        colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                    ) {
+                        Text("Cancelar", color = White)
+                    }
                 }
-            },
-            dismissButton = {
-                OutlinedButton(
-                    onClick = onDismiss,
-                    modifier = Modifier
-                        .padding(end = 4.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Primary)
-                ) {
-                    Text("Cancelar", color = White)
-                }
+
             }
         )
     }
 }
 
+@Composable
+fun IconDesplegable(total: Int, payed: Int,canceled:Int) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box {
+        Icon(
+            imageVector = Icons.Default.MoreVert,
+            contentDescription = "Options",
+            modifier = Modifier.clickable {
+                expanded = true
+            }
+                .padding(8.dp)
+
+        )
+        DropdownMenu(
+            expanded=expanded,
+            onDismissRequest = {
+                expanded=false
+            },
+            modifier = Modifier
+                .background(BeigeClaro)
+                .padding(8.dp)
+        ) {
+            Column (
+                modifier = Modifier.fillMaxWidth()
+
+            ){
+                Text("Total = $total", color = Color.Black, fontWeight = FontWeight.Bold)
+                Text("Pagados = $payed",color = Color.Black, fontWeight = FontWeight.Bold)
+                Text("Cancelados = $canceled",color = Color.Black, fontWeight = FontWeight.Bold)
+
+            }
+
+        }
+    }
+}

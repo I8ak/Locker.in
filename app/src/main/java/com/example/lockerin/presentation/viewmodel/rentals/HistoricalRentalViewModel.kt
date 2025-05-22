@@ -4,9 +4,10 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.lockerin.domain.model.HistoricRental
-import com.example.lockerin.domain.usecase.historicRental.AddHistoricRentalUseCase
+import com.example.lockerin.domain.usecase.historicRental.CountHistoricUseCase
 import com.example.lockerin.domain.usecase.historicRental.EditHistoricRentalUseCase
 import com.example.lockerin.domain.usecase.historicRental.ListHistoricRentalUseCase
+import com.example.lockerin.domain.usecase.rental.CountRentalsByUserUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -20,7 +21,8 @@ import kotlinx.coroutines.launch
 
 class HistoricalRentalViewModel(
     val listHistoricRentalUseCase: ListHistoricRentalUseCase,
-    val editHistoricRentalUseCase: EditHistoricRentalUseCase
+    val editHistoricRentalUseCase: EditHistoricRentalUseCase,
+    val countHistoricUseCase: CountHistoricUseCase
 ) : ViewModel() {
     private val _userId = MutableStateFlow<String?>(null)
     val userId: StateFlow<String?> = _userId.asStateFlow()
@@ -40,9 +42,10 @@ class HistoricalRentalViewModel(
 
     fun setUserId(userId: String) {
         _userId.value = userId
+        countHistoricRentals(userId)
     }
 
-    fun setStatus(historicRental: HistoricRental, status: Boolean) {
+    fun setStatus(historicRental: HistoricRental?, status: Boolean) {
         viewModelScope.launch {
 
             if (historicRental != null) {
@@ -51,6 +54,20 @@ class HistoricalRentalViewModel(
             }
         }
     }
+
+    private val _payedCount = MutableStateFlow(0)
+    val payedCount: StateFlow<Int> = _payedCount
+
+    private val _canceledCount = MutableStateFlow(0)
+    val canceledCount: StateFlow<Int> = _canceledCount
+
+    fun countHistoricRentals(userId: String) {
+        viewModelScope.launch {
+            _payedCount.value = countHistoricUseCase(userId, status = true)
+            _canceledCount.value = countHistoricUseCase(userId, status = false)
+        }
+    }
+
 
 
 

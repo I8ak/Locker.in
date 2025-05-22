@@ -55,4 +55,14 @@ class HistoricRentalFirestoreRepository(
     suspend fun editHistoricalRental(historicRental: HistoricRental){
         historicRentalCollection.document(historicRental.historicID).set(historicRental).await()
     }
+
+    suspend fun countHistoricRentals(userId: String,status: Boolean):Int{
+        val snapshot=firestore.collection("historicRentals")
+            .whereEqualTo("userID", userId)
+            .whereEqualTo("status",status)
+            .get()
+            .await()
+
+        return snapshot.size()
+    }
 }
