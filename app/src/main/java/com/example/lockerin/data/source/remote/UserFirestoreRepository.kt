@@ -19,12 +19,25 @@ class UserFirestoreRepository(firestore: FirebaseFirestore) {
     }
 
 
-
     suspend fun deleteUser(userId: String) {
         try {
             userCollection.document(userId).delete().await()
         } catch (e: Exception) {
             Log.e("Delete", "Error deleting user document for UID $userId: ${e.message}", e)
+            throw e
+        }
+    }
+
+    suspend fun updateAvatar(userId: String, avatar: String, tipo: Int) {
+        try {
+            userCollection.document(userId).update(
+                mapOf(
+                    "avatar" to avatar,
+                    "tipo" to tipo
+                )
+            ).await()
+        } catch (e: Exception) {
+            Log.e("UpdateAvatar", "Error updating avatar for UID $userId: ${e.message}", e)
             throw e
         }
     }

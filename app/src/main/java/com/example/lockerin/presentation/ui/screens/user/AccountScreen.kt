@@ -50,13 +50,11 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.components.DrawerMenu
 import com.example.lockerin.presentation.ui.components.LoadingScreen
@@ -177,7 +175,7 @@ fun AccountScreen(
                     Spacer(modifier = Modifier.padding(8.dp))
                     Cards(userID, navController)
                     Spacer(modifier = Modifier.padding(8.dp))
-                    ChoseAvatar(userID, navController)
+                    AvatarChoose(userID, navController)
 
 
 
@@ -615,7 +613,7 @@ fun Cards(
 }
 
 @Composable
-fun ChoseAvatar(
+fun AvatarChoose(
     userID: String,
     navController: NavHostController
 ){

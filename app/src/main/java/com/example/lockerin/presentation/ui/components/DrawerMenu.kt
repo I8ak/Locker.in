@@ -1,8 +1,12 @@
 package com.example.lockerin.presentation.ui.components
 
 import android.annotation.SuppressLint
+import android.graphics.BitmapFactory
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -44,23 +48,31 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.lockerin.R
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
 import com.example.lockerin.domain.model.User
 import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.theme.BeigeClaro
 import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 import kotlinx.coroutines.launch
+import android.util.Base64
+
+import kotlin.io.encoding.ExperimentalEncodingApi
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalEncodingApi::class)
 @Composable
 fun DrawerMenu(
     textoBar: String,
@@ -101,24 +113,38 @@ fun DrawerMenu(
                                 navController.navigate(Screen.Account.createRoute(userID = fullUser?.userID.toString()))
                             }
                     ) {
+                        val tipo=fullUser?.tipo
                         val name = fullUser?.name.orEmpty()
-                        val initial = name.firstOrNull()?.uppercaseChar() ?: "?"
-                        val avatarColor = remember(fullUser?.userID) { randomColor() }
+                        if (tipo==0){
 
-                        Box(
-                            modifier = Modifier
-                                .size(60.dp)
-                                .clip(CircleShape)
-                                .background(avatarColor),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = initial.toString(),
-                                color = Color.White,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 24.sp,
-                                textAlign = TextAlign.Center
+                            val initial = name.firstOrNull()?.uppercaseChar() ?: "?"
+                            val colorInt=fullUser.avatar.toInt()
+                            val avatarColor = Color(colorInt)
+
+                            Box(
+                                modifier = Modifier
+                                    .size(60.dp)
+                                    .clip(CircleShape)
+                                    .background(avatarColor),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = initial.toString(),
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 24.sp,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }else if (tipo==1){
+                            val context = LocalContext.current
+                            val avatar = context.resources.getIdentifier(fullUser.avatar, "drawable", context.packageName)
+                            Image(
+                                painter = painterResource(id = avatar),
+                                contentDescription = "Avatar",
+                                modifier = Modifier.size(60.dp).clip(CircleShape)
                             )
+
                         }
 
                         Text(
@@ -351,14 +377,3 @@ fun DrawerItem(
     }
 }
 
-fun randomColor(): Color {
-    val colors = listOf(
-        Color(0xFFE57373),
-        Color(0xFF64B5F6),
-        Color(0xFF81C784),
-        Color(0xFF673AB7),
-        Color(0xFFBA68C8),
-        Color(0xFFFF8A65)
-    )
-    return colors.random()
-}

@@ -76,7 +76,9 @@ class AuthViewModel : ViewModel(){
                             userID = it.uid,
                             name = name,
                             email = email,
-                            role = role
+                            role = role,
+                            avatar = "-1739917",
+                            tipo = 0
                         )
                         firestore.collection("users").document(it.uid).set(newUser)
                             .addOnSuccessListener {

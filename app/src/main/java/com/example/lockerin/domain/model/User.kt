@@ -9,7 +9,9 @@ data class User(
     val name: String = "",
     val email: String = "",
     val role: String = "",
+    val avatar: String = "",
+    val tipo: Int = 0,
     @ServerTimestamp var createdAt: Date? = null
 ) {
-    constructor() : this("", "", "", "",null)
+    constructor() : this("", "", "", "","",0,null)
 }

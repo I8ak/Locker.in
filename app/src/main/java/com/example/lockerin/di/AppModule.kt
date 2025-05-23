@@ -32,6 +32,7 @@ import com.example.lockerin.domain.usecase.rental.GetRentalUseCase
 import com.example.lockerin.domain.usecase.rental.IsLockerAvailableUseCase
 import com.example.lockerin.domain.usecase.rental.ListRentalsByUserIdUseCase
 import com.example.lockerin.domain.usecase.user.DeleteUserUseCase
+import com.example.lockerin.domain.usecase.user.EditAvatarUseCase
 import com.example.lockerin.domain.usecase.user.GetUserUseCase
 import com.example.lockerin.presentation.viewmodel.lockers.LockersViewModel
 import com.example.lockerin.presentation.viewmodel.rentals.RentalViewModel
@@ -57,6 +58,8 @@ val appModule = module  {
     //Users
     factory { GetUserUseCase(get()) }
     factory { DeleteUserUseCase(get()) }
+    factory { EditAvatarUseCase(get()) }
+
 
     //Lockers
     factory { ListLockersUseCase(get()) }
@@ -95,7 +98,7 @@ val appModule = module  {
 
 
     //ViewModels
-    viewModel { UsersViewModel(get(),get()) }
+    viewModel { UsersViewModel(get(),get(),get()) }
     viewModel { AuthViewModel() }
     viewModel { LockersViewModel(get(),get(),get(),get(),get(),get(),get()) }
     viewModel { CardsViewModel(get(),get(),get(),get(),get()) }

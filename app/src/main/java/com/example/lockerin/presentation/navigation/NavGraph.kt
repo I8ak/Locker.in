@@ -10,7 +10,6 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.example.lockerin.presentation.navigation.Screen.ChooseAvatar
 import com.example.lockerin.presentation.ui.screens.card.AddCardScreen
 import com.example.lockerin.presentation.ui.screens.locker.AddLockerScreen
 import com.example.lockerin.presentation.ui.screens.card.CardsScreen
@@ -28,7 +27,6 @@ import com.example.lockerin.presentation.ui.screens.locker.EditLockerScreen
 import com.example.lockerin.presentation.ui.screens.reserveLocker.StatusPayScreen
 import com.example.lockerin.presentation.ui.screens.user.AccountScreen
 import com.example.lockerin.presentation.ui.screens.user.ChooseAvatarScreen
-import com.example.lockerin.presentation.ui.screens.user.ChoseAvatar
 import com.example.lockerin.presentation.ui.screens.user.ConfigurationScreen
 import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 
