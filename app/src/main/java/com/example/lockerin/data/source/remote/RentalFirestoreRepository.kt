@@ -117,5 +117,27 @@ class RentalFirestoreRepository(private val firestore: FirebaseFirestore) {
 
         return condition1 && condition2
     }
-    
+
+    suspend fun getRentalsByUserOnce(userId: String): List<Rental> {
+        val snapshot = rentalCollection.whereEqualTo("userID", userId).get().await()
+        return snapshot.documents.mapNotNull { doc ->
+            try {
+                doc.toObject(Rental::class.java)?.copy(rentalID = doc.id)
+            } catch (e: Exception) {
+                null
+            }
+        }
+    }
+
+    suspend fun deleteAllRentalsByUser(userId: String) {
+        val rentals = getRentalsByUserOnce(userId)
+        rentals.forEach { rental ->
+            deleteRental(rental.rentalID)
+        }
+    }
+
+
+
+
+
 }

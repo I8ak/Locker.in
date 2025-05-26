@@ -54,10 +54,6 @@ import java.util.Date
 import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.components.InfoRow
 import com.example.lockerin.presentation.ui.components.LoadingScreen
-import com.example.lockerin.presentation.ui.components.decrypt
-import com.example.lockerin.presentation.ui.components.generateAesKey
-import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
-import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
 import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
 import java.util.Locale
@@ -73,26 +69,30 @@ fun StatusPayScreen(
     cardsViewModel: CardsViewModel = koinViewModel(),
     navController: NavHostController = rememberNavController(),
 ) {
-
-
+    // Establece el ID de usuario en el CardsViewModel cuando la pantalla se lanza.
     LaunchedEffect(userID) {
         cardsViewModel.setUserId(userID)
     }
 
+    // Estados para controlar la carga y el temporizador.
     var isLoading by remember { mutableStateOf(true) }
     var secondsRemaining by remember { mutableIntStateOf(10) }
 
+    // Registra el ID de la tarjeta para depuración.
     Log.d("Payment", "ID: $cardID")
+
+    // Efecto para obtener los datos de la tarjeta y el pago, y simular la carga.
     LaunchedEffect(cardID, paymentID) {
         cardsViewModel.getCardById(cardID)
         paymentViewModel.getPaymentByPaymentId(paymentID)
-        delay(1000)
+        delay(1000) // Simula un tiempo de carga de 1 segundo.
         isLoading = false
     }
 
+    // Efecto para el temporizador de cuenta regresiva y navegación automática.
     LaunchedEffect(key1 = "countdown") {
         while (secondsRemaining > 0) {
-            delay(1000)
+            delay(1000) // Espera 1 segundo.
             secondsRemaining--
         }
         navController.navigate(Screen.Home.route) {
@@ -100,26 +100,35 @@ fun StatusPayScreen(
         }
     }
 
-
+    // Recopila el estado del pago y la tarjeta del ViewModel.
     val payment by paymentViewModel.selectedPayment.collectAsState()
-
-
     val card by cardsViewModel.selectedCard.collectAsState()
+
+    // Configuración inicial de la interfaz de usuario basada en el estado del pago.
     val startDate = Date()
     val format = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-    var icono = Icons.Default.CheckCircle
+    var icon = Icons.Default.CheckCircle
     var color = myGreenColor
-    var texto = "Pago realizado con éxito"
+    var textMessage = "Pago realizado con éxito"
 
+    // Maneja el botón de retroceso para navegar a la pantalla de inicio.
     BackHandler {
         navController.navigate(Screen.Home.route) {
             popUpTo(Screen.Home.route) { inclusive = true }
         }
     }
 
+    // Muestra la pantalla de carga si isLoading es verdadero.
     if (isLoading) {
         LoadingScreen(isLoading)
     } else {
+        // Ajusta el icono, color y mensaje si el pago fue rechazado.
+        if (payment?.status == false) {
+            icon = Icons.Default.RemoveCircle
+            color = Color.Red
+            textMessage = "Pago rechazado"
+        }
+
         Scaffold(
             topBar = {
                 TopAppBar(
@@ -144,12 +153,11 @@ fun StatusPayScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.ArrowBack,
-                                contentDescription = "Ir atras",
+                                contentDescription = "Ir atrás",
                                 tint = Color.Black,
                                 modifier = Modifier.size(30.dp)
                             )
                         }
-
                     },
                     actions = {
                         Spacer(modifier = Modifier.width(48.dp))
@@ -166,24 +174,19 @@ fun StatusPayScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                if (payment?.status == false) {
-                    icono = Icons.Default.RemoveCircle
-                    color = Color.Red
-                    texto = "Pago rechazado"
-                }
+                // Icono de estado de pago
                 Icon(
-                    imageVector = icono,
-                    contentDescription = "Pago",
-                    modifier = Modifier
-                        .size(200.dp),
+                    imageVector = icon,
+                    contentDescription = "Estado del pago",
+                    modifier = Modifier.size(200.dp),
                     tint = color
                 )
 
                 Spacer(modifier = Modifier.size(32.dp))
 
-
+                // Mensaje de estado de pago
                 Text(
-                    text = texto,
+                    text = textMessage,
                     fontSize = 20.sp,
                     color = Color.Black,
                     fontWeight = FontWeight.Bold,
@@ -191,6 +194,7 @@ fun StatusPayScreen(
                 )
                 Spacer(modifier = Modifier.size(16.dp))
 
+                // Mensaje de cuenta regresiva
                 Text(
                     text = "Volviendo al inicio en $secondsRemaining segundos...",
                     fontSize = 16.sp,
@@ -200,23 +204,15 @@ fun StatusPayScreen(
 
                 Spacer(modifier = Modifier.size(16.dp))
 
+                // Detalles del pago si fue exitoso
                 if (payment?.status == true) {
-                    InfoRow("Código de reserva", rentalID)
-
-                    InfoRow("Fecha de pago", format.format(startDate))
-
-                    InfoRow("Tarjeta", card?.cardNumber ?: "No disponible")
-
-                    InfoRow("ID pago", paymentID)
-
-                    InfoRow("Precio total", "${payment?.amount.toString()} €")
+                    InfoRow(label = "Código de reserva", value = rentalID)
+                    InfoRow(label = "Fecha de pago", value = format.format(startDate))
+                    InfoRow(label = "Tarjeta", value = card?.cardNumber ?: "No disponible")
+                    InfoRow(label = "ID pago", value = paymentID)
+                    InfoRow(label = "Precio total", value = "${payment?.amount.toString()} €")
                 }
             }
         }
     }
-
 }
-
-
-
-

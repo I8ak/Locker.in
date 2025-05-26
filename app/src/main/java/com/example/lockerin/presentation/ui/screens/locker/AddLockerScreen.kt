@@ -65,10 +65,13 @@ fun AddLockerScreen(
     lockerViewModel: LockersViewModel = koinViewModel(),
     authViewModel: AuthViewModel=koinViewModel()
 ) {
+    // ViewModel y estados de usuario
     userViewModel.getUserById(userID)
     val userId = authViewModel.currentUserId
     val userState by userViewModel.user.collectAsState()
-    val user=userViewModel.getUserById(userId.toString())
+    val user = userViewModel.getUserById(userId.toString())
+
+    // Estados para los campos del formulario
     var lockerID by remember { mutableStateOf("") }
     var address by remember { mutableStateOf("") }
     var city by remember { mutableStateOf("") }
@@ -79,20 +82,22 @@ fun AddLockerScreen(
     var longitude by remember { mutableStateOf(0.0) }
     var latitude by remember { mutableStateOf(0.0) }
 
+    // Estado y ámbito para Snackbar
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
+    // Manejo de foco para los campos de texto
     val focusManager = LocalFocusManager.current
-    val lockerIDFocusRequest= remember { FocusRequester() }
-    val addressFocusRequest= remember { FocusRequester() }
-    val cityFocusRequest= remember { FocusRequester() }
-    val statusFocusRequest= remember { FocusRequester() }
-    val sizeFocusRequest= remember { FocusRequester() }
-    val dimensionFocusRequest= remember { FocusRequester() }
-    val pricePerHourFocusRequest= remember { FocusRequester() }
-    val longitudeFocusRequest= remember { FocusRequester() }
-    val latitudeFocusRequest= remember { FocusRequester() }
+    val lockerIDFocusRequest = remember { FocusRequester() }
+    val addressFocusRequest = remember { FocusRequester() }
+    val cityFocusRequest = remember { FocusRequester() }
+    val sizeFocusRequest = remember { FocusRequester() }
+    val dimensionFocusRequest = remember { FocusRequester() }
+    val pricePerHourFocusRequest = remember { FocusRequester() }
+    val longitudeFocusRequest = remember { FocusRequester() }
+    val latitudeFocusRequest = remember { FocusRequester() }
 
+    // El contenido principal de la pantalla, envuelto en un DrawerMenu
     DrawerMenu(
         textoBar = "Añadir Locker",
         navController = navController,
@@ -102,7 +107,7 @@ fun AddLockerScreen(
             Scaffold(
                 modifier = Modifier
                     .statusBarsPadding()
-                .padding(paddingValues),
+                    .padding(paddingValues),
                 snackbarHost = { SnackbarHost(snackbarHostState) },
                 content = { innerPadding ->
                     Column(
@@ -112,6 +117,7 @@ fun AddLockerScreen(
                             .padding(innerPadding)
                             .padding(16.dp)
                     ) {
+                        // Campo de texto para Locker ID
                         OutlinedTextField(
                             value = lockerID,
                             onValueChange = { lockerID = it },
@@ -126,7 +132,8 @@ fun AddLockerScreen(
                                 .background(
                                     Color.Transparent,
                                     RoundedCornerShape(12.dp)
-                                ).focusRequester(lockerIDFocusRequest),
+                                )
+                                .focusRequester(lockerIDFocusRequest),
                             keyboardOptions = KeyboardOptions.Default.copy(
                                 imeAction = ImeAction.Next
                             ),
@@ -144,6 +151,8 @@ fun AddLockerScreen(
                             )
                         )
                         Spacer(modifier = Modifier.padding(5.dp))
+
+                        // Campo de texto para Dirección
                         OutlinedTextField(
                             value = address,
                             onValueChange = { address = it },
@@ -158,7 +167,8 @@ fun AddLockerScreen(
                                 .background(
                                     Color.Transparent,
                                     RoundedCornerShape(12.dp)
-                                ).focusRequester(addressFocusRequest),
+                                )
+                                .focusRequester(addressFocusRequest),
                             keyboardOptions = KeyboardOptions.Default.copy(
                                 imeAction = ImeAction.Next
                             ),
@@ -176,6 +186,8 @@ fun AddLockerScreen(
                             )
                         )
                         Spacer(modifier = Modifier.padding(5.dp))
+
+                        // Campo de texto para Latitud
                         OutlinedTextField(
                             value = latitude.toString(),
                             onValueChange = { latitude = it.toDouble() },
@@ -190,7 +202,8 @@ fun AddLockerScreen(
                                 .background(
                                     Color.Transparent,
                                     RoundedCornerShape(12.dp)
-                                ).focusRequester(latitudeFocusRequest),
+                                )
+                                .focusRequester(latitudeFocusRequest),
                             keyboardOptions = KeyboardOptions.Default.copy(
                                 imeAction = ImeAction.Next,
                                 keyboardType = KeyboardType.Number
@@ -209,6 +222,8 @@ fun AddLockerScreen(
                             )
                         )
                         Spacer(modifier = Modifier.padding(5.dp))
+
+                        // Campo de texto para Longitud
                         OutlinedTextField(
                             value = longitude.toString(),
                             onValueChange = { longitude = it.toDouble() },
@@ -223,7 +238,8 @@ fun AddLockerScreen(
                                 .background(
                                     Color.Transparent,
                                     RoundedCornerShape(12.dp)
-                                ).focusRequester(longitudeFocusRequest),
+                                )
+                                .focusRequester(longitudeFocusRequest),
                             keyboardOptions = KeyboardOptions.Default.copy(
                                 imeAction = ImeAction.Next,
                                 keyboardType = KeyboardType.Number
@@ -243,9 +259,17 @@ fun AddLockerScreen(
                         )
                         Spacer(modifier = Modifier.padding(5.dp))
 
-                        CityDropdown(selectedCity = city,cityFocusRequester = cityFocusRequest,nextFocusRequester = sizeFocusRequest, onCitySelected = { city = it })
+                        // Dropdown para la Ciudad
+                        CityDropdown(
+                            selectedCity = city,
+                            cityFocusRequester = cityFocusRequest,
+                            nextFocusRequester = sizeFocusRequest,
+                            onCitySelected = { city = it }
+                        )
 
                         Spacer(modifier = Modifier.padding(5.dp))
+
+                        // Campo de texto para el Tamaño
                         OutlinedTextField(
                             value = size,
                             onValueChange = { size = it },
@@ -260,7 +284,8 @@ fun AddLockerScreen(
                                 .background(
                                     Color.Transparent,
                                     RoundedCornerShape(12.dp)
-                                ).focusRequester(sizeFocusRequest),
+                                )
+                                .focusRequester(sizeFocusRequest),
                             keyboardOptions = KeyboardOptions.Default.copy(
                                 imeAction = ImeAction.Next
                             ),
@@ -278,6 +303,8 @@ fun AddLockerScreen(
                             )
                         )
                         Spacer(modifier = Modifier.padding(5.dp))
+
+                        // Campo de texto para las Dimensiones
                         OutlinedTextField(
                             value = dimension,
                             onValueChange = { dimension = it },
@@ -292,7 +319,8 @@ fun AddLockerScreen(
                                 .background(
                                     Color.Transparent,
                                     RoundedCornerShape(12.dp)
-                                ).focusRequester(dimensionFocusRequest),
+                                )
+                                .focusRequester(dimensionFocusRequest),
                             keyboardOptions = KeyboardOptions.Default.copy(
                                 imeAction = ImeAction.Next
                             ),
@@ -310,6 +338,8 @@ fun AddLockerScreen(
                             )
                         )
                         Spacer(modifier = Modifier.padding(5.dp))
+
+                        // Campo de texto para el Precio por hora
                         OutlinedTextField(
                             value = pricePerHour.toString(),
                             onValueChange = { pricePerHour = it.toDouble() },
@@ -324,7 +354,8 @@ fun AddLockerScreen(
                                 .background(
                                     Color.Transparent,
                                     RoundedCornerShape(12.dp)
-                                ).focusRequester(pricePerHourFocusRequest),
+                                )
+                                .focusRequester(pricePerHourFocusRequest),
                             keyboardOptions = KeyboardOptions.Default.copy(
                                 imeAction = ImeAction.Next,
                                 keyboardType = KeyboardType.Number
@@ -343,27 +374,27 @@ fun AddLockerScreen(
                             )
                         )
                         Spacer(modifier = Modifier.padding(5.dp))
+
+                        // Botón para Añadir Locker
                         Button(
                             onClick = {
                                 val newLocker = Locker(
-                                    lockerID.capitalize(),
-                                    address.capitalize(),
-                                    city.capitalize(),
-                                    status,
-                                    size.capitalize(),
-                                    dimension,
-                                    pricePerHour,
-                                    latitude,
-                                    longitude,
+                                    lockerID = lockerID.capitalize(),
+                                    location = address.capitalize(),
+                                    city = city.capitalize(),
+                                    status = status,
+                                    size = size.capitalize(),
+                                    dimension = dimension,
+                                    pricePerHour = pricePerHour,
+                                    latitude = latitude,
+                                    longitude = longitude,
                                 )
                                 lockerViewModel.addLocker(newLocker) {
                                     coroutineScope.launch {
                                         snackbarHostState.showSnackbar("El ID del locker ya existe.")
                                     }
                                 }
-
                                 navController.navigate(Screen.ListLockers.createRoute(userID))
-
                             },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = Primary,
@@ -385,5 +416,3 @@ fun AddLockerScreen(
         },
     )
 }
-
-

@@ -32,7 +32,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -44,7 +43,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -64,17 +62,14 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
-import com.example.lockerin.presentation.ui.theme.Primary
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.theme.BeigeClaro
-import com.example.lockerin.presentation.viewmodel.users.AuthState
+import com.example.lockerin.presentation.ui.theme.Primary
 import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 import kotlinx.coroutines.launch
 
@@ -84,9 +79,9 @@ fun RegisterScreen(
     navController: NavHostController,
     authViewModel: AuthViewModel = viewModel(),
 ) {
+    // Variables de estado
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
-
     var user by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -94,16 +89,17 @@ fun RegisterScreen(
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPassword by remember { mutableStateOf(false) }
     var confirmFieldFocused by remember { mutableStateOf(false) }
-    var lengthPass by remember { mutableStateOf(false) }
+    var lengthPass by remember { mutableStateOf(false) } // Esta variable parece no usarse en el código actual para la validación de longitud.
+    var isChecked by remember { mutableStateOf(false) } // Estado para el Checkbox
 
+    // Gestión del foco
     val focusManager = LocalFocusManager.current
     val userFocusRequester = remember { FocusRequester() }
     val emailFocusRequester = remember { FocusRequester() }
     val passwordFocusRequester = remember { FocusRequester() }
     val confirmPasswordFocusRequester = remember { FocusRequester() }
 
-
-
+    // Diseño de la interfaz de usuario
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
@@ -128,7 +124,6 @@ fun RegisterScreen(
             }
         },
         content = { paddingValues ->
-
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -145,22 +140,17 @@ fun RegisterScreen(
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
                 )
-
                 Spacer(modifier = Modifier.padding(20.dp))
 
+                // Campo de entrada de usuario
                 OutlinedTextField(
                     value = user,
                     onValueChange = { user = it },
-                    label = {
-                        Text(
-                            text = "Usuario",
-                            color = Color.Black
-                        )
-                    },
+                    label = { Text(text = "Usuario", color = Color.Black) },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Person,
-                            contentDescription = "Person Icon",
+                            contentDescription = "Icono de Persona",
                             tint = Color.Black
                         )
                     },
@@ -175,9 +165,7 @@ fun RegisterScreen(
                         imeAction = ImeAction.Next
                     ),
                     keyboardActions = KeyboardActions(
-                        onNext = {
-                            emailFocusRequester.requestFocus()
-                        }
+                        onNext = { emailFocusRequester.requestFocus() }
                     ),
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -190,19 +178,15 @@ fun RegisterScreen(
                 )
                 Spacer(modifier = Modifier.padding(5.dp))
 
+                // Campo de entrada de email
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
-                    label = {
-                        Text(
-                            text = "Email",
-                            color = Color.Black
-                        )
-                    },
+                    label = { Text(text = "Email", color = Color.Black) },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Email,
-                            contentDescription = "Email Icon",
+                            contentDescription = "Icono de Email",
                             tint = Color.Black
                         )
                     },
@@ -217,9 +201,7 @@ fun RegisterScreen(
                         imeAction = ImeAction.Next
                     ),
                     keyboardActions = KeyboardActions(
-                        onNext = {
-                            passwordFocusRequester.requestFocus()
-                        }
+                        onNext = { passwordFocusRequester.requestFocus() }
                     ),
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -232,26 +214,20 @@ fun RegisterScreen(
                 )
                 Spacer(modifier = Modifier.padding(5.dp))
 
+                // Campo de entrada de contraseña
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
-                    label = {
-                        Text(
-                            text = "Contraseña",
-                            color = Color.Black
-                        )
-                    },
+                    label = { Text(text = "Contraseña", color = Color.Black) },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Lock,
-                            contentDescription = "Password Icon",
+                            contentDescription = "Icono de Contraseña",
                             tint = Color.Black
                         )
                     },
                     trailingIcon = {
-                        IconButton(
-                            onClick = { passwordVisible = !passwordVisible }
-                        ) {
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
                             Icon(
                                 imageVector = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                                 contentDescription = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña",
@@ -271,9 +247,7 @@ fun RegisterScreen(
                         imeAction = ImeAction.Next
                     ),
                     keyboardActions = KeyboardActions(
-                        onNext = {
-                            confirmPasswordFocusRequester.requestFocus()
-                        }
+                        onNext = { confirmPasswordFocusRequester.requestFocus() }
                     ),
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -286,26 +260,20 @@ fun RegisterScreen(
                 )
                 Spacer(modifier = Modifier.padding(5.dp))
 
+                // Campo de entrada de confirmar contraseña
                 OutlinedTextField(
                     value = passwordConfirm,
                     onValueChange = { passwordConfirm = it },
-                    label = {
-                        Text(
-                            text = "Confirmar contraseña",
-                            color = Color.Black
-                        )
-                    },
+                    label = { Text(text = "Confirmar contraseña", color = Color.Black) },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Lock,
-                            contentDescription = "Password Icon",
+                            contentDescription = "Icono de Contraseña",
                             tint = Color.Black
                         )
                     },
                     trailingIcon = {
-                        IconButton(
-                            onClick = { passwordVisible = !passwordVisible }
-                        ) {
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
                             Icon(
                                 imageVector = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                                 contentDescription = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña",
@@ -328,9 +296,7 @@ fun RegisterScreen(
                         imeAction = ImeAction.Done
                     ),
                     keyboardActions = KeyboardActions(
-                        onDone = {
-                            focusManager.clearFocus()
-                        }
+                        onDone = { focusManager.clearFocus() }
                     ),
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -342,6 +308,8 @@ fun RegisterScreen(
                     singleLine = true
                 )
                 Spacer(modifier = Modifier.padding(5.dp))
+
+                // Mensajes de error de validación
                 if (!confirmFieldFocused && !confirmPassword && passwordConfirm.isNotEmpty()) {
                     Text(
                         text = "Las contraseñas no coinciden",
@@ -352,9 +320,9 @@ fun RegisterScreen(
                         fontWeight = FontWeight.Bold
                     )
                 }
-                if (!confirmFieldFocused && !confirmPassword && password.length < 6 && passwordConfirm.length < 6) {
+                if (password.isNotEmpty() && password.length < 6 && confirmPassword && passwordConfirm.isNotEmpty()) { // Corregido el condicional
                     Text(
-                        text = "Las contraseñas tienen menos de 6 dígitos",
+                        text = "La contraseña debe tener al menos 6 dígitos",
                         color = Color.Red,
                         fontSize = 12.sp,
                         modifier = Modifier.fillMaxWidth(),
@@ -363,9 +331,8 @@ fun RegisterScreen(
                     )
                 }
                 Spacer(modifier = Modifier.padding(5.dp))
-                var isChecked by remember { mutableStateOf(false) }
 
-
+                // Checkbox y enlace a términos y condiciones
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
@@ -378,10 +345,8 @@ fun RegisterScreen(
                             checkedColor = Primary,
                             uncheckedColor = Color.Black
                         )
-
                     )
                     val context = LocalContext.current
-
                     Text(
                         text = "Acepto los términos y condiciones",
                         color = Color.Black,
@@ -400,12 +365,15 @@ fun RegisterScreen(
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
+
+                // Botón de Registrarse
                 val allFieldsValid = user.isNotEmpty() &&
                         email.isNotEmpty() &&
                         password.isNotEmpty() &&
                         passwordConfirm.isNotEmpty() &&
                         password == passwordConfirm &&
-                        isChecked
+                        password.length >= 6 && isChecked
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
@@ -443,8 +411,8 @@ fun RegisterScreen(
                                         if (password.isEmpty()) appendLine("• Contraseña requerida")
                                         if (passwordConfirm.isEmpty()) appendLine("• Confirmar contraseña")
                                         if (password != passwordConfirm) appendLine("• Las contraseñas no coinciden")
-                                        if (lengthPass) appendLine("• Las contraseñas tiene menos de 6 dígitos")
-                                        if (!isChecked) appendLine("• Debes aceptar los términos")
+                                        if (password.length < 6) appendLine("• La contraseña debe tener al menos 6 dígitos")
+                                        if (!isChecked) appendLine("• Debes aceptar los términos y condiciones")
                                     }
                                     snackbarHostState.showSnackbar(
                                         message = errorMessage.ifEmpty { "Complete todos los campos" },
@@ -453,7 +421,6 @@ fun RegisterScreen(
                                 }
                             }
                         },
-
                         colors = ButtonDefaults.buttonColors(
                             containerColor = if (allFieldsValid) Primary else Color.Gray,
                             disabledContentColor = Color.White.copy(alpha = 0.7f),
@@ -467,7 +434,6 @@ fun RegisterScreen(
                             contentDescription = "Registrarse",
                             tint = Color.White
                         )
-
                     }
                 }
             }
@@ -500,4 +466,3 @@ fun RegisterScreen(
         }
     )
 }
-

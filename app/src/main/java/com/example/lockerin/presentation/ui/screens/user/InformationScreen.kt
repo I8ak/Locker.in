@@ -31,34 +31,37 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.components.DrawerMenu
 import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
 import org.koin.androidx.compose.koinViewModel
-import kotlin.toString
 
 @Composable
 fun ConfigurationScreen(
     userId: String,
     navController: NavHostController,
-    userViewModel: UsersViewModel= koinViewModel(),
-    authViewModel: AuthViewModel=koinViewModel()
-){
+    userViewModel: UsersViewModel = koinViewModel(),
+    authViewModel: AuthViewModel = koinViewModel()
+) {
+    // Manejo del botón de retroceso para volver a la pantalla de inicio
     BackHandler {
         navController.navigate(Screen.Home.route) {
             popUpTo(Screen.Home.route) { inclusive = true }
         }
     }
-    val userId = authViewModel.currentUserId
+
+    // Obtención de datos del ViewModel
+    val currentUserId = authViewModel.currentUserId
     val userState by userViewModel.user.collectAsState()
-    val user=userViewModel.getUserById(userId.toString())
+    currentUserId?.let { userViewModel.getUserById(it) }
+
+    // Componente DrawerMenu para la navegación y el contenido de la pantalla
     DrawerMenu(
-      textoBar = "Información",
-        navController=navController,
-        authViewModel = viewModel(),
+        textoBar = "Información",
+        navController = navController,
+        authViewModel = authViewModel, // Se usa el authViewModel pasado como parámetro
         fullUser = userState,
         content = {
             Column(
@@ -77,13 +80,12 @@ fun ConfigurationScreen(
                 Spacer(modifier = Modifier.padding(8.dp))
                 ContactUs()
             }
-
         }
     )
 }
 
 @Composable
-fun PrivacitySecurity(){
+fun PrivacitySecurity() {
     var isSelected by remember { mutableStateOf(false) }
     Column(
         modifier = Modifier
@@ -135,7 +137,7 @@ fun PrivacitySecurity(){
 }
 
 @Composable
-fun Help(){
+fun Help() {
     var isSelected by remember { mutableStateOf(false) }
     Column(
         modifier = Modifier
@@ -184,7 +186,7 @@ fun Help(){
 }
 
 @Composable
-fun AboutUs(){
+fun AboutUs() {
     var isSelected by remember { mutableStateOf(false) }
     Column(
         modifier = Modifier
@@ -233,7 +235,7 @@ fun AboutUs(){
 }
 
 @Composable
-fun ContactUs(){
+fun ContactUs() {
     var isSelected by remember { mutableStateOf(false) }
     Column(
         modifier = Modifier
@@ -292,5 +294,3 @@ fun ContactUs(){
         }
     }
 }
-
-

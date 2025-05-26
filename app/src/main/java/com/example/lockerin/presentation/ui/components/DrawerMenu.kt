@@ -1,11 +1,9 @@
 package com.example.lockerin.presentation.ui.components
 
-import android.annotation.SuppressLint
-import android.graphics.BitmapFactory
+
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 
 import androidx.compose.foundation.layout.Box
@@ -42,8 +40,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -62,8 +58,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.lockerin.domain.model.User
 import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.theme.BeigeClaro
+import com.example.lockerin.presentation.viewmodel.lockers.LockersViewModel
 import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
 
 import kotlin.io.encoding.ExperimentalEncodingApi
 
@@ -74,19 +72,21 @@ fun DrawerMenu(
     navController: NavHostController,
     content: @Composable (PaddingValues) -> Unit,
     authViewModel: AuthViewModel = viewModel(),
+    lockersViewModel: LockersViewModel = koinViewModel(),
     fullUser: User?
 ) {
-
-
+    // Estado del drawer de navegación (abierto/cerrado)
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    // Ancho del drawer, calculado como 2/3 del ancho de la pantalla
     val drawerWidth = with(LocalConfiguration.current) {
         screenWidthDp.dp * 2f / 3f
     }
 
-
     ModalNavigationDrawer(
-        modifier = Modifier.statusBarsPadding().navigationBarsPadding(),
+        modifier = Modifier
+            .statusBarsPadding()
+            .navigationBarsPadding(),
         drawerState = drawerState,
         drawerContent = {
             Column(
@@ -108,12 +108,12 @@ fun DrawerMenu(
                                 navController.navigate(Screen.Account.createRoute(userID = fullUser?.userID.toString()))
                             }
                     ) {
-                        val tipo=fullUser?.tipo
+                        val tipo = fullUser?.tipo
                         val name = fullUser?.name.orEmpty()
-                        if (tipo==0){
 
-                            val initial = name.firstOrNull()?.uppercaseChar() ?: "?"
-                            val colorInt=fullUser.avatar.toInt()
+                        if (tipo == 0) {
+                            val initial = name.firstOrNull()?.uppercaseChar() ?: '?'
+                            val colorInt = fullUser?.avatar?.toInt() ?: 0
                             val avatarColor = Color(colorInt)
 
                             Box(
@@ -131,17 +131,19 @@ fun DrawerMenu(
                                     textAlign = TextAlign.Center
                                 )
                             }
-                        }else if (tipo==1){
+                        } else if (tipo == 1) {
                             val context = LocalContext.current
-                            val avatar = context.resources.getIdentifier(fullUser.avatar, "drawable", context.packageName)
+                            val avatarResId = context.resources.getIdentifier(fullUser.avatar, "drawable", context.packageName)
                             Image(
-                                painter = painterResource(id = avatar),
+                                painter = painterResource(id = avatarResId),
                                 contentDescription = "Avatar",
-                                modifier = Modifier.size(60.dp).clip(CircleShape)
+                                modifier = Modifier
+                                    .size(60.dp)
+                                    .clip(CircleShape)
                             )
-
                         }
 
+                        // Muestra el nombre del usuario
                         Text(
                             text = name.ifBlank { "Nombre de Usuario" },
                             modifier = Modifier
@@ -153,16 +155,13 @@ fun DrawerMenu(
                         )
                     }
 
-
-                    // Items del menú
+                    // Muestra el menú
                     DrawerItem(
-                        icon = {
-                            Icon(Icons.Default.Home, "Inicio"
-                            ,tint = Color.Black) },
+                        icon = { Icon(Icons.Default.Home, "Inicio", tint = Color.Black) },
                         text = "Inicio",
                         onClick = {
                             scope.launch {
-                                drawerState.close()
+                                drawerState.close() // Cierra el drawer
                                 navController.navigate(Screen.Home.route) {
                                     launchSingleTop = true
                                 }
@@ -170,13 +169,7 @@ fun DrawerMenu(
                         }
                     )
                     DrawerItem(
-                        icon = {
-                            Icon(
-                                Icons.Default.ViewCompactAlt,
-                                "Reservas",
-                                tint = Color.Black
-                            )
-                        },
+                        icon = { Icon(Icons.Default.ViewCompactAlt, "Reservas", tint = Color.Black) },
                         text = "Reservas",
                         onClick = {
                             scope.launch {
@@ -215,7 +208,7 @@ fun DrawerMenu(
                         icon = {
                             Icon(
                                 painter = painterResource(id = R.drawable.informatioi),
-                                contentDescription = "Informacion",
+                                contentDescription = "Información",
                                 tint = Color.Black
                             )
                         },
@@ -230,7 +223,10 @@ fun DrawerMenu(
                         }
                     )
 
+                    // Log para depuración del rol del usuario
                     Log.e("DrawerMenu", "Role: $fullUser")
+
+                    // Muestra el ítem "Lockers" solo si el usuario es administrador
                     if (fullUser?.role == "administrator") {
                         DrawerItem(
                             icon = { Icon(Icons.Default.ShopTwo, "Lockers", tint = Color.Black) },
@@ -246,11 +242,9 @@ fun DrawerMenu(
                                 }
                             }
                         )
-
                     }
                 }
 
-                // Barra inferior fija
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -264,7 +258,7 @@ fun DrawerMenu(
                             .clickable {
                                 scope.launch {
                                     drawerState.close()
-                                    authViewModel.signOut()
+                                    authViewModel.signOut(lockersViewModel)
                                     navController.navigate(Screen.Login.route) {
                                         popUpTo(0)
                                     }
@@ -287,7 +281,6 @@ fun DrawerMenu(
                     }
                 }
             }
-
         },
         scrimColor = Color.Black.copy(alpha = 0.5f)
     ) {
@@ -329,15 +322,14 @@ fun DrawerMenu(
                                     modifier = Modifier.size(30.dp)
                                 )
                             }
-
                         },
                         actions = {
                             Spacer(modifier = Modifier.width(48.dp))
                         }
                     )
                 }
-
-            }, containerColor = BeigeClaro
+            },
+            containerColor = BeigeClaro
         ) { innerPadding ->
             Box(
                 modifier = Modifier
@@ -349,6 +341,7 @@ fun DrawerMenu(
         }
     }
 }
+
 
 @Composable
 fun DrawerItem(
@@ -372,4 +365,3 @@ fun DrawerItem(
         )
     }
 }
-

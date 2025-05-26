@@ -1,6 +1,5 @@
 package com.example.lockerin.presentation.ui.screens.user
 
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -39,13 +38,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
-import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.theme.BeigeClaro
 import com.example.lockerin.presentation.ui.theme.Primary
 import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
@@ -56,6 +52,12 @@ fun EmailResetPassScreen(
     navController: NavHostController,
     authViewModel: AuthViewModel = viewModel()
 ) {
+    // Variables de estado
+    var showDialog by remember { mutableStateOf(false) }
+    var dialogMessage by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+
+    // Diseño de la interfaz de usuario
     Scaffold(
         topBar = {
             TopAppBar(
@@ -84,8 +86,7 @@ fun EmailResetPassScreen(
                             tint = Color.Black,
                             modifier = Modifier.size(30.dp)
                         )
-                    }//hola ishak
-
+                    }
                 },
                 actions = {
                     Spacer(modifier = Modifier.width(48.dp))
@@ -94,8 +95,6 @@ fun EmailResetPassScreen(
         },
         containerColor = BeigeClaro
     ) { padding ->
-        var showDialog by remember { mutableStateOf(false) }
-        var dialogMessage by remember { mutableStateOf("") }
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -105,16 +104,10 @@ fun EmailResetPassScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            var email by remember { mutableStateOf("") }
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
-                label = {
-                    Text(
-                        text = "Email",
-                        color = Color.Black
-                    )
-                },
+                label = { Text(text = "Email", color = Color.Black) },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Email,
@@ -135,20 +128,21 @@ fun EmailResetPassScreen(
             )
             Spacer(modifier = Modifier.padding(8.dp))
 
-
             Button(
                 onClick = {
                     if (email.isNotEmpty()) {
                         authViewModel.sendPasswordResetEmail(email) { isSuccess, errorMessage ->
-
                             if (isSuccess) {
                                 showDialog = true
                                 dialogMessage = "Enlace enviado, revisa tu correo"
                             } else {
                                 showDialog = true
-                                dialogMessage = "Error al enviar el enlace"
+                                dialogMessage = "Error al enviar el enlace: $errorMessage"
                             }
                         }
+                    } else {
+                        showDialog = true
+                        dialogMessage = "Por favor, introduce tu email para resetear la contraseña."
                     }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Primary),
@@ -158,19 +152,20 @@ fun EmailResetPassScreen(
                     color = White
                 )
                 Icon(
-                    imageVector = Icons.Default.ArrowForward, contentDescription = "Row Icon",
+                    imageVector = Icons.Default.ArrowForward,
+                    contentDescription = "Icono de flecha",
                     tint = White
                 )
             }
-
         }
+        // Diálogo para mostrar mensajes al usuario
         if (showDialog) {
             ConfirmationDialog(
-                onDismissRequest = { showDialog = false }, texto = dialogMessage
+                onDismissRequest = { showDialog = false },
+                texto = dialogMessage
             )
         }
     }
-
 }
 
 @Composable

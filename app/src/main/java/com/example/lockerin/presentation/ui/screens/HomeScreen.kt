@@ -18,11 +18,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -31,13 +29,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.example.lockerin.R
 import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.components.DrawerMenu
@@ -67,10 +63,13 @@ fun HomeScreen(
     lockersViewModel: LockersViewModel = koinViewModel(),
     rentalViewModel: RentalViewModel = koinViewModel(),
 ) {
+    // Variables de estado
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     var backPressedOnce by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(true) }
 
+    // Manejo del botón de retroceso
     BackHandler {
         if (backPressedOnce) {
             exitProcess(0)
@@ -86,6 +85,7 @@ fun HomeScreen(
         backPressedOnce = false
     }
 
+    // Obtención de datos del ViewModel
     val userId = authViewModel.currentUserId
     if (userId == null) {
         navController.navigate(Screen.Login.route)
@@ -93,24 +93,27 @@ fun HomeScreen(
     }
     val userState by userViewModel.user.collectAsState()
     val counts by lockersViewModel.availableCounts.collectAsState()
+
+    // Efectos lanzados al iniciar el Composable o cuando cambia el userId
     LaunchedEffect(userId) {
         lockersViewModel.countAvailableLockersByCity("Madrid")
         lockersViewModel.countAvailableLockersByCity("Barcelona")
         userId.let {
-            rentalViewModel.checkAndMoveExpiredRentals(it)
+            rentalViewModel.checkAndMoveExpiredRentals(userId.toString())
         }
         userViewModel.getUserById(userId.toString())
     }
-    var isLoading by remember { mutableStateOf(true) }
+
+    // Simulación de pantalla de carga
     LaunchedEffect(Unit) {
         delay(1000)
         isLoading = false
     }
 
-
     val cantidadMadrid = counts["Madrid"] ?: 0
     val cantidadBarcelona = counts["Barcelona"] ?: 0
 
+    // Renderizado condicional de la pantalla
     if (isLoading) {
         LoadingScreen(isLoading = isLoading)
     } else {
@@ -119,7 +122,7 @@ fun HomeScreen(
             navController = navController,
             authViewModel = authViewModel,
             fullUser = userState,
-            content = { padding->
+            content = { padding ->
                 Scaffold(
                     snackbarHost = { SnackbarHost(snackbarHostState) },
                     containerColor = BeigeClaro
@@ -138,7 +141,6 @@ fun HomeScreen(
                                 .padding(horizontal = 16.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-
                             CiudadCard(
                                 userId = userId.toString(),
                                 nombre = "Madrid",
@@ -146,9 +148,7 @@ fun HomeScreen(
                                 imagen = R.drawable.madrid,
                                 navController = navController
                             )
-
                             Spacer(modifier = Modifier.height(16.dp))
-
                             CiudadCard(
                                 userId = userId.toString(),
                                 nombre = "Barcelona",
@@ -163,7 +163,6 @@ fun HomeScreen(
             }
         )
     }
-
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -172,7 +171,6 @@ fun Reservas(
     userID: String,
     navController: NavController
 ) {
-
     val rentalViewModel: RentalViewModel = koinViewModel()
     val rentalCount by rentalViewModel.rentalCount.collectAsState()
 
@@ -196,9 +194,7 @@ fun Reservas(
             painter = painterResource(id = R.drawable.locker),
             contentDescription = "Icono de reservas",
         )
-
         Spacer(modifier = Modifier.width(16.dp))
-
         Column {
             Text(
                 text = "Reservas",
@@ -206,14 +202,11 @@ fun Reservas(
                 fontSize = 25.sp,
                 color = Color.Black
             )
-
             Text(
                 text = "$rentalCount ${if (rentalCount == 1) "Reserva disponible" else "Reservas disponibles"}",
                 modifier = Modifier.padding(top = 8.dp),
                 color = Color.Black
             )
-
-
         }
     }
 }
@@ -243,9 +236,7 @@ fun CiudadCard(
             contentDescription = "imagen $nombre",
             modifier = Modifier.size(64.dp)
         )
-
         Spacer(modifier = Modifier.width(16.dp))
-
         Column {
             Text(
                 text = nombre,
@@ -260,5 +251,3 @@ fun CiudadCard(
         }
     }
 }
-
-

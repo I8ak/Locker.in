@@ -60,6 +60,7 @@ import com.example.lockerin.presentation.ui.components.DrawerMenu
 import com.example.lockerin.presentation.ui.components.LoadingScreen
 import com.example.lockerin.presentation.ui.theme.BeigeClaro
 import com.example.lockerin.presentation.ui.theme.Primary
+import com.example.lockerin.presentation.viewmodel.lockers.LockersViewModel
 import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
 import kotlinx.coroutines.delay
@@ -70,14 +71,21 @@ fun AccountScreen(
     userID: String,
     navController: NavHostController,
     userViewModel: UsersViewModel = koinViewModel(),
-    authViewModel: AuthViewModel = viewModel()
+    authViewModel: AuthViewModel = viewModel(),
+    lockersViewModel: LockersViewModel = koinViewModel()
 ) {
+    // Obtiene el ID del usuario actual.
+    val userId = authViewModel.currentUserId
+
+    // Maneja el botón de retroceso para navegar a la pantalla de inicio.
     BackHandler {
         navController.navigate(Screen.Home.route) {
             popUpTo(Screen.Home.route) { inclusive = true }
         }
     }
-    if (userID == null) {
+
+    // Si el ID de usuario es nulo, redirige a la pantalla de inicio de sesión.
+    if (userId == null) {
         LaunchedEffect(Unit) {
             navController.navigate(Screen.Login.route) {
                 popUpTo(0)
@@ -85,22 +93,30 @@ fun AccountScreen(
         }
         return
     }
-    val userId = authViewModel.currentUserId
+
+    // Recopila el estado del usuario del ViewModel.
     val userState by userViewModel.user.collectAsState()
-    val user = userViewModel.getUserById(userID)
-    Log.d("usuario", userID)
+    // Obtiene los datos del usuario por su ID.
+    userViewModel.getUserById(userId.toString())
+    Log.d("usuario", userId.toString())
+
+    // Estado para controlar la pantalla de carga.
     var isLoading by remember { mutableStateOf(true) }
+
+    // Simula un retraso para la pantalla de carga.
     LaunchedEffect(Unit) {
         delay(1000)
         isLoading = false
     }
+
+    // Muestra la pantalla de carga o el contenido principal.
     if (isLoading) {
         LoadingScreen(isLoading = isLoading)
     } else {
         DrawerMenu(
             textoBar = "Cuenta",
             navController = navController,
-            authViewModel = viewModel(),
+            authViewModel = authViewModel,
             fullUser = userState,
             content = {
                 Column(
@@ -110,6 +126,7 @@ fun AccountScreen(
                         .padding(16.dp)
                 ) {
                     Spacer(modifier = Modifier.padding(8.dp))
+                    // Muestra el nombre de usuario
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -129,7 +146,7 @@ fun AccountScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = user?.name.toString(),
+                            text = userState?.name.toString(),
                             modifier = Modifier
                                 .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp))
                                 .padding(8.dp)
@@ -139,6 +156,7 @@ fun AccountScreen(
                             color = Color.Black
                         )
                     }
+                    // Muestra el email del usuario
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -158,7 +176,7 @@ fun AccountScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = user?.email.toString(),
+                            text = userState?.email.toString(),
                             modifier = Modifier
                                 .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp))
                                 .padding(8.dp)
@@ -171,19 +189,15 @@ fun AccountScreen(
                     Spacer(modifier = Modifier.padding(8.dp))
                     ChangePass(authViewModel)
                     Spacer(modifier = Modifier.padding(8.dp))
-                    DeleteAcount(authViewModel, navController, userViewModel, userId.toString())
+                    DeleteAcount(authViewModel, navController, userViewModel, lockersViewModel, userId.toString())
                     Spacer(modifier = Modifier.padding(8.dp))
-                    Cards(userID, navController)
+                    Cards(userId.toString(), navController)
                     Spacer(modifier = Modifier.padding(8.dp))
-                    AvatarChoose(userID, navController)
-
-
-
+                    AvatarChoose(userId.toString(), navController)
                 }
             }
         )
     }
-
 }
 
 @Composable
@@ -195,7 +209,7 @@ fun ChangePass(authViewModel: AuthViewModel) {
     var passwordVisible by remember { mutableStateOf(false) }
     var passwordsMatch by remember { mutableStateOf(true) }
     var showDialog by remember { mutableStateOf(false) }
-    var texto by remember { mutableStateOf("") }
+    var dialogText by remember { mutableStateOf("") }
 
     val focusManager = LocalFocusManager.current
     val oldPassFocusRequester = remember { FocusRequester() }
@@ -222,16 +236,10 @@ fun ChangePass(authViewModel: AuthViewModel) {
             color = Color.Black
         )
         if (isSelected) {
-
             OutlinedTextField(
                 value = oldPassword,
                 onValueChange = { oldPassword = it },
-                label = {
-                    Text(
-                        text = "Introduce la antigua contraseña",
-                        color = Color.Black
-                    )
-                },
+                label = { Text(text = "Introduce la antigua contraseña", color = Color.Black) },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Lock,
@@ -272,15 +280,11 @@ fun ChangePass(authViewModel: AuthViewModel) {
                 ),
                 singleLine = true
             )
+            Spacer(modifier = Modifier.height(8.dp))
             OutlinedTextField(
                 value = newPassw,
                 onValueChange = { newPassw = it },
-                label = {
-                    Text(
-                        text = "Introduce la nueva contraseña",
-                        color = Color.Black
-                    )
-                },
+                label = { Text(text = "Introduce la nueva contraseña", color = Color.Black) },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Lock,
@@ -321,16 +325,11 @@ fun ChangePass(authViewModel: AuthViewModel) {
                 ),
                 singleLine = true
             )
-
+            Spacer(modifier = Modifier.height(8.dp))
             OutlinedTextField(
                 value = confirmPass,
                 onValueChange = { confirmPass = it },
-                label = {
-                    Text(
-                        text = "Confirmar contraseña",
-                        color = Color.Black
-                    )
-                },
+                label = { Text(text = "Confirmar contraseña", color = Color.Black) },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Lock,
@@ -355,10 +354,10 @@ fun ChangePass(authViewModel: AuthViewModel) {
                     .background(Color.Transparent)
                     .focusRequester(confirmPasswordFocusRequester),
                 keyboardOptions = KeyboardOptions.Default.copy(
-                    imeAction = ImeAction.Next
+                    imeAction = ImeAction.Done
                 ),
                 keyboardActions = KeyboardActions(
-                    onNext = {
+                    onDone = {
                         focusManager.clearFocus()
                     }
                 ),
@@ -372,10 +371,14 @@ fun ChangePass(authViewModel: AuthViewModel) {
                 singleLine = true
             )
             Spacer(modifier = Modifier.padding(5.dp))
-            if (newPassw != confirmPass) {
-                passwordsMatch = false
-            } else {
-                passwordsMatch = true
+            passwordsMatch = newPassw == confirmPass
+            if (!passwordsMatch) {
+                Text(
+                    text = "Las contraseñas no coinciden",
+                    color = Color.Red,
+                    fontSize = 12.sp,
+                    modifier = Modifier.align(Alignment.End)
+                )
             }
             Spacer(modifier = Modifier.padding(5.dp))
             Row(
@@ -384,25 +387,25 @@ fun ChangePass(authViewModel: AuthViewModel) {
             ) {
                 Button(
                     onClick = {
-
-                        if (newPassw.length < 6 || confirmPass.length < 6) {
-                            texto = "La contraseña nueva tiene menos de 6 dígitos"
+                        if (oldPassword.isEmpty() || newPassw.isEmpty() || confirmPass.isEmpty()) {
+                            dialogText = "Todos los campos deben estar llenos."
                             showDialog = true
-                        } else if (oldPassword.isEmpty() || newPassw.isEmpty() || confirmPass.isEmpty()) {
-                            texto = "Los campos están vacíos"
+                        } else if (newPassw.length < 6) {
+                            dialogText = "La nueva contraseña debe tener al menos 6 caracteres."
                             showDialog = true
                         } else if (!passwordsMatch) {
-                            texto = "Las contraseñas no coinciden"
+                            dialogText = "Las contraseñas no coinciden."
                             showDialog = true
                         } else {
                             authViewModel.updatePassword(oldPassword, newPassw) { success, errorMessage ->
-                                texto = if (success) {
+                                if (success) {
                                     oldPassword = ""
                                     newPassw = ""
                                     confirmPass = ""
-                                    "Contraseña cambiada exitosamente."
+                                    dialogText = "Contraseña cambiada exitosamente."
+                                    isSelected = false
                                 } else {
-                                    errorMessage ?: "Error al cambiar la contraseña"
+                                    dialogText = errorMessage ?: "Error al cambiar la contraseña."
                                 }
                                 showDialog = true
                             }
@@ -418,7 +421,7 @@ fun ChangePass(authViewModel: AuthViewModel) {
         if (showDialog) {
             PasswordChangeConfirmationDialog(
                 onDismissRequest = { showDialog = false },
-                texto = texto
+                texto = dialogText
             )
         }
     }
@@ -429,10 +432,12 @@ fun DeleteAcount(
     authViewModel: AuthViewModel,
     navController: NavController,
     userViewModel: UsersViewModel,
+    lockersViewModel: LockersViewModel,
     userId: String
 ) {
     var showDialog by remember { mutableStateOf(false) }
     var deleteErrorMessage by remember { mutableStateOf<String?>(null) }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -449,7 +454,7 @@ fun DeleteAcount(
         )
         Icon(
             imageVector = Icons.Default.PersonRemove,
-            contentDescription = "delete",
+            contentDescription = "Eliminar cuenta",
             tint = Color.Black,
             modifier = Modifier.clickable {
                 showDialog = true
@@ -458,29 +463,34 @@ fun DeleteAcount(
         if (showDialog) {
             ConfirmDeleteAccountDialog(
                 onConfirmation = {
+                    // Primero intenta borrar los datos del usuario de la base de datos
                     userViewModel.deleteAccount(userId) { success, errorMessage ->
                         if (success) {
-                            authViewModel.deleteUser { success, errorMessage ->
-                                if (success) {
-                                    authViewModel.signOut()
+                            Log.d("DeleteAccount", "Datos de usuario eliminados de la base de datos.")
+                            // Si se borran los datos, intenta borrar la cuenta de autenticación
+                            authViewModel.deleteUser { success2, errorMessage2 ->
+                                if (success2) {
+                                    Log.d("DeleteAccount", "Cuenta de autenticación eliminada.")
+                                    // Si se borra la cuenta de autenticación, cierra la sesión y navega
+                                    authViewModel.signOut(lockersViewModel = lockersViewModel)
                                     navController.navigate(Screen.Login.route) {
                                         popUpTo(Screen.Login.route) { inclusive = true }
                                     }
                                 } else {
-                                    deleteErrorMessage = errorMessage
+                                    deleteErrorMessage = errorMessage2 ?: "Error al eliminar la cuenta de autenticación."
+                                    Log.e("DeleteAccount", "Error al eliminar la cuenta de autenticación: $deleteErrorMessage")
                                 }
                             }
-
                         } else {
-                            deleteErrorMessage = errorMessage
+                            deleteErrorMessage = errorMessage ?: "Error al eliminar los datos del usuario de la base de datos."
+                            Log.e("DeleteAccount", "Error al eliminar datos de usuario de la base de datos: $deleteErrorMessage")
                         }
                     }
-
-
                 },
                 onDismissRequest = {
                     showDialog = false
-                }
+                },
+                errorMessage = deleteErrorMessage
             )
         }
     }
@@ -490,6 +500,7 @@ fun DeleteAcount(
 fun ConfirmDeleteAccountDialog(
     onConfirmation: () -> Unit,
     onDismissRequest: () -> Unit,
+    errorMessage: String? = null
 ) {
     AlertDialog(
         onDismissRequest = onDismissRequest,
@@ -502,40 +513,48 @@ fun ConfirmDeleteAccountDialog(
                     .fillMaxWidth()
                     .padding(top = 16.dp, start = 16.dp, end = 16.dp),
                 color = Color.Black,
+                fontWeight = FontWeight.Bold
             )
         },
         text = {
-            Text(
-                text = "¿Quieres eliminar tu cuenta de forma permanente?",
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp, horizontal = 16.dp),
-                color = Color.Black,
-            )
+            Column {
+                Text(
+                    text = "¿Quieres eliminar tu cuenta de forma permanente? Esta acción es irreversible y borrará todos tus datos.",
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp, horizontal = 16.dp),
+                    color = Color.Black,
+                    fontSize = 14.sp
+                )
+                errorMessage?.let {
+                    Text(
+                        text = "Error: $it",
+                        color = Color.Red,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+                    )
+                }
+            }
         },
         confirmButton = {
             Row(
                 modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceAround,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Button(
                     onClick = {
                         onConfirmation()
-                        onDismissRequest()
                     },
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(end = 4.dp),
+                    modifier = Modifier.weight(1f).padding(end = 4.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Primary)
                 ) {
                     Text("Sí", color = White)
                 }
                 Button(
                     onClick = onDismissRequest,
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 4.dp),
+                    modifier = Modifier.weight(1f).padding(start = 4.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Primary)
                 ) {
                     Text("No", color = White)
@@ -544,7 +563,6 @@ fun ConfirmDeleteAccountDialog(
         },
         dismissButton = null
     )
-
 }
 
 @Composable
@@ -591,7 +609,6 @@ fun Cards(
             .clickable {
                 navController.navigate(Screen.Cards.createRoute(userID))
             }
-
     ) {
         Text(
             text = "Tarjetas asociadas",
@@ -602,21 +619,20 @@ fun Cards(
         )
         Icon(
             imageVector = Icons.Default.CreditCard,
-            contentDescription = "Cards",
+            contentDescription = "Tarjetas",
             tint = Color.Black,
             modifier = Modifier.clickable {
                 navController.navigate(Screen.Cards.createRoute(userID))
             }
         )
     }
-
 }
 
 @Composable
 fun AvatarChoose(
     userID: String,
     navController: NavHostController
-){
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -626,7 +642,6 @@ fun AvatarChoose(
             .clickable {
                 navController.navigate(Screen.ChooseAvatar.createRoute(userID))
             }
-
     ) {
         Text(
             text = "Elegir avatar",
@@ -637,9 +652,8 @@ fun AvatarChoose(
         )
         Icon(
             imageVector = Icons.Default.Person4,
-            contentDescription = "person",
+            contentDescription = "Elegir avatar",
             tint = Color.Black
         )
     }
-
 }

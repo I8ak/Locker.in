@@ -62,7 +62,6 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -87,28 +86,37 @@ fun ReserveScreen(
     userViewModel: UsersViewModel = koinViewModel(),
     authViewModel: AuthViewModel = koinViewModel()
 ) {
+    // Obtiene el ID del usuario actual y el estado del usuario.
     val userId = authViewModel.currentUserId
     val userState by userViewModel.user.collectAsState()
-    val user = userViewModel.getUserById(userId.toString())
+    userViewModel.getUserById(userId.toString())
     val lockers = lockersViewModel.lockers.collectAsState()
-    // Estados
+
+    // Estados para las fechas y horas seleccionadas.
     var startDate by remember { mutableStateOf<LocalDate?>(null) }
     var startTime by remember { mutableStateOf<LocalTime?>(null) }
     var endDate by remember { mutableStateOf<LocalDate?>(null) }
     var endTime by remember { mutableStateOf<LocalTime?>(null) }
 
-    // Errores
+    // Estados para los errores de validación.
     var dateError by remember { mutableStateOf(false) }
     var timeError by remember { mutableStateOf(false) }
     var dateStartError by remember { mutableStateOf(false) }
     var timeStartError by remember { mutableStateOf(false) }
 
-    // Validación
+    // Función de validación de fechas y horas.
     fun validate() {
-        dateError = endDate != null && startDate != null && endDate!!.isBefore(startDate!!)
+        // Valida que la fecha de inicio no sea anterior a la fecha actual.
         dateStartError = startDate?.isBefore(LocalDate.now()) == true
+
+        // Valida que la hora de inicio no sea anterior a la hora actual si la fecha de inicio es hoy.
         timeStartError = startDate?.isEqual(LocalDate.now()) == true &&
                 startTime?.isBefore(LocalTime.now()) == true
+
+        // Valida que la fecha de fin no sea anterior a la fecha de inicio.
+        dateError = endDate != null && startDate != null && endDate!!.isBefore(startDate!!)
+
+        // Valida que la hora de fin no sea anterior a la hora de inicio si las fechas son iguales.
         timeError = if (endDate != null && startDate != null && endDate == startDate) {
             endTime != null && startTime != null && endTime!!.isBefore(startTime)
         } else {
@@ -116,29 +124,28 @@ fun ReserveScreen(
         }
     }
 
+    // Estado para la pantalla de carga.
     var isLoading by remember { mutableStateOf(false) }
 
-
+    // Efecto que se ejecuta cuando cambian las fechas u horas para revalidar y actualizar el estado de carga.
     LaunchedEffect(startDate, startTime, endDate, endTime) {
         validate()
 
+        // Solo se carga si todas las fechas y horas están seleccionadas y no hay errores de validación.
         if (startDate != null && startTime != null &&
             endDate != null && endTime != null &&
             !dateStartError && !timeStartError && !dateError && !timeError
         ) {
             isLoading = true
-
             kotlinx.coroutines.delay(500)
-
             isLoading = false
         }
     }
 
-
     DrawerMenu(
         textoBar = city,
         navController = navController,
-        authViewModel = viewModel(),
+        authViewModel = authViewModel,
         fullUser = userState,
         content = { paddingValues ->
             Column(
@@ -147,6 +154,7 @@ fun ReserveScreen(
                     .padding(paddingValues)
                     .padding(16.dp)
             ) {
+                // Selector de Fecha de Inicio
                 Text(
                     "Inicio",
                     style = MaterialTheme.typography.titleMedium,
@@ -161,6 +169,7 @@ fun ReserveScreen(
                     DateSelector(
                         selectedDate = startDate,
                         onDateSelected = { startDate = it },
+                        isError = dateStartError,
                         modifier = Modifier.weight(0.6f)
                     )
 
@@ -169,11 +178,12 @@ fun ReserveScreen(
                     TimeSelector(
                         selectedTime = startTime,
                         onTimeSelected = { startTime = it },
+                        isError = timeStartError,
                         modifier = Modifier.weight(0.4f)
                     )
                 }
 
-                // Grupo Fin
+                // Selector de Fecha de Fin
                 Text(
                     "Fin",
                     style = MaterialTheme.typography.titleMedium,
@@ -202,61 +212,58 @@ fun ReserveScreen(
                     )
                 }
 
-                // Mensajes de error
+                // Mensajes de error para el usuario
                 if (dateStartError) {
                     Text(
-                        text = "La fecha de inicio no puede ser anterior a la fecha actual",
+                        text = "La fecha de inicio no puede ser anterior a la fecha actual.",
                         color = Color.Red,
                         modifier = Modifier.padding(top = 4.dp)
                     )
                 }
-
                 if (timeStartError) {
                     Text(
-                        text = "La hora de inicio no puede ser anterior a la hora actual",
+                        text = "La hora de inicio no puede ser anterior a la hora actual.",
                         color = Color.Red,
                         modifier = Modifier.padding(top = 4.dp)
                     )
                 }
-
                 if (dateError) {
                     Text(
-                        text = "La fecha de fin no puede ser anterior a la de inicio",
+                        text = "La fecha de fin no puede ser anterior a la de inicio.",
                         color = Color.Red,
                         modifier = Modifier.padding(top = 4.dp)
                     )
                 }
                 if (timeError) {
                     Text(
-                        text = "La hora de fin no puede ser anterior a la de inicio",
+                        text = "La hora de fin no puede ser anterior a la de inicio (si es el mismo día).",
                         color = Color.Red,
                         modifier = Modifier.padding(top = 4.dp)
                     )
                 }
-                Log.i("Fecha", "fecha incio $startDate")
-                Log.i("Fecha", "hora incio $startTime")
-                Log.i("Fecha", "fecha fin $endDate")
-                Log.i("Fecha", "hora fin $endTime")
+
+                // Logs para depuración
+                Log.i("Fecha", "fecha inicio: $startDate")
+                Log.i("Fecha", "hora inicio: $startTime")
+                Log.i("Fecha", "fecha fin: $endDate")
+                Log.i("Fecha", "hora fin: $endTime")
+
+                // Muestra la lista de lockers solo si todas las selecciones son válidas y no hay errores
                 if (startDate != null && startTime != null && endDate != null && endTime != null &&
                     !dateStartError && !timeStartError && !dateError && !timeError
                 ) {
-
                     val rentalViewModel: RentalViewModel = koinViewModel()
 
-                    // Convertir LocalDate a Date para usar en isLockerAvailable
+                    // Convierte LocalDate y LocalTime a LocalDateTime y luego a Date para la lógica de disponibilidad.
                     val startDateTime = startDate!!.atTime(startTime!!)
-                    val startDateAsDate =
-                        Date.from(startDateTime.atZone(ZoneId.systemDefault()).toInstant())
+                    val startDateAsDate = Date.from(startDateTime.atZone(ZoneId.systemDefault()).toInstant())
                     val endDateTime = endDate!!.atTime(endTime!!)
-                    val endDateAsDate =
-                        Date.from(endDateTime.atZone(ZoneId.systemDefault()).toInstant())
+                    val endDateAsDate = Date.from(endDateTime.atZone(ZoneId.systemDefault()).toInstant())
 
-                    val durationstartDateTime = startDate?.atTime(startTime ?: LocalTime.MIDNIGHT)
-                    val durationendDateTime = endDate?.atTime(endTime ?: LocalTime.MIDNIGHT)
-                    val duration =
-                        calcultaionDuracion(durationstartDateTime!!, durationendDateTime!!)
+                    val duration = calculateDuration(startDateTime, endDateTime)
 
-                    Log.i("Duracion", "duracion ${duration}")
+                    Log.i("Duracion", "duracion: $duration horas")
+
                     if (isLoading) {
                         CircularProgressIndicator(
                             modifier = Modifier
@@ -267,50 +274,67 @@ fun ReserveScreen(
                     } else {
                         LazyColumn(
                             modifier = Modifier
-                                .padding(paddingValues)
+                                .padding(top = 16.dp)
                                 .background(Color.Transparent)
                         ) {
                             items(lockers.value.filter {
-                                it.city.equals(
-                                    city,
-                                    ignoreCase = true
-                                )
+                                it.city.equals(city, ignoreCase = true)
                             }) { locker ->
                                 key(locker.lockerID) {
                                     LockersCard(
-                                        userID = userID,
+                                        userID = userId.toString(),
                                         locker = locker,
                                         startDate = startDateAsDate,
                                         endDate = endDateAsDate,
                                         rentalViewModel = rentalViewModel,
                                         navController = navController,
                                         duration = duration,
-                                        startDateString = trasformarFecha(durationstartDateTime),
-                                        endDateString = trasformarFecha(durationendDateTime),
+                                        startDateString = formatDateTime(startDateTime),
+                                        endDateString = formatDateTime(endDateTime),
                                     )
                                 }
                             }
                         }
                     }
-
                 }
             }
         }
     )
 }
 
+/**
+ * Calcula la duración entre dos objetos `LocalDateTime` en horas.
+ *
+ * @param startDate El objeto `LocalDateTime` de inicio.
+ * @param endDate El objeto `LocalDateTime` de fin.
+ * @return La duración en horas como un `Double`.
+ */
 @RequiresApi(Build.VERSION_CODES.O)
-fun calcultaionDuracion(startDate: LocalDateTime, endDate: LocalDateTime): Double {
+fun calculateDuration(startDate: LocalDateTime, endDate: LocalDateTime): Double {
     val duration = Duration.between(startDate, endDate)
     return duration.toMinutes().toDouble() / 60
 }
 
+/**
+ * Formatea un objeto `LocalDateTime` a una cadena de texto en formato "dd-MM-yyyy HH:mm".
+ *
+ * @param date El objeto `LocalDateTime` a formatear.
+ * @return La cadena de texto formateada.
+ */
 @RequiresApi(Build.VERSION_CODES.O)
-fun trasformarFecha(date: LocalDateTime): String {
+fun formatDateTime(date: LocalDateTime): String {
     val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
     return date.format(formatter)
 }
 
+/**
+ * Composable para seleccionar una fecha.
+ *
+ * @param selectedDate La fecha actualmente seleccionada.
+ * @param onDateSelected La función de callback que se invoca cuando se selecciona una fecha.
+ * @param isError Indica si hay un error en la selección de la fecha.
+ * @param modifier El `Modifier` para aplicar a este composable.
+ */
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -384,6 +408,14 @@ fun DateSelector(
     }
 }
 
+/**
+ * Composable para seleccionar una hora.
+ *
+ * @param selectedTime La hora actualmente seleccionada.
+ * @param onTimeSelected La función de callback que se invoca cuando se selecciona una hora.
+ * @param isError Indica si hay un error en la selección de la hora.
+ * @param modifier El `Modifier` para aplicar a este composable.
+ */
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun TimeSelector(
@@ -430,9 +462,9 @@ fun TimeSelector(
                     onTimeSelected(LocalTime.of(hour, minute))
                     showPicker = false
                 },
-                selectedTime?.hour ?: 12,
-                selectedTime?.minute ?: 0,
-                true
+                selectedTime?.hour ?: LocalTime.now().hour, // Establece la hora actual por defecto
+                selectedTime?.minute ?: LocalTime.now().minute, // Establece los minutos actuales por defecto
+                true // Formato de 24 horas
             )
         }
 
@@ -442,6 +474,19 @@ fun TimeSelector(
     }
 }
 
+/**
+ * Composable para mostrar una tarjeta de casillero.
+ *
+ * @param userID El ID del usuario.
+ * @param locker El objeto `Locker` a mostrar.
+ * @param startDate La fecha de inicio de la reserva.
+ * @param endDate La fecha de fin de la reserva.
+ * @param rentalViewModel El `RentalViewModel` para verificar la disponibilidad del casillero.
+ * @param navController El `NavHostController` para la navegación.
+ * @param duration La duración de la reserva en horas.
+ * @param startDateString La fecha de inicio de la reserva como cadena formateada.
+ * @param endDateString La fecha de fin de la reserva como cadena formateada.
+ */
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun LockersCard(
@@ -455,34 +500,41 @@ fun LockersCard(
     startDateString: String,
     endDateString: String
 ) {
-    val imagen = when (locker.size) {
+    // Determina la imagen del casillero según su tamaño.
+    val imageResId = when (locker.size) {
         "Small" -> R.drawable.personal_bag
         "Medium" -> R.drawable.luggage
         else -> R.drawable.trolley
     }
-    val lockerAvailabilityMap by rentalViewModel.lockerAvailability.collectAsState()
 
+    // Recopila el estado de disponibilidad del casillero del ViewModel.
+    val lockerAvailabilityMap by rentalViewModel.lockerAvailability.collectAsState()
     val isAvailable = lockerAvailabilityMap[locker.lockerID] ?: false
 
+    // Lanza el efecto para verificar la disponibilidad del casillero cuando cambian el ID del casillero o las fechas.
     LaunchedEffect(locker.lockerID, startDate, endDate) {
-        Log.d("LockersCard", "LaunchedEffect triggered for locker: ${locker.lockerID}")
+        Log.d("LockersCard", "Verificando disponibilidad para el casillero: ${locker.lockerID}")
         rentalViewModel.isLockerAvailable(locker.lockerID, startDate, endDate)
     }
+
     Card(
         modifier = Modifier
             .fillMaxSize()
             .padding(8.dp)
             .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp))
             .clickable {
-                if (isAvailable) navController.navigate(
-                    Screen.Details.createRoute(
-                        userID,
-                        locker.lockerID,
-                        startDateString,
-                        endDateString,
-                        (duration * locker.pricePerHour).toString()
+                // Navega a la pantalla de detalles solo si el casillero está disponible.
+                if (isAvailable) {
+                    navController.navigate(
+                        Screen.Details.createRoute(
+                            userID,
+                            locker.lockerID,
+                            startDateString,
+                            endDateString,
+                            (duration * locker.pricePerHour).toString()
+                        )
                     )
-                )
+                }
             },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
@@ -491,17 +543,17 @@ fun LockersCard(
     ) {
         Row(Modifier.fillMaxSize()) {
             Image(
-                painter = painterResource(id = imagen),
-                contentDescription = "size ${locker.size}",
+                painter = painterResource(id = imageResId),
+                contentDescription = "Tamaño del casillero: ${locker.size}",
                 modifier = Modifier
                     .size(64.dp)
                     .align(Alignment.CenterVertically)
             )
-            Column(Modifier
-                .padding(8.dp)
-                .fillMaxHeight()) {
-
-                Log.i("Fecha", "isAvailable $isAvailable")
+            Column(
+                Modifier
+                    .padding(8.dp)
+                    .fillMaxHeight()
+            ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -521,11 +573,10 @@ fun LockersCard(
                     )
                     Icon(
                         imageVector = Icons.Default.Star,
-                        contentDescription = "Star",
+                        contentDescription = "Puntuación",
                         tint = Primary,
                         modifier = Modifier.padding(end = 8.dp)
                     )
-
                 }
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(text = "Dirección: ${locker.location}", color = Color.Black)
@@ -537,7 +588,3 @@ fun LockersCard(
         }
     }
 }
-
-
-
-

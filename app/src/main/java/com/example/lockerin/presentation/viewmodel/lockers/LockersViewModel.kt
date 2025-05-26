@@ -95,6 +95,11 @@ class LockersViewModel(
             addPuntuacionUseCase(lockerId,nuevaPuntuacion)
         }
     }
+    fun clearState() {
+        _availableCounts.value = emptyMap()
+        _selectedLocker.value = null
+    }
+
 
 
 }

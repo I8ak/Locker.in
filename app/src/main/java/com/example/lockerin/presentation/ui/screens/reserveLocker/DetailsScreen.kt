@@ -60,21 +60,24 @@ fun DetailsScreen(
 ) {
     val userId = authViewModel.currentUserId
     val userState by userViewModel.user.collectAsState()
-    Log.d("DetailsScreen", totalPrice.toString())
     val lockersViewModel: LockersViewModel = koinViewModel()
     val locker by lockersViewModel.selectedLocker.collectAsState()
+
     var isLoading by remember { mutableStateOf(true) }
+
+    val priceToDouble = totalPrice.toBigDecimal().setScale(2, RoundingMode.HALF_UP).toDouble()
+
+    // Log para depuración, mostrando el precio total
+    Log.d("DetailsScreen", totalPrice.toString())
+
     LaunchedEffect(Unit) {
         delay(1000)
         isLoading = false
     }
+
     LaunchedEffect(lockerID) {
         lockersViewModel.getLockerById(lockerID)
     }
-
-    val priceToDouble = totalPrice.toBigDecimal().setScale(2, RoundingMode.HALF_UP).toDouble()
-
-
 
     if (isLoading) {
         LoadingScreen(isLoading = true)
@@ -93,24 +96,20 @@ fun DetailsScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-
-
                     locker?.let {
-                        // Fecha de inicio
+                        // Muestra la fecha de inicio de la reserva
                         InfoRow("Fecha de inicio", startDate)
 
-                        // Fecha de fin
+                        // Muestra la fecha de fin de la reserva
                         InfoRow("Fecha de fin", endDate)
 
-                        // Ubicación
+                        // Muestra la ubicación del casillero
                         InfoRow("Ubicación", it.location)
 
-
-                        // Dimensiones
+                        // Muestra las dimensiones del casillero
                         InfoRow("Dimensiones", it.dimension)
 
-
-                        // Precio total
+                        // Muestra el precio total de la reserva
                         InfoRow("Precio total", "$priceToDouble €")
 
                         Spacer(modifier = Modifier.height(16.dp))
@@ -151,12 +150,11 @@ fun DetailsScreen(
                             }
                         }
                     } ?: run {
+                        // Mensaje si no se encuentra el casillero
                         Text(text = "No se encontró el locker con ID: $lockerID")
                     }
                 }
             }
         )
     }
-
 }
-

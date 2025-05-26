@@ -76,40 +76,47 @@ fun AddCardScreen(
     cardsViewModel: CardsViewModel = koinViewModel(),
     authViewModel: AuthViewModel = viewModel()
 ) {
-
+    // ViewModels y estados de usuario
     val userId = authViewModel.currentUserId
     val userState by userViewModel.user.collectAsState()
-    val user = userViewModel.getUserById(userId.toString())
+    val user = userViewModel.getUserById(userID)
 
-    LaunchedEffect(Unit) {
-        userViewModel.getUserById(userID)
-    }
+    // Estados de entrada del formulario
     var numberCard by remember { mutableStateOf("") }
     var nameCard by remember { mutableStateOf("") }
     var expirationDate by remember { mutableStateOf("") }
     var cvv by remember { mutableStateOf("") }
-    val imagen = when (verificationCardType(numberCard)) {
-        "Visa" -> R.drawable.visa
-        "MasterCard" -> R.drawable.mastercard
-        "American Express" -> R.drawable.american_express
-        else -> R.drawable.credit_card
-    }
-    var showDialog by remember { mutableStateOf(false) }
     var isValid by remember { mutableStateOf(true) }
 
+    // Estados de la interfaz de usuario
+    var showDialog by remember { mutableStateOf(false) }
+
+    // Gestión del foco
     val focusManager = LocalFocusManager.current
     val numCardFocusRequest = remember { FocusRequester() }
     val nameCardFocusRequest = remember { FocusRequester() }
     val expDateCardFocusRequest = remember { FocusRequester() }
     val cvvCardFocusRequest = remember { FocusRequester() }
 
+    // Imagen del tipo de tarjeta
+    val imagen = when (verificationCardType(numberCard)) {
+        "Visa" -> R.drawable.visa
+        "MasterCard" -> R.drawable.mastercard
+        "American Express" -> R.drawable.american_express
+        else -> R.drawable.credit_card
+    }
+
+    LaunchedEffect(Unit) {
+        userViewModel.getUserById(userID)
+    }
+
+    // Menú lateral que contiene el formulario de adición de tarjeta
     DrawerMenu(
         textoBar = "Agregar tarjeta",
         navController = navController,
         authViewModel = viewModel(),
         fullUser = userState,
         content = { paddingValues ->
-
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -117,6 +124,7 @@ fun AddCardScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
+                // Imagen del tipo de tarjeta
                 Image(
                     painter = painterResource(id = imagen),
                     contentDescription = imagen.toString(),
@@ -125,6 +133,8 @@ fun AddCardScreen(
                         .align(Alignment.Start)
                 )
                 Spacer(modifier = Modifier.padding(8.dp))
+
+                // Campo de entrada para el número de tarjeta
                 OutlinedTextField(
                     value = numberCard,
                     onValueChange = {
@@ -132,7 +142,7 @@ fun AddCardScreen(
                     },
                     label = {
                         Text(
-                            text = "Numero de la tarjeta",
+                            text = "Número de la tarjeta",
                             color = Color.Black
                         )
                     },
@@ -159,12 +169,14 @@ fun AddCardScreen(
                     singleLine = true
                 )
                 Spacer(modifier = Modifier.padding(8.dp))
+
+                // Campo de entrada para el nombre del titular de la tarjeta
                 OutlinedTextField(
                     value = nameCard,
                     onValueChange = { nameCard = it },
                     label = {
                         Text(
-                            text = "Nombre de la tarjeta",
+                            text = "Nombre del titular",
                             color = Color.Black
                         )
                     },
@@ -190,10 +202,13 @@ fun AddCardScreen(
                     singleLine = true
                 )
                 Spacer(modifier = Modifier.padding(8.dp))
+
+                // Fila para la fecha de vencimiento y el CVV
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                 ) {
+                    // Campo de entrada para la fecha de vencimiento
                     OutlinedTextField(
                         value = expirationDate,
                         onValueChange = {
@@ -204,12 +219,12 @@ fun AddCardScreen(
                         },
                         label = {
                             Text(
-                                text = "Fecha expiración",
+                                text = "Fecha de expiración",
                                 color = Color.Black
                             )
                         },
                         placeholder = {
-                            Text("MM/YY", color = Color.Gray)
+                            Text("MM/AA", color = Color.Gray)
                         },
                         isError = expirationDate.length == 5 && !isValid,
                         modifier = Modifier
@@ -237,6 +252,8 @@ fun AddCardScreen(
                         singleLine = true
                     )
                     Spacer(modifier = Modifier.padding(8.dp))
+
+                    // Campo de entrada para el CVV
                     OutlinedTextField(
                         value = cvv,
                         onValueChange = { if (it.length <= 4) cvv = it },
@@ -270,9 +287,10 @@ fun AddCardScreen(
                     )
                 }
                 Spacer(modifier = Modifier.padding(8.dp))
+
+                // Botón para agregar tarjeta
                 Button(
                     onClick = {
-
                         if (numberCard.isNotEmpty() && nameCard.isNotEmpty() && expirationDate.isNotEmpty() && cvv.isNotEmpty() && isValid) {
                             val newCard = Tarjeta(
                                 cardNumber = cardsViewModel.encrypt(numberCard),
@@ -282,12 +300,9 @@ fun AddCardScreen(
                                 cvv = cvv,
                                 typeCard = verificationCardType(numberCard),
                             )
-                            cardsViewModel.addCard(
-                                newCard
-                            )
+                            cardsViewModel.addCard(newCard)
                             navController.popBackStack()
                         }
-
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Primary,
@@ -299,8 +314,9 @@ fun AddCardScreen(
                         color = White
                     )
                 }
-
             }
+
+            // Diálogo de tarjeta ya existente
             if (showDialog) {
                 CardDialog(
                     onDismissRequest = {
@@ -311,7 +327,6 @@ fun AddCardScreen(
         }
     )
 }
-
 
 @Composable
 fun CardDialog(
@@ -342,12 +357,12 @@ fun CardDialog(
     )
 }
 
-
+// Función para verificar el tipo de tarjeta
 fun verificationCardType(numberCard: String): String {
     val cleanedNumber = numberCard.replace(" ", "").replace("-", "")
 
     if (!cleanedNumber.matches(Regex("\\d+"))) {
-        return "Unknown Type (Invalid Characters)"
+        return "Tipo desconocido (caracteres inválidos)"
     }
 
     val length = cleanedNumber.length
@@ -383,9 +398,9 @@ fun verificationCardType(numberCard: String): String {
             return "Tarjeta"
         }
     }
-
 }
 
+// Función para validar la fecha de vencimiento
 @RequiresApi(Build.VERSION_CODES.O)
 fun isExpirationDateValid(input: String): Boolean {
     if (!Regex("^\\d{2}/\\d{2}$").matches(input)) return false
@@ -403,5 +418,3 @@ fun isExpirationDateValid(input: String): Boolean {
 
     return inputDate >= now
 }
-
-

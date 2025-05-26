@@ -60,26 +60,27 @@ import org.koin.androidx.compose.koinViewModel
 fun CardsScreen(
     userID: String,
     navController: NavHostController = rememberNavController(),
-    userViewModel: UsersViewModel= koinViewModel(),
+    userViewModel: UsersViewModel = koinViewModel(),
     cardsViewModel: CardsViewModel = koinViewModel(),
-    authViewModel: AuthViewModel=koinViewModel()
+    authViewModel: AuthViewModel = koinViewModel()
 ) {
     val userId = authViewModel.currentUserId
     val userState by userViewModel.user.collectAsState()
-    val user=userViewModel.getUserById(userId.toString())
+    val user = userViewModel.getUserById(userId.toString())
     val cardsState by cardsViewModel.cards.collectAsState()
 
-    LaunchedEffect(userID) {
-        cardsViewModel.setUserId(userID)
+    // Efecto para establecer el ID del usuario en el ViewModel de tarjetas cuando la pantalla se lanza
+    LaunchedEffect(userId.toString()) {
+        cardsViewModel.setUserId(userId.toString())
     }
 
+    // Componente de menú lateral que envuelve el contenido de la pantalla
     DrawerMenu(
         textoBar = "Mis tarjetas",
         navController = navController,
         authViewModel = viewModel(),
         fullUser = userState,
         content = { paddingValues ->
-
             Column(
                 modifier = Modifier
                     .background(Color.Transparent)
@@ -87,10 +88,9 @@ fun CardsScreen(
                     .padding(vertical = 26.dp, horizontal = 16.dp)
                     .fillMaxSize(),
             ) {
-                LazyColumn{
-                    items(
-                        cardsState
-                    ) { card ->
+                // Lista de tarjetas del usuario
+                LazyColumn {
+                    items(cardsState) { card ->
                         key(card.cardID) {
                             CardsCard(
                                 tarjeta = card,
@@ -101,6 +101,7 @@ fun CardsScreen(
                 }
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Fila para el botón "Añadir una tarjeta nueva"
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -108,7 +109,7 @@ fun CardsScreen(
                         .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp))
                         .padding(16.dp)
                         .clickable {
-                            navController.navigate(Screen.AddCard.createRoute(userID))
+                            navController.navigate(Screen.AddCard.createRoute(userId.toString()))
                         }
                 ) {
                     Text(
@@ -125,8 +126,6 @@ fun CardsScreen(
                     )
                 }
             }
-
-
         }
     )
 }
@@ -136,14 +135,16 @@ fun CardsCard(
     tarjeta: Tarjeta,
     cardsViewModel: CardsViewModel,
 ) {
-
+    // Estado para controlar si la tarjeta está seleccionada/expandida
     var isSelected by remember { mutableStateOf(false) }
+    // Determina la imagen de la tarjeta según su tipo
     val imagen = when (tarjeta.typeCard) {
         "Visa" -> R.drawable.visa
         "MasterCard" -> R.drawable.mastercard
         "American Express" -> R.drawable.american_express
-        else -> R.drawable.credit_card
+        else -> R.drawable.credit_card // Imagen por defecto
     }
+    // Estado para controlar la visibilidad del diálogo de confirmación de eliminación
     var showDialog by remember { mutableStateOf(false) }
 
     Card(
@@ -151,13 +152,14 @@ fun CardsCard(
             .fillMaxWidth()
             .padding(8.dp)
             .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp))
-        .clickable { isSelected = !isSelected },
+            .clickable { isSelected = !isSelected },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color.Transparent
         )
     ) {
         Column(modifier = Modifier.padding(8.dp)) {
+            // Muestra el tipo de tarjeta (Visa, MasterCard, etc.)
             Text(
                 text = tarjeta.typeCard,
                 fontSize = 20.sp,
@@ -166,6 +168,7 @@ fun CardsCard(
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
             Row(modifier = Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
+                // Muestra la imagen de la tarjeta
                 Image(
                     painter = painterResource(id = imagen),
                     contentDescription = tarjeta.typeCard,
@@ -174,6 +177,7 @@ fun CardsCard(
                         .size(60.dp)
                 )
                 Spacer(modifier = Modifier.padding(8.dp))
+                // Muestra el número de tarjeta
                 Text(
                     text = tarjeta.cardNumber, color = Color.Black,
                     modifier = Modifier
@@ -181,6 +185,7 @@ fun CardsCard(
                         .align(Alignment.CenterVertically)
                 )
             }
+            // Si la tarjeta está seleccionada, muestra detalles adicionales y el icono de eliminar
             if (isSelected) {
                 Text(
                     text = "Nombre: ${tarjeta.cardName}",
@@ -192,21 +197,24 @@ fun CardsCard(
                     color = Color.Black,
                     modifier = Modifier.padding(horizontal = 8.dp)
                 )
+                // Icono para eliminar la tarjeta
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = "Eliminar",
                     modifier = Modifier
                         .size(24.dp)
                         .clickable {
-                            showDialog=true
+                            showDialog = true
                         }
                         .align(Alignment.End),
                     tint = Color.Black,
                 )
+                // Si showDialog es verdadero, muestra el diálogo de confirmación
                 if (showDialog) {
                     ConfirmDeleteCardDialog(
                         onConfirmation = {
                             cardsViewModel.removeCard(tarjeta)
+                            showDialog = false
                         },
                         onDismissRequest = {
                             showDialog = false
@@ -214,7 +222,6 @@ fun CardsCard(
                     )
                 }
             }
-
         }
     }
 }
@@ -239,7 +246,7 @@ fun ConfirmDeleteCardDialog(
         },
         text = {
             Text(
-                text = "¿Quieres eliminar tu tajeta de forma permanente?",
+                text = "¿Quieres eliminar tu tarjeta de forma permanente?",
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -252,6 +259,7 @@ fun ConfirmDeleteCardDialog(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // Botón "Sí" para confirmar la eliminación
                 Button(
                     onClick = {
                         onConfirmation()
@@ -264,6 +272,7 @@ fun ConfirmDeleteCardDialog(
                 ) {
                     Text("Sí", color = White)
                 }
+                // Botón "No" para cancelar la eliminación
                 Button(
                     onClick = onDismissRequest,
                     modifier = Modifier
@@ -277,5 +286,4 @@ fun ConfirmDeleteCardDialog(
         },
         dismissButton = null
     )
-
 }

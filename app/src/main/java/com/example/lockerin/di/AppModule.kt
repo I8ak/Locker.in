@@ -57,7 +57,7 @@ val appModule = module  {
 
     //Users
     factory { GetUserUseCase(get()) }
-    factory { DeleteUserUseCase(get()) }
+    factory { DeleteUserUseCase(get(),get(),get()) }
     factory { EditAvatarUseCase(get()) }
 
 

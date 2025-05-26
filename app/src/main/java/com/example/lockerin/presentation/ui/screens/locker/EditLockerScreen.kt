@@ -59,34 +59,38 @@ fun EditLockerScreen(
     lockerViewModel: LockersViewModel = koinViewModel(),
     authViewModel: AuthViewModel = viewModel()
 ) {
-    userViewModel.getUserById(userID)
-
+    // ViewModel y estados de usuario
     val userId = authViewModel.currentUserId
     val userState by userViewModel.user.collectAsState()
     val user = userViewModel.getUserById(userId.toString())
     val locker by lockerViewModel.selectedLocker.collectAsState()
 
-    LaunchedEffect(lockerID) {
-        lockerViewModel.getLockerById(lockerID)
-    }
+    // Estados para los campos del formulario
     var address by remember { mutableStateOf("") }
     var city by remember { mutableStateOf("") }
     var status by remember { mutableStateOf(true) }
     var size by remember { mutableStateOf("") }
     var dimension by remember { mutableStateOf("") }
     var pricePerHour by remember { mutableDoubleStateOf(0.0) }
-    var longitude by remember { mutableStateOf(0.0) }
-    var latitude by remember { mutableStateOf(0.0) }
+    var longitude by remember { mutableDoubleStateOf(0.0) }
+    var latitude by remember { mutableDoubleStateOf(0.0) }
 
+    // Manejo de foco para los campos de texto
     val focusManager = LocalFocusManager.current
-    val addressFocusRequest= remember { FocusRequester() }
-    val cityFocusRequest= remember { FocusRequester() }
-    val sizeFocusRequest= remember { FocusRequester() }
-    val dimensionFocusRequest= remember { FocusRequester() }
-    val pricePerHourFocusRequest= remember { FocusRequester() }
-    val longitudeFocusRequest= remember { FocusRequester() }
-    val latitudeFocusRequest= remember { FocusRequester() }
+    val addressFocusRequest = remember { FocusRequester() }
+    val cityFocusRequest = remember { FocusRequester() }
+    val sizeFocusRequest = remember { FocusRequester() }
+    val dimensionFocusRequest = remember { FocusRequester() }
+    val pricePerHourFocusRequest = remember { FocusRequester() }
+    val longitudeFocusRequest = remember { FocusRequester() }
+    val latitudeFocusRequest = remember { FocusRequester() }
 
+    // Efecto para cargar los datos del locker cuando se inicia la pantalla o cambia el lockerID
+    LaunchedEffect(lockerID) {
+        lockerViewModel.getLockerById(lockerID)
+    }
+
+    // Efecto para actualizar los campos del formulario cuando el 'locker' se carga o cambia
     LaunchedEffect(locker) {
         if (locker != null) {
             address = locker!!.location
@@ -100,13 +104,13 @@ fun EditLockerScreen(
         }
     }
 
+    // El contenido principal de la pantalla, envuelto en un DrawerMenu
     DrawerMenu(
-        textoBar = "Añadir Locker",
+        textoBar = "Editar Locker",
         navController = navController,
         authViewModel = viewModel(),
         fullUser = userState,
         content = { paddingValues ->
-
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -114,7 +118,7 @@ fun EditLockerScreen(
                     .padding(paddingValues)
                     .padding(16.dp)
             ) {
-
+                // Campo de texto para la Dirección
                 OutlinedTextField(
                     value = address,
                     onValueChange = { address = it },
@@ -129,7 +133,8 @@ fun EditLockerScreen(
                         .background(
                             Color.Transparent,
                             RoundedCornerShape(12.dp)
-                        ).focusRequester(addressFocusRequest),
+                        )
+                        .focusRequester(addressFocusRequest),
                     keyboardOptions = KeyboardOptions.Default.copy(
                         imeAction = ImeAction.Next
                     ),
@@ -147,6 +152,8 @@ fun EditLockerScreen(
                     )
                 )
                 Spacer(modifier = Modifier.padding(5.dp))
+
+                // Campo de texto para Latitud
                 OutlinedTextField(
                     value = latitude.toString(),
                     onValueChange = { latitude = it.toDouble() },
@@ -161,7 +168,8 @@ fun EditLockerScreen(
                         .background(
                             Color.Transparent,
                             RoundedCornerShape(12.dp)
-                        ).focusRequester(latitudeFocusRequest),
+                        )
+                        .focusRequester(latitudeFocusRequest),
                     keyboardOptions = KeyboardOptions.Default.copy(
                         imeAction = ImeAction.Next,
                         keyboardType = KeyboardType.Number
@@ -180,6 +188,8 @@ fun EditLockerScreen(
                     )
                 )
                 Spacer(modifier = Modifier.padding(5.dp))
+
+                // Campo de texto para Longitud
                 OutlinedTextField(
                     value = longitude.toString(),
                     onValueChange = { longitude = it.toDouble() },
@@ -194,7 +204,8 @@ fun EditLockerScreen(
                         .background(
                             Color.Transparent,
                             RoundedCornerShape(12.dp)
-                        ).focusRequester(longitudeFocusRequest),
+                        )
+                        .focusRequester(longitudeFocusRequest),
                     keyboardOptions = KeyboardOptions.Default.copy(
                         imeAction = ImeAction.Next,
                         keyboardType = KeyboardType.Number
@@ -213,8 +224,17 @@ fun EditLockerScreen(
                     )
                 )
                 Spacer(modifier = Modifier.padding(5.dp))
-                CityDropdown(selectedCity = city,cityFocusRequester = cityFocusRequest,nextFocusRequester = sizeFocusRequest, onCitySelected = { city = it })
+
+                // Dropdown para la Ciudad
+                CityDropdown(
+                    selectedCity = city,
+                    cityFocusRequester = cityFocusRequest,
+                    nextFocusRequester = sizeFocusRequest,
+                    onCitySelected = { city = it }
+                )
                 Spacer(modifier = Modifier.padding(5.dp))
+
+                // Campo de texto para el Tamaño
                 OutlinedTextField(
                     value = size,
                     onValueChange = { size = it },
@@ -229,7 +249,8 @@ fun EditLockerScreen(
                         .background(
                             Color.Transparent,
                             RoundedCornerShape(12.dp)
-                        ).focusRequester(sizeFocusRequest),
+                        )
+                        .focusRequester(sizeFocusRequest),
                     keyboardOptions = KeyboardOptions.Default.copy(
                         imeAction = ImeAction.Next
                     ),
@@ -247,6 +268,8 @@ fun EditLockerScreen(
                     )
                 )
                 Spacer(modifier = Modifier.padding(5.dp))
+
+                // Campo de texto para las Dimensiones
                 OutlinedTextField(
                     value = dimension,
                     onValueChange = { dimension = it },
@@ -261,7 +284,8 @@ fun EditLockerScreen(
                         .background(
                             Color.Transparent,
                             RoundedCornerShape(12.dp)
-                        ).focusRequester(dimensionFocusRequest),
+                        )
+                        .focusRequester(dimensionFocusRequest),
                     keyboardOptions = KeyboardOptions.Default.copy(
                         imeAction = ImeAction.Next
                     ),
@@ -279,6 +303,8 @@ fun EditLockerScreen(
                     )
                 )
                 Spacer(modifier = Modifier.padding(5.dp))
+
+                // Campo de texto para el Precio por hora
                 OutlinedTextField(
                     value = pricePerHour.toString(),
                     onValueChange = { pricePerHour = it.toDouble() },
@@ -293,7 +319,8 @@ fun EditLockerScreen(
                         .background(
                             Color.Transparent,
                             RoundedCornerShape(12.dp)
-                        ).focusRequester(pricePerHourFocusRequest),
+                        )
+                        .focusRequester(pricePerHourFocusRequest),
                     keyboardOptions = KeyboardOptions.Default.copy(
                         imeAction = ImeAction.Next,
                         keyboardType = KeyboardType.Number
@@ -313,6 +340,8 @@ fun EditLockerScreen(
                 )
 
                 Spacer(modifier = Modifier.padding(5.dp))
+
+                // Switch para el Estado del Locker (Disponible/No disponible)
                 Text(
                     text = "Estado del Locker",
                     color = Color.Black
@@ -330,6 +359,7 @@ fun EditLockerScreen(
                 )
                 Spacer(modifier = Modifier.padding(5.dp))
 
+                // Botón para Editar Locker
                 Button(
                     onClick = {
                         val editLocker = Locker(

@@ -58,7 +58,14 @@ fun ChooseAvatarScreen(
     userViewModel: UsersViewModel = koinViewModel(),
     authViewModel: AuthViewModel = viewModel()
 ) {
+    // Manejo del botón de retroceso para volver a la pantalla de inicio
+    BackHandler {
+        navController.navigate(Screen.Home.route) {
+            popUpTo(Screen.Home.route) { inclusive = true }
+        }
+    }
 
+    // Si el userID es nulo, redirige al usuario a la pantalla de inicio de sesión
     if (userID == null) {
         LaunchedEffect(Unit) {
             navController.navigate(Screen.Login.route) {
@@ -67,26 +74,32 @@ fun ChooseAvatarScreen(
         }
         return
     }
+
+    // Obtención del ID de usuario actual y el estado del usuario del ViewModel
     val userId = authViewModel.currentUserId
     val userState by userViewModel.user.collectAsState()
-    val user = userViewModel.getUserById(userID)
+    userViewModel.getUserById(userID) // Actualiza el usuario en el ViewModel
     Log.d("usuario", userID)
+
+    // Estado de carga de la pantalla
     var isLoading by remember { mutableStateOf(true) }
     val context = LocalContext.current
     var selectedOption by remember { mutableStateOf<AvatarOption?>(null) }
 
+    // Simula un tiempo de carga para la pantalla
     LaunchedEffect(Unit) {
         delay(1000)
         isLoading = false
     }
 
+    // Renderizado condicional de la pantalla de carga o el contenido principal
     if (isLoading) {
         LoadingScreen(isLoading = isLoading)
     } else {
         DrawerMenu(
             textoBar = "Elegir avatar",
             navController = navController,
-            authViewModel = viewModel(),
+            authViewModel = authViewModel,
             fullUser = userState,
             content = {
                 Column(
@@ -129,12 +142,10 @@ fun ChooseAvatarScreen(
                             userViewModel.updateAvatar(userID, resourceName, 1)
                         }
                     )
-
                 }
             }
         )
     }
-
 }
 
 @Composable
@@ -250,14 +261,10 @@ fun listAvatar(): List<Int> {
         R.drawable.mujer1,
         R.drawable.mujer2,
         R.drawable.mujerpelirroja,
-        R.drawable.mujerblancacoleta,
+        R.drawable.mujerhijabi,
         R.drawable.mujerblamcapelocorto
     )
-
 }
-
-
-
 
 fun avatarOptionToString(option: AvatarOption): String {
     return when (option) {
@@ -265,6 +272,3 @@ fun avatarOptionToString(option: AvatarOption): String {
         is AvatarOption.Image -> option.avatarResId.toString()
     }
 }
-
-
-

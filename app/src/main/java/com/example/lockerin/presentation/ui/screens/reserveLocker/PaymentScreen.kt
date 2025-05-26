@@ -17,52 +17,49 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddCard
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.material3.RadioButton
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.lockerin.R
-import com.example.lockerin.domain.model.Tarjeta
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCard
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.RadioButtonDefaults
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.lockerin.domain.model.Payment
 import com.example.lockerin.domain.model.Rental
+import com.example.lockerin.domain.model.Tarjeta
 import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.components.DrawerMenu
 import com.example.lockerin.presentation.ui.components.LoadingScreen
-import com.example.lockerin.presentation.ui.components.decrypt
-import com.example.lockerin.presentation.ui.components.generateAesKey
 import com.example.lockerin.presentation.ui.theme.Primary
 import com.example.lockerin.presentation.viewmodel.lockers.LockersViewModel
-import com.example.lockerin.presentation.viewmodel.rentals.RentalViewModel
 import com.example.lockerin.presentation.viewmodel.payment.CardsViewModel
 import com.example.lockerin.presentation.viewmodel.payment.PaymentViewModel
+import com.example.lockerin.presentation.viewmodel.rentals.RentalViewModel
 import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
 import com.google.firebase.firestore.FirebaseFirestore
@@ -70,10 +67,28 @@ import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
 import java.time.LocalDateTime
 import java.time.ZoneId
-import java.util.Date
 import java.time.format.DateTimeFormatter
+import java.util.Date
 import kotlin.random.Random
 
+
+/**
+ * Composable que representa la pantalla de pago donde el usuario puede seleccionar una tarjeta
+ * para pagar el alquiler de un casillero.
+ *
+ * @param userID El ID del usuario actual.
+ * @param lockerID El ID del casillero que se va a alquilar.
+ * @param startDate La fecha de inicio del alquiler en formato de cadena.
+ * @param endDate La fecha de fin del alquiler en formato de cadena.
+ * @param totalPrice El precio total del alquiler en formato de cadena.
+ * @param navController El controlador de navegación para manejar las transiciones entre pantallas.
+ * @param userViewModel ViewModel para la gestión de datos del usuario.
+ * @param lockersViewModel ViewModel para la gestión de datos de los casilleros.
+ * @param paymentViewModel ViewModel para la gestión de datos de pagos.
+ * @param cardsViewModel ViewModel para la gestión de datos de tarjetas.
+ * @param rentalViewModel ViewModel para la gestión de datos de alquileres.
+ * @param authViewModel ViewModel para la autenticación de usuarios.
+ */
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun PaymentScreen(
@@ -83,24 +98,33 @@ fun PaymentScreen(
     endDate: String,
     totalPrice: String,
     navController: NavHostController = rememberNavController(),
-    userViewModel: UsersViewModel= koinViewModel(),
-    lockersViewModel: LockersViewModel= koinViewModel(),
+    userViewModel: UsersViewModel = koinViewModel(),
+    lockersViewModel: LockersViewModel = koinViewModel(),
     paymentViewModel: PaymentViewModel = koinViewModel(),
     cardsViewModel: CardsViewModel = koinViewModel(),
     rentalViewModel: RentalViewModel = koinViewModel(),
-    authViewModel: AuthViewModel=koinViewModel(),
-    ) {
-
-
+    authViewModel: AuthViewModel = koinViewModel(),
+) {
+    // Obtiene el ID del usuario actual del AuthViewModel.
     val userId = authViewModel.currentUserId
+    // Recopila el estado del usuario.
     val userState by userViewModel.user.collectAsState()
+    // Recopila la lista de tarjetas del usuario.
     val cardsState by cardsViewModel.cards.collectAsState()
+
+    // Estado para controlar la visualización de la pantalla de carga.
     var isLoading by remember { mutableStateOf(true) }
+    // Estado para almacenar el ID de la tarjeta seleccionada.
+    var selectedCardId by remember { mutableStateOf<String?>(null) }
+
+    // Efecto que se lanza una vez que el Composable entra en la composición.
     LaunchedEffect(userID) {
         cardsViewModel.setUserId(userID)
         delay(1000)
         isLoading = false
     }
+
+    // Muestra la pantalla de carga si isLoading es verdadero.
     if (isLoading) {
         LoadingScreen(isLoading)
     } else {
@@ -117,7 +141,7 @@ fun PaymentScreen(
                         .padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    var selectedCardId by remember { mutableStateOf<String?>(null) }
+                    // Título de la sección de selección de tarjeta.
                     Text(
                         text = "Selecciona una tarjeta",
                         fontSize = 25.sp,
@@ -129,31 +153,34 @@ fun PaymentScreen(
                     )
                     Spacer(modifier = Modifier.padding(16.dp))
 
+                    // Lista desplazable de tarjetas del usuario.
                     LazyColumn(
                         modifier = Modifier
                             .background(Color.Transparent)
                     ) {
-                        items(
-                            cardsState
-                        ) { card ->
+                        items(cardsState) { card ->
                             key(card.cardID) {
                                 Log.d("Card", "Tarjeta: ${card.cardID}")
                                 CardsCard(
                                     tarjeta = card,
                                     isSelected = card.cardID == selectedCardId,
                                     onCardSelected = { selectedCardId = it },
-                                    )
+                                )
                             }
-
                         }
                     }
                     Spacer(modifier = Modifier.padding(16.dp))
+                    // Botón para añadir una nueva tarjeta.
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(8.dp)
                             .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp))
-                            .padding(16.dp),
+                            .padding(16.dp)
+                            .clickable {
+                                // Navega a la pantalla para añadir una nueva tarjeta.
+                                navController.navigate(Screen.AddCard.createRoute(userID))
+                            },
                     ) {
                         Text(
                             text = "Añadir una tarjeta nueva",
@@ -166,12 +193,10 @@ fun PaymentScreen(
                             imageVector = Icons.Default.AddCard,
                             contentDescription = "AddCard",
                             tint = Color.Black,
-                            modifier = Modifier.clickable {
-                                navController.navigate(Screen.AddCard.createRoute(userID))
-                            }
                         )
                     }
                     Spacer(modifier = Modifier.padding(16.dp))
+                    // Sección que muestra el precio total.
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -202,25 +227,28 @@ fun PaymentScreen(
                         )
                     }
 
-
-
-
                     Spacer(modifier = Modifier.padding(16.dp))
+                    // Botones de "Pagar" y "Cancelar".
                     Row {
                         Button(
+                            // El botón de pagar está habilitado solo si se ha seleccionado una tarjeta.
                             enabled = selectedCardId != null,
                             onClick = {
+                                // Genera un ID de alquiler aleatorio.
                                 val rentalIDRandom = generarNumeroSeisDigitos().toString()
-                                val currebntCardId=selectedCardId
-                                val rental= Rental(
+                                val currebntCardId = selectedCardId
+                                // Crea un objeto Rental con los datos del alquiler.
+                                val rental = Rental(
                                     rentalID = rentalIDRandom,
                                     userID = userID,
                                     lockerID = lockerID,
                                     startDate = transformDate(startDate),
                                     endDate = transformDate(endDate),
                                 )
+                                // Genera un nuevo ID de pago.
                                 val paymentID = FirebaseFirestore.getInstance().collection("payments").document().id
-                                val payment=Payment(
+                                // Crea un objeto Payment con los detalles del pago.
+                                val payment = Payment(
                                     paymentID = paymentID,
                                     userID = userID,
                                     rentalID = rental.rentalID,
@@ -228,19 +256,26 @@ fun PaymentScreen(
                                     amount = totalPrice.toDouble(),
                                     status = true,
                                 )
-                                if (payment.status==true){
-                                    lockersViewModel.setStatus(lockerID,false)
+                                // Si el pago es exitoso, actualiza el estado del casillero y añade el alquiler.
+                                if (payment.status == true) {
+                                    lockersViewModel.setStatus(lockerID, false)
                                     rentalViewModel.addRental(rental)
                                 }
-                                    paymentViewModel.addPayment(payment)
+                                // Añade el registro de pago.
+                                paymentViewModel.addPayment(payment)
 
+                                // Logs para depuración sobre los objetos creados.
                                 Log.d("Rental", "Alquiler agregado: $rental")
                                 Log.d("Payment", "Pago agregado: $payment")
+
+                                // Navega a la pantalla de estado de pago, pasando los IDs relevantes.
                                 navController.navigate(
                                     Screen.StatusPay.createRoute(
                                         userID,
                                         currebntCardId.toString(),
-                                        payment.paymentID,rentalIDRandom)){
+                                        payment.paymentID, rentalIDRandom
+                                    )
+                                ) {
                                     popUpTo(Screen.Payment.route) {
                                         inclusive = true
                                     }
@@ -248,7 +283,8 @@ fun PaymentScreen(
                             },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = Primary,
-                                disabledContainerColor = Color.Gray),
+                                disabledContainerColor = Color.Gray
+                            ),
                             modifier = Modifier.width(130.dp)
                         ) {
                             Text(text = "Pagar", fontWeight = FontWeight.Bold, color = Color.White)
@@ -256,6 +292,7 @@ fun PaymentScreen(
                         Spacer(modifier = Modifier.width(16.dp))
                         Button(
                             onClick = {
+                                // Navega de vuelta a la pantalla de inicio al cancelar.
                                 navController.navigate(Screen.Home.route)
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = Primary),
@@ -267,28 +304,46 @@ fun PaymentScreen(
                 }
             }
         )
-
     }
 }
 
+/**
+ * Genera un número aleatorio de seis dígitos.
+ * Este número se usa como ID de alquiler.
+ * @return Un número entero aleatorio entre 100000 y 999999 (inclusive).
+ */
 fun generarNumeroSeisDigitos(): Int {
     return Random.nextInt(100000, 1000000)
 }
 
+/**
+ * Transforma una cadena de fecha a un objeto `Date`.
+ * El formato de la cadena de entrada es "dd-MM-yyyy HH:mm".
+ * @param date La cadena de fecha a transformar.
+ * @return El objeto `Date` correspondiente a la cadena de fecha.
+ */
 @RequiresApi(Build.VERSION_CODES.O)
 fun transformDate(date: String): Date {
-    val formatter= DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
+    val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
     val localDateTime = LocalDateTime.parse(date, formatter)
     val instant = localDateTime.atZone(ZoneId.systemDefault()).toInstant()
     return Date.from(instant)
-
 }
+
+/**
+ * Composable que muestra la tarjeta de crédito del usuario con un botón de radio para seleccionarla.
+ *
+ * @param tarjeta El objeto `Tarjeta` que contiene los detalles de la tarjeta.
+ * @param isSelected Indica si esta tarjeta está actualmente seleccionada.
+ * @param onCardSelected Callback que se invoca cuando el usuario selecciona la tarjeta.
+ */
 @Composable
 fun CardsCard(
     tarjeta: Tarjeta,
     isSelected: Boolean,
     onCardSelected: (cardId: String) -> Unit,
 ) {
+    // Determina la imagen de la tarjeta basándose en el tipo de tarjeta.
     val imagen = when (tarjeta.typeCard) {
         "Visa" -> R.drawable.visa
         "MasterCard" -> R.drawable.mastercard
@@ -328,6 +383,7 @@ fun CardsCard(
                         .weight(1f)
                         .align(Alignment.CenterVertically)
                 )
+                // Botón de radio para seleccionar la tarjeta.
                 RadioButton(
                     selected = isSelected,
                     onClick = { onCardSelected(tarjeta.cardID) },
@@ -342,4 +398,3 @@ fun CardsCard(
         }
     }
 }
-

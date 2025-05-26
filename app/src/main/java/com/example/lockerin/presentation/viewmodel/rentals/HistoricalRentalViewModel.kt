@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -26,28 +27,37 @@ class HistoricalRentalViewModel(
 ) : ViewModel() {
     private val _userId = MutableStateFlow<String?>(null)
     val userId: StateFlow<String?> = _userId.asStateFlow()
-    private val _historicalRental: MutableStateFlow<HistoricRental?> = MutableStateFlow(null)
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val historicalRental: StateFlow<List<HistoricRental>> = _userId
-        .filterNotNull()
-        .flatMapLatest { userId: String ->
-            Log.e("HistoricalRentalViewModel", "Getting historic rentals for userId: ${userId}")
-            listHistoricRentalUseCase(userId).catch { e->
-                Log.e("HistoricalRentalViewModel", "Error fetching historical rentals: ${e.message}")
-                emit(emptyList())
+        .flatMapLatest { uid ->
+            if (uid != null && uid.isNotBlank()) {
+                Log.e("HistoricalRentalViewModel", "Getting historic rentals for userId: $uid")
+                listHistoricRentalUseCase(uid).catch { e->
+                    Log.e("HistoricalRentalViewModel", "Error fetching historical rentals: ${e.message}")
+                    emit(emptyList())
+                }
+            } else {
+                Log.w("HistoricalRentalViewModel", "UserId is null or blank, emitting empty list for historical rentals.")
+                flowOf(emptyList())
             }
         }
         .stateIn(viewModelScope, SharingStarted.Companion.WhileSubscribed(5000), emptyList())
 
-    fun setUserId(userId: String) {
-        _userId.value = userId
-        countHistoricRentals(userId)
+    fun setUserId(userId: String?) {
+        if (userId == null || userId.isBlank()) {
+            Log.w("HistoricalRentalViewModel", "setUserId called with null or blank ID. Setting _userId to null.")
+            _userId.value = null
+            countHistoricRentals(null)
+        } else {
+            Log.d("HistoricalRentalViewModel", "setUserId called with valid ID: $userId")
+            _userId.value = userId
+            countHistoricRentals(userId)
+        }
     }
 
     fun setStatus(historicRental: HistoricRental?, status: Boolean) {
         viewModelScope.launch {
-
             if (historicRental != null) {
                 val updatedHistoricRental = historicRental.copy(calificado = status)
                 editHistoricRentalUseCase(updatedHistoricRental)
@@ -61,10 +71,16 @@ class HistoricalRentalViewModel(
     private val _canceledCount = MutableStateFlow(0)
     val canceledCount: StateFlow<Int> = _canceledCount
 
-    fun countHistoricRentals(userId: String) {
+    fun countHistoricRentals(userId: String?) {
         viewModelScope.launch {
-            _payedCount.value = countHistoricUseCase(userId, status = true)
-            _canceledCount.value = countHistoricUseCase(userId, status = false)
+            if (userId != null && userId.isNotBlank()) {
+                _payedCount.value = countHistoricUseCase(userId, status = true)
+                _canceledCount.value = countHistoricUseCase(userId, status = false)
+            } else {
+                _payedCount.value = 0
+                _canceledCount.value = 0
+                Log.w("HistoricalRentalViewModel", "Cannot count historic rentals: userId is null or blank.")
+            }
         }
     }
 

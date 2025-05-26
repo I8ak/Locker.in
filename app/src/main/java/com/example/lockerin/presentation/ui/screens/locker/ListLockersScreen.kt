@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -72,18 +73,18 @@ fun ListLockersScreen(
     lockerViewModel: LockersViewModel = koinViewModel(),
     authViewModel: AuthViewModel = viewModel()
 ) {
-
     val userId = authViewModel.currentUserId
     val userState by userViewModel.user.collectAsState()
     val user = userViewModel.getUserById(userId.toString())
     userViewModel.getUserById(userID)
 
+    // Recopilamos la lista de lockers disponibles
     val lockers by lockerViewModel.lockers.collectAsState()
 
-
-
+    // Log para depuración
     Log.d("Locker en Screen", "Mapped Locker: $lockers")
 
+    // Componente de menú lateral
     DrawerMenu(
         textoBar = "Lockers",
         navController = navController,
@@ -98,6 +99,7 @@ fun ListLockersScreen(
                             .padding(innerPadding)
                             .background(BeigeClaro)
                     ) {
+                        // Lista desplazable de casilleros
                         LazyColumn(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -118,6 +120,7 @@ fun ListLockersScreen(
                     }
                 },
                 floatingActionButton = {
+                    // Botón flotante para añadir un nuevo casillero
                     Button(
                         onClick = {
                             navController.navigate(Screen.AddLocker.createRoute(userID))
@@ -136,25 +139,31 @@ fun ListLockersScreen(
             )
         }
     )
-
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun LockersCard(
-    user: User?, locker: Locker?, navController: NavHostController,
+    user: User?,
+    locker: Locker?,
+    navController: NavHostController,
     lockerViewModel: LockersViewModel
 ) {
+    // Si el casillero o el usuario son nulos, no se renderiza la tarjeta
     if (locker == null || user == null) {
         Log.d("Locker en Card", "Mapped Locker: $locker y user: $user")
         return
     }
+    // Log para depuración
     Log.d("Locker en Card", "Mapped Locker: $locker y user: $user")
+
+    // Determina la imagen del casillero según su tamaño
     val imagen = when (locker.size) {
         "Small" -> R.drawable.personal_bag
         "Medium" -> R.drawable.luggage
         else -> R.drawable.trolley
     }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -171,6 +180,7 @@ fun LockersCard(
                     .fillMaxSize()
                     .padding(8.dp)
             ) {
+                // Imagen del tipo de casillero
                 Image(
                     painter = painterResource(id = imagen),
                     contentDescription = "size ${locker.size}",
@@ -184,6 +194,7 @@ fun LockersCard(
                         .weight(1f)
                         .padding(end = 8.dp)
                 ) {
+                    // Información del casillero
                     Text(text = "Locker Id: ${locker.lockerID}", color = Color.Black)
                     Text(text = "Dirección: ${locker.location}", color = Color.Black)
                     Text(text = "Ciudad: ${locker.city}", color = Color.Black)
@@ -201,6 +212,7 @@ fun LockersCard(
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // Icono de edición
                 Icon(
                     Icons.Filled.Edit,
                     modifier = Modifier
@@ -217,6 +229,7 @@ fun LockersCard(
                     tint = Color.Black
                 )
                 Spacer(modifier = Modifier.width(8.dp))
+                // Icono de eliminación
                 Icon(
                     Icons.Filled.Delete,
                     modifier = Modifier
@@ -230,6 +243,4 @@ fun LockersCard(
             }
         }
     }
-
 }
-

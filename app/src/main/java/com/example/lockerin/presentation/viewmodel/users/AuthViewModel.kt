@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.lockerin.domain.model.User
+import com.example.lockerin.presentation.viewmodel.lockers.LockersViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
@@ -20,6 +21,7 @@ import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.GoogleAuthProvider
+import org.koin.androidx.compose.koinViewModel
 
 
 enum class AuthState{
@@ -207,8 +209,11 @@ class AuthViewModel : ViewModel(){
     }
 
 
-    fun signOut(){
+    fun signOut(lockersViewModel: LockersViewModel){
+
         viewModelScope.launch {
+            Log.d("AuthViewModel", "Usuario después de signOut: ${firebaseAuth.currentUser}")
+            lockersViewModel.clearState()
             firebaseAuth.signOut()
             _authState.value = AuthState.LOGGED_OUT
         }
@@ -252,21 +257,16 @@ class AuthViewModel : ViewModel(){
             user.delete()
                 .addOnCompleteListener { task ->
                     if(task.isSuccessful){
-                        firestore.collection("users").document(user.uid).delete()
-                            .addOnSuccessListener {
-                                onComplete(true, null)
-                            }
-                            .addOnFailureListener { e ->
-                                onComplete(false, e.message)
-                            }
-                    }else{
+                        onComplete(true, null)
+                    } else {
                         onComplete(false, task.exception?.message)
                     }
                 }
-        }else{
+        } else {
             onComplete(false, "Usuario no autenticado")
         }
     }
+
 
     fun sendPasswordResetEmail(
         email: String,

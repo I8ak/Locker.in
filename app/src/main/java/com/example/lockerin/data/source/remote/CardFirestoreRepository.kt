@@ -74,4 +74,23 @@ class CardFirestoreRepository(val firestore: FirebaseFirestore) {
             awaitClose { listener.remove() }
         }
     }
+
+    suspend fun getCardsByUserOnce(userId: String): List<Tarjeta> {
+        val snapshot = cardCollection.whereEqualTo("userId", userId).get().await()
+        return snapshot.documents.mapNotNull { doc ->
+            try {
+                doc.toObject(Tarjeta::class.java)?.copy(cardID = doc.id)
+            } catch (e: Exception) {
+                null
+            }
+        }
+    }
+
+    suspend fun deleteAllCardsByUser(userId: String) {
+        val cards = getCardsByUserOnce(userId)
+        cards.forEach { card ->
+            delete(card) // tu función ya existente
+        }
+    }
+
 }

@@ -25,7 +25,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
@@ -51,20 +50,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.autofill.AutofillNode
-import androidx.compose.ui.autofill.AutofillTree
-import androidx.compose.ui.autofill.AutofillType
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.White
-import androidx.compose.ui.platform.LocalAutofill
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.semantics.semantics
-
-
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -83,11 +75,6 @@ import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
-import com.google.firebase.Firebase
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.firestore.firestore
-
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -95,17 +82,19 @@ fun LoginScreen(
     navController: NavHostController,
     authViewModel: AuthViewModel = viewModel(),
 ) {
+    // Variables de estado
     var showDialog by remember { mutableStateOf(false) }
     var dialogMessage by remember { mutableStateOf("") }
-
-    val focusManager = LocalFocusManager.current
-    val emailFocusRequester = remember { FocusRequester() }
-    val passwordFocusRequester = remember { FocusRequester() }
-
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
 
+    // Gestión del foco
+    val focusManager = LocalFocusManager.current
+    val emailFocusRequester = remember { FocusRequester() }
+    val passwordFocusRequester = remember { FocusRequester() }
+
+    // Launcher para el resultado de la actividad de Google Sign-In
     val launcher =
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
@@ -129,24 +118,20 @@ fun LoginScreen(
             }
         }
 
-
-
-
+    // Diseño de la interfaz de usuario
     Surface(
         modifier = Modifier
             .fillMaxSize()
             .statusBarsPadding(), color = BeigeClaro
     ) {
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState()),
-
             verticalArrangement = Arrangement.SpaceBetween,
-
-            ) {
+        ) {
+            // Sección superior: Logo
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -159,34 +144,31 @@ fun LoginScreen(
                     modifier = Modifier.size(300.dp)
                 )
             }
+
+            // Sección central: Formulario de inicio de sesión
             Column(
                 modifier = Modifier
                     .weight(1f)
                     .offset(y = (-90).dp),
                 verticalArrangement = Arrangement.Center
             ) {
-
                 Text(
                     text = "Login",
                     fontSize = 40.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
                 )
-
                 Spacer(modifier = Modifier.padding(20.dp))
+
+                // Campo de entrada de email
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
-                    label = {
-                        Text(
-                            text = "Email",
-                            color = Color.Black
-                        )
-                    },
+                    label = { Text(text = "Email", color = Color.Black) },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Email,
-                            contentDescription = "Email Icon",
+                            contentDescription = "Icono de Email",
                             tint = Color.Black
                         )
                     },
@@ -201,9 +183,7 @@ fun LoginScreen(
                         imeAction = ImeAction.Next
                     ),
                     keyboardActions = KeyboardActions(
-                        onNext = {
-                            passwordFocusRequester.requestFocus()
-                        }
+                        onNext = { passwordFocusRequester.requestFocus() }
                     ),
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -216,27 +196,20 @@ fun LoginScreen(
                 )
                 Spacer(modifier = Modifier.padding(5.dp))
 
-
+                // Campo de entrada de contraseña
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
-                    label = {
-                        Text(
-                            text = "Password",
-                            color = Color.Black
-                        )
-                    },
+                    label = { Text(text = "Contraseña", color = Color.Black) },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Lock,
-                            contentDescription = "Password Icon",
+                            contentDescription = "Icono de Contraseña",
                             tint = Color.Black
                         )
                     },
                     trailingIcon = {
-                        IconButton(
-                            onClick = { passwordVisible = !passwordVisible }
-                        ) {
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
                             Icon(
                                 imageVector = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                                 contentDescription = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña",
@@ -256,9 +229,7 @@ fun LoginScreen(
                         imeAction = ImeAction.Done
                     ),
                     keyboardActions = KeyboardActions(
-                        onDone = {
-                            focusManager.clearFocus()
-                        }
+                        onDone = { focusManager.clearFocus() }
                     ),
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -270,14 +241,19 @@ fun LoginScreen(
                     singleLine = true
                 )
                 Spacer(modifier = Modifier.padding(5.dp))
+
+                // Enlace "¿Has olvidado la contraseña?"
                 Text(
                     text = "¿Has olvidado la contraseña?",
                     textDecoration = TextDecoration.Underline,
                     color = Color.Black,
                     modifier = Modifier.clickable {
                         navController.navigate(Screen.EmailResetPass.route)
-                    })
+                    }
+                )
                 Spacer(modifier = Modifier.padding(5.dp))
+
+                // Botón de iniciar sesión
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
@@ -304,22 +280,21 @@ fun LoginScreen(
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Primary),
                     ) {
-                        Text(
-                            text = "Ingresar",
-                            color = White
-                        )
+                        Text(text = "Ingresar", color = White)
                         Icon(
                             imageVector = Icons.Default.ArrowForward,
-                            contentDescription = "Row Icon",
+                            contentDescription = "Icono de flecha",
                             tint = White
                         )
                     }
                 }
+
+                // Divisor y botón de Google Sign-In
                 OrDivider()
-
                 GoogleSignInButton(launcher)
-
             }
+
+            // Sección inferior: Enlace de registro
             BottomAppBar(
                 modifier = Modifier.fillMaxWidth(),
                 containerColor = Color.Transparent,
@@ -328,9 +303,7 @@ fun LoginScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    Text(
-                        text = "¿No tienes una cuenta?", color = Color.Black
-                    )
+                    Text(text = "¿No tienes una cuenta?", color = Color.Black)
                     Spacer(modifier = Modifier.padding(5.dp))
                     Text(
                         text = "Regístrate",
@@ -339,13 +312,13 @@ fun LoginScreen(
                         modifier = Modifier.clickable {
                             navController.navigate(Screen.Register.route)
                         }
-
                     )
                 }
-
             }
         }
     }
+
+    // Diálogo para mensajes de error
     if (showDialog) {
         UserConfirmationDialog(
             onDismissRequest = { showDialog = false }, texto = dialogMessage
@@ -412,7 +385,7 @@ fun GoogleSignInButton(launcher: ManagedActivityResultLauncher<Intent, androidx.
     ) {
         Icon(
             painter = painterResource(id = R.mipmap.ic_google_foreground),
-            contentDescription = "Google Icon",
+            contentDescription = "Icono de Google",
             tint = Color.Unspecified,
             modifier = Modifier.size(28.dp)
         )
