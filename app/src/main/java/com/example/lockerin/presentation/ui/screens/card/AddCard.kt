@@ -66,6 +66,7 @@ import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import java.util.Calendar
 import java.util.Date
+
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AddCardScreen(
@@ -196,9 +197,9 @@ fun AddCardScreen(
                     OutlinedTextField(
                         value = expirationDate,
                         onValueChange = {
-                            if (it.length<=5){
+                            if (it.length <= 5) {
                                 expirationDate = it
-                                isValid=isExpirationDateValid(it)
+                                isValid = isExpirationDateValid(it)
                             }
                         },
                         label = {
@@ -210,7 +211,7 @@ fun AddCardScreen(
                         placeholder = {
                             Text("MM/YY", color = Color.Gray)
                         },
-                        isError = !isValid,
+                        isError = expirationDate.length == 5 && !isValid,
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(0.7f)
@@ -229,14 +230,16 @@ fun AddCardScreen(
                             focusedBorderColor = Color.Black,
                             unfocusedBorderColor = Color.Black,
                             focusedTextColor = Color.Black,
-                            unfocusedTextColor = Color.Black
+                            unfocusedTextColor = Color.Black,
+                            errorBorderColor = Color.Red,
+                            errorTextColor = Color.Red
                         ),
                         singleLine = true
                     )
                     Spacer(modifier = Modifier.padding(8.dp))
                     OutlinedTextField(
                         value = cvv,
-                        onValueChange = { if (it.length<=4)  cvv = it },
+                        onValueChange = { if (it.length <= 4) cvv = it },
                         label = {
                             Text(
                                 text = "CVV",
@@ -395,7 +398,6 @@ fun isExpirationDateValid(input: String): Boolean {
 
     val fullYear = 2000 + year
 
-    // Obtener fecha actual
     val now = java.time.YearMonth.now()
     val inputDate = java.time.YearMonth.of(fullYear, month)
 

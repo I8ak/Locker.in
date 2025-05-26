@@ -1,8 +1,11 @@
 package com.example.lockerin.presentation.ui.screens.reserveLocker
 
 import android.annotation.SuppressLint
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.util.Log
+import android.widget.RatingBar
 import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
@@ -59,7 +62,9 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.graphics.Color.Companion.White
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
+import androidx.core.content.ContextCompat.startActivity
 import com.example.lockerin.domain.model.HistoricRental
 import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.components.DrawerMenu
@@ -82,6 +87,7 @@ import java.util.Date
 import com.gowtham.ratingbar.RatingBar
 import com.gowtham.ratingbar.RatingBarConfig
 import java.nio.file.WatchEvent
+import androidx.core.net.toUri
 
 @SuppressLint("StateFlowValueCalledInComposition")
 @RequiresApi(Build.VERSION_CODES.O)
@@ -228,6 +234,8 @@ fun CardReserved(
         else -> R.drawable.trolley
     }
 
+    val context = LocalContext.current
+
     LaunchedEffect(payment?.cardID) {
         cardsViewModel.getCardById(payment?.cardID.toString())
     }
@@ -280,7 +288,13 @@ fun CardReserved(
                         Spacer(modifier = Modifier.size(8.dp))
                         Text(
                             text = "Localización: ${locker?.location},${locker?.city} ",
-                            color = Color.Black
+                            color = Color.Black,
+                            modifier = Modifier.clickable {
+                                val addressClick = "geo:0,0?q=${locker?.latitude},${locker?.longitude}(${locker?.location})".toUri()
+                                val mapIntent = Intent(Intent.ACTION_VIEW, addressClick)
+                                mapIntent.setPackage("com.google.android.apps.maps")
+                                startActivity(context, mapIntent, null)
+                            }
                         )
                         Spacer(modifier = Modifier.size(8.dp))
                         Text(text = "Precio: ${payment?.amount}€", color = Color.Black)

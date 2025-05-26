@@ -49,14 +49,20 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.autofill.AutofillNode
+import androidx.compose.ui.autofill.AutofillTree
+import androidx.compose.ui.autofill.AutofillType
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.White
+import androidx.compose.ui.platform.LocalAutofill
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.semantics
 
 
 import androidx.compose.ui.text.font.FontWeight
@@ -83,6 +89,7 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.firestore
 
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun LoginScreen(
     navController: NavHostController,
@@ -95,14 +102,12 @@ fun LoginScreen(
     val emailFocusRequester = remember { FocusRequester() }
     val passwordFocusRequester = remember { FocusRequester() }
 
-    Surface(
-        modifier = Modifier
-            .fillMaxSize()
-            .statusBarsPadding(), color = BeigeClaro
-    ) {
-        var email by remember { mutableStateOf("") }
-        val context = LocalContext.current
-        val launcher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
+
+    val launcher =
+        rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
             try {
                 val account = task.getResult(ApiException::class.java)
@@ -124,6 +129,14 @@ fun LoginScreen(
             }
         }
 
+
+
+
+    Surface(
+        modifier = Modifier
+            .fillMaxSize()
+            .statusBarsPadding(), color = BeigeClaro
+    ) {
 
         Column(
             modifier = Modifier
@@ -202,8 +215,7 @@ fun LoginScreen(
                     singleLine = true
                 )
                 Spacer(modifier = Modifier.padding(5.dp))
-                var password by remember { mutableStateOf("") }
-                var passwordVisible by remember { mutableStateOf(false) }
+
 
                 OutlinedTextField(
                     value = password,

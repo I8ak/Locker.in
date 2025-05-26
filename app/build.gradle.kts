@@ -61,6 +61,8 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material.icons.extended)
     implementation("com.google.accompanist:accompanist-flowlayout:0.30.1")
+    implementation ("androidx.compose.ui:ui:1.8.2")
+
 
 
     // BOMs

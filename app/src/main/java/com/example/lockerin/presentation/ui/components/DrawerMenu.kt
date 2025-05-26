@@ -2,6 +2,7 @@ package com.example.lockerin.presentation.ui.components
 
 import android.annotation.SuppressLint
 import android.graphics.BitmapFactory
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -85,7 +86,7 @@ fun DrawerMenu(
 
 
     ModalNavigationDrawer(
-        modifier = Modifier.statusBarsPadding(),
+        modifier = Modifier.statusBarsPadding().navigationBarsPadding(),
         drawerState = drawerState,
         drawerContent = {
             Column(
@@ -229,6 +230,7 @@ fun DrawerMenu(
                         }
                     )
 
+                    Log.e("DrawerMenu", "Role: $fullUser")
                     if (fullUser?.role == "administrator") {
                         DrawerItem(
                             icon = { Icon(Icons.Default.ShopTwo, "Lockers", tint = Color.Black) },

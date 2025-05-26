@@ -334,7 +334,8 @@ fun CardsCard(
                     modifier = Modifier
                         .align(Alignment.CenterVertically),
                     colors = RadioButtonDefaults.colors(
-                        selectedColor = Color.Black
+                        selectedColor = Color.Black,
+                        unselectedColor = Color.Gray
                     )
                 )
             }

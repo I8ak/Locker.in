@@ -174,7 +174,9 @@ class AuthViewModel : ViewModel(){
                                     userID = user.uid,
                                     name = user.displayName ?: "",
                                     email = user.email ?: "",
-                                    role = "user"
+                                    role = "user",
+                                    avatar = "-1739917",
+                                    tipo = 0
                                 )
                                 userRef.set(newUser)
                                     .addOnSuccessListener {

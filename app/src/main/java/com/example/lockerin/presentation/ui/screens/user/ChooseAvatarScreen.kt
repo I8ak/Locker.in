@@ -58,11 +58,7 @@ fun ChooseAvatarScreen(
     userViewModel: UsersViewModel = koinViewModel(),
     authViewModel: AuthViewModel = viewModel()
 ) {
-    BackHandler {
-        navController.navigate(Screen.Home.route) {
-            popUpTo(Screen.Home.route) { inclusive = true }
-        }
-    }
+
     if (userID == null) {
         LaunchedEffect(Unit) {
             navController.navigate(Screen.Login.route) {
