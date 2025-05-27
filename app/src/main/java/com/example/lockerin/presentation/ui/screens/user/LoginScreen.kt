@@ -68,7 +68,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.lockerin.R
+import com.example.lockerin.data.utils.NetworkUtils
 import com.example.lockerin.presentation.navigation.Screen
+import com.example.lockerin.presentation.ui.components.NoConexionDialog
 import com.example.lockerin.presentation.ui.theme.BeigeClaro
 import com.example.lockerin.presentation.ui.theme.Primary
 import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
@@ -84,6 +86,7 @@ fun LoginScreen(
 ) {
     // Variables de estado
     var showDialog by remember { mutableStateOf(false) }
+    var showDialogConection by remember { mutableStateOf(false) }
     var dialogMessage by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -93,6 +96,8 @@ fun LoginScreen(
     val focusManager = LocalFocusManager.current
     val emailFocusRequester = remember { FocusRequester() }
     val passwordFocusRequester = remember { FocusRequester() }
+
+    val context= LocalContext.current
 
     // Launcher para el resultado de la actividad de Google Sign-In
     val launcher =
@@ -105,7 +110,12 @@ fun LoginScreen(
                 if (idToken != null) {
                     authViewModel.signInWithGoogle(idToken) { success, error ->
                         if (success) {
-                            navController.navigate(Screen.Home.route)
+                            if (NetworkUtils.isInternetAvailable(context)) {
+                                navController.navigate(Screen.Home.route)
+
+                            } else {
+                                showDialogConection = true
+                            }
                         } else {
                             Log.e("LoginScreen", error ?: "Error desconocido")
                         }
@@ -248,7 +258,12 @@ fun LoginScreen(
                     textDecoration = TextDecoration.Underline,
                     color = Color.Black,
                     modifier = Modifier.clickable {
+                        if (NetworkUtils.isInternetAvailable(context)) {
                         navController.navigate(Screen.EmailResetPass.route)
+                        } else {
+                            showDialogConection = true
+                        }
+
                     }
                 )
                 Spacer(modifier = Modifier.padding(5.dp))
@@ -267,11 +282,16 @@ fun LoginScreen(
                             }
                             authViewModel.signIn(email, password) { success, errorMessage ->
                                 if (success) {
-                                    navController.navigate(Screen.Home.route) {
-                                        popUpTo(Screen.Login.route) {
-                                            inclusive = true
+                                    if (NetworkUtils.isInternetAvailable(context)) {
+                                        navController.navigate(Screen.Home.route) {
+                                            popUpTo(Screen.Login.route) {
+                                                inclusive = true
+                                            }
                                         }
+                                    } else {
+                                        showDialogConection = true
                                     }
+
                                 } else {
                                     dialogMessage = errorMessage.toString()
                                     showDialog = true
@@ -310,7 +330,7 @@ fun LoginScreen(
                         color = Primary,
                         textDecoration = TextDecoration.Underline,
                         modifier = Modifier.clickable {
-                            navController.navigate(Screen.Register.route)
+                                navController.navigate(Screen.Register.route)
                         }
                     )
                 }
@@ -360,20 +380,32 @@ fun UserConfirmationDialog(
 fun GoogleSignInButton(launcher: ManagedActivityResultLauncher<Intent, androidx.activity.result.ActivityResult>) {
     val context = LocalContext.current
 
+    var showDialogConection by remember { mutableStateOf(false) }
+    if (showDialogConection){
+        NoConexionDialog(
+            onDismiss = { showDialogConection = false }
+        )
+    }
+
     Button(
         onClick = {
-            val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken("6498666863-43gut27a2d6v86vsgi6fu8vgc8abucge.apps.googleusercontent.com")
-                .requestEmail()
-                .build()
+            if (NetworkUtils.isInternetAvailable(context)) {
+                val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestIdToken("6498666863-43gut27a2d6v86vsgi6fu8vgc8abucge.apps.googleusercontent.com")
+                    .requestEmail()
+                    .build()
 
-            val googleSignInClient = GoogleSignIn.getClient(context, gso)
-            launcher.launch(googleSignInClient.signInIntent)
+                val googleSignInClient = GoogleSignIn.getClient(context, gso)
+                launcher.launch(googleSignInClient.signInIntent)
 
-            googleSignInClient.signOut().addOnCompleteListener {
-                val signInIntent = googleSignInClient.signInIntent
-                launcher.launch(signInIntent)
+                googleSignInClient.signOut().addOnCompleteListener {
+                    val signInIntent = googleSignInClient.signInIntent
+                    launcher.launch(signInIntent)
+                }
+            } else {
+                showDialogConection = true
             }
+
         },
         modifier = Modifier
             .fillMaxWidth()

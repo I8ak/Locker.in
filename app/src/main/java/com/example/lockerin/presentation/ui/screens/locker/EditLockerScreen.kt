@@ -32,16 +32,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.lockerin.data.utils.NetworkUtils
 import com.example.lockerin.domain.model.Locker
 import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.components.CityDropdown
 import com.example.lockerin.presentation.ui.components.DrawerMenu
+import com.example.lockerin.presentation.ui.components.NoConexionDialog
 import com.example.lockerin.presentation.ui.theme.BeigeClaro
 import com.example.lockerin.presentation.ui.theme.Primary
 import com.example.lockerin.presentation.viewmodel.lockers.LockersViewModel
@@ -102,6 +105,14 @@ fun EditLockerScreen(
             longitude = locker!!.longitude
             latitude = locker!!.latitude
         }
+    }
+
+    val context = LocalContext.current
+    var showDialogConection by remember { mutableStateOf(false) }
+    if (showDialogConection) {
+        NoConexionDialog(
+            onDismiss = { showDialogConection = false }
+        )
     }
 
     // El contenido principal de la pantalla, envuelto en un DrawerMenu
@@ -362,19 +373,23 @@ fun EditLockerScreen(
                 // Botón para Editar Locker
                 Button(
                     onClick = {
-                        val editLocker = Locker(
-                            lockerID = lockerID,
-                            location = address,
-                            city = city,
-                            size = size,
-                            dimension = dimension,
-                            pricePerHour = pricePerHour,
-                            status = status,
-                            latitude = latitude,
-                            longitude = longitude
-                        )
-                        lockerViewModel.editLocker(editLocker)
-                        navController.navigate(Screen.ListLockers.createRoute(userID))
+                        if (NetworkUtils.isInternetAvailable(context)) {
+                            val editLocker = Locker(
+                                lockerID = lockerID,
+                                location = address,
+                                city = city,
+                                size = size,
+                                dimension = dimension,
+                                pricePerHour = pricePerHour,
+                                status = status,
+                                latitude = latitude,
+                                longitude = longitude
+                            )
+                            lockerViewModel.editLocker(editLocker)
+                            navController.navigate(Screen.ListLockers.createRoute(userID))
+                        } else {
+                            showDialogConection = true
+                        }
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Primary,

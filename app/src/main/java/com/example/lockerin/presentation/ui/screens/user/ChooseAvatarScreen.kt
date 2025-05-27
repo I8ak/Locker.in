@@ -36,9 +36,11 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.lockerin.R
+import com.example.lockerin.data.utils.NetworkUtils
 import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.components.DrawerMenu
 import com.example.lockerin.presentation.ui.components.LoadingScreen
+import com.example.lockerin.presentation.ui.components.NoConexionDialog
 import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
 import com.google.accompanist.flowlayout.FlowRow
@@ -155,6 +157,14 @@ fun ColorChoose(
 ) {
     val colors = listColor()
 
+    val context= LocalContext.current
+    var showDialogConection by remember { mutableStateOf(false) }
+    if (showDialogConection){
+        NoConexionDialog(
+            onDismiss = { showDialogConection = false }
+        )
+    }
+
     FlowRow(
         modifier = Modifier
             .fillMaxWidth()
@@ -171,7 +181,11 @@ fun ColorChoose(
                     .clip(CircleShape)
                     .background(color)
                     .clickable {
-                        onColorSelected(color)
+                        if (NetworkUtils.isInternetAvailable(context)) {
+                            onColorSelected(color)
+                        } else {
+                            showDialogConection = true
+                        }
                     },
                 contentAlignment = Alignment.Center
             ) {
@@ -211,6 +225,14 @@ fun DefaultAvatar(
 ) {
     val avatars = listAvatar()
 
+    val context= LocalContext.current
+    var showDialogConection by remember { mutableStateOf(false) }
+    if (showDialogConection){
+        NoConexionDialog(
+            onDismiss = { showDialogConection = false }
+        )
+    }
+
     FlowRow(
         modifier = Modifier
             .fillMaxWidth()
@@ -226,7 +248,11 @@ fun DefaultAvatar(
                     .size(60.dp)
                     .clip(CircleShape)
                     .clickable {
-                        onAvatarSelected(avatar)
+                        if (NetworkUtils.isInternetAvailable(context)) {
+                            onAvatarSelected(avatar)
+                        } else {
+                            showDialogConection = true
+                        }
                     },
                 contentAlignment = Alignment.Center
             ) {

@@ -40,7 +40,11 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -62,6 +66,7 @@ import com.example.lockerin.presentation.viewmodel.lockers.LockersViewModel
 import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
+import com.example.lockerin.data.utils.NetworkUtils
 
 import kotlin.io.encoding.ExperimentalEncodingApi
 
@@ -81,6 +86,14 @@ fun DrawerMenu(
     // Ancho del drawer, calculado como 2/3 del ancho de la pantalla
     val drawerWidth = with(LocalConfiguration.current) {
         screenWidthDp.dp * 2f / 3f
+    }
+
+    val context= LocalContext.current
+    var showDialogConection by remember { mutableStateOf(false) }
+    if (showDialogConection){
+        NoConexionDialog(
+            onDismiss = { showDialogConection = false }
+        )
     }
 
     ModalNavigationDrawer(
@@ -105,7 +118,11 @@ fun DrawerMenu(
                         modifier = Modifier
                             .padding(bottom = 16.dp)
                             .clickable {
-                                navController.navigate(Screen.Account.createRoute(userID = fullUser?.userID.toString()))
+                                if (NetworkUtils.isInternetAvailable(context)) {
+                                    navController.navigate(Screen.Account.createRoute(userID = fullUser?.userID.toString()))
+                                } else {
+                                    showDialogConection = true
+                                }
                             }
                     ) {
                         val tipo = fullUser?.tipo
@@ -161,9 +178,13 @@ fun DrawerMenu(
                         text = "Inicio",
                         onClick = {
                             scope.launch {
-                                drawerState.close() // Cierra el drawer
-                                navController.navigate(Screen.Home.route) {
-                                    launchSingleTop = true
+                                drawerState.close()
+                                if (NetworkUtils.isInternetAvailable(context)) {
+                                    navController.navigate(Screen.Home.route) {
+                                        launchSingleTop = true
+                                    }
+                                } else {
+                                    showDialogConection = true
                                 }
                             }
                         }
@@ -174,8 +195,12 @@ fun DrawerMenu(
                         onClick = {
                             scope.launch {
                                 drawerState.close()
-                                navController.navigate(Screen.ResrvedLockers.createRoute(userID = fullUser?.userID.toString())) {
-                                    launchSingleTop = true
+                                if (NetworkUtils.isInternetAvailable(context)) {
+                                    navController.navigate(Screen.ResrvedLockers.createRoute(userID = fullUser?.userID.toString())) {
+                                        launchSingleTop = true
+                                    }
+                                } else {
+                                    showDialogConection = true
                                 }
                             }
                         }
@@ -186,8 +211,12 @@ fun DrawerMenu(
                         onClick = {
                             scope.launch {
                                 drawerState.close()
-                                navController.navigate(Screen.Account.createRoute(userID = fullUser?.userID.toString())) {
-                                    launchSingleTop = true
+                                if (NetworkUtils.isInternetAvailable(context)) {
+                                    navController.navigate(Screen.Account.createRoute(userID = fullUser?.userID.toString())) {
+                                        launchSingleTop = true
+                                    }
+                                } else {
+                                    showDialogConection = true
                                 }
                             }
                         }
@@ -198,8 +227,12 @@ fun DrawerMenu(
                         onClick = {
                             scope.launch {
                                 drawerState.close()
-                                navController.navigate(Screen.MapScreen.route) {
-                                    launchSingleTop = true
+                                if (NetworkUtils.isInternetAvailable(context)) {
+                                    navController.navigate(Screen.MapScreen.route) {
+                                        launchSingleTop = true
+                                    }
+                                } else {
+                                    showDialogConection = true
                                 }
                             }
                         }
@@ -216,8 +249,12 @@ fun DrawerMenu(
                         onClick = {
                             scope.launch {
                                 drawerState.close()
-                                navController.navigate(Screen.Information.route) {
-                                    launchSingleTop = true
+                                if (NetworkUtils.isInternetAvailable(context)) {
+                                    navController.navigate(Screen.Information.route) {
+                                        launchSingleTop = true
+                                    }
+                                } else {
+                                    showDialogConection = true
                                 }
                             }
                         }
@@ -234,10 +271,14 @@ fun DrawerMenu(
                             onClick = {
                                 scope.launch {
                                     drawerState.close()
-                                    navController.navigate(
-                                        Screen.ListLockers.createRoute(fullUser.userID.toString())
-                                    ) {
-                                        launchSingleTop = true
+                                    if (NetworkUtils.isInternetAvailable(context)) {
+                                        navController.navigate(
+                                            Screen.ListLockers.createRoute(fullUser.userID.toString())
+                                        ) {
+                                            launchSingleTop = true
+                                        }
+                                    } else {
+                                        showDialogConection = true
                                     }
                                 }
                             }
@@ -258,9 +299,13 @@ fun DrawerMenu(
                             .clickable {
                                 scope.launch {
                                     drawerState.close()
-                                    authViewModel.signOut(lockersViewModel)
-                                    navController.navigate(Screen.Login.route) {
-                                        popUpTo(0)
+                                    if (NetworkUtils.isInternetAvailable(context)) {
+                                        authViewModel.signOut(lockersViewModel)
+                                        navController.navigate(Screen.Login.route) {
+                                            popUpTo(0)
+                                        }
+                                    } else {
+                                        showDialogConection = true
                                     }
                                 }
                             }

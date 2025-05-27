@@ -36,12 +36,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.White
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.lockerin.data.utils.NetworkUtils
+import com.example.lockerin.presentation.ui.components.NoConexionDialog
 import com.example.lockerin.presentation.ui.theme.BeigeClaro
 import com.example.lockerin.presentation.ui.theme.Primary
 import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
@@ -56,6 +59,14 @@ fun EmailResetPassScreen(
     var showDialog by remember { mutableStateOf(false) }
     var dialogMessage by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
+
+    val context= LocalContext.current
+    var showDialogConection by remember { mutableStateOf(false) }
+    if (showDialogConection){
+        NoConexionDialog(
+            onDismiss = { showDialogConection = false }
+        )
+    }
 
     // Diseño de la interfaz de usuario
     Scaffold(
@@ -130,20 +141,26 @@ fun EmailResetPassScreen(
 
             Button(
                 onClick = {
-                    if (email.isNotEmpty()) {
-                        authViewModel.sendPasswordResetEmail(email) { isSuccess, errorMessage ->
-                            if (isSuccess) {
-                                showDialog = true
-                                dialogMessage = "Enlace enviado, revisa tu correo"
-                            } else {
-                                showDialog = true
-                                dialogMessage = "Error al enviar el enlace: $errorMessage"
+                    if (NetworkUtils.isInternetAvailable(context)) {
+                        if (email.isNotEmpty()) {
+                            authViewModel.sendPasswordResetEmail(email) { isSuccess, errorMessage ->
+                                if (isSuccess) {
+                                    showDialog = true
+                                    dialogMessage = "Enlace enviado, revisa tu correo"
+                                } else {
+                                    showDialog = true
+                                    dialogMessage = "Error al enviar el enlace: $errorMessage"
+                                }
                             }
+                        } else {
+                            showDialog = true
+                            dialogMessage = "Por favor, introduce tu email para resetear la contraseña."
                         }
                     } else {
-                        showDialog = true
-                        dialogMessage = "Por favor, introduce tu email para resetear la contraseña."
+                        showDialogConection = true
                     }
+
+
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Primary),
             ) {

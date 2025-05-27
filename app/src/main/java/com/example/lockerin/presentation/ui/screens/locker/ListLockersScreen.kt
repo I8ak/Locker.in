@@ -28,6 +28,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -42,19 +43,28 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.White
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.lockerin.R
+import com.example.lockerin.data.utils.NetworkUtils
 import com.example.lockerin.domain.model.Locker
 import com.example.lockerin.domain.model.User
 import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.components.DrawerMenu
 import com.example.lockerin.presentation.ui.components.LoadingScreen
+import com.example.lockerin.presentation.ui.components.NoConexionDialog
+import com.example.lockerin.presentation.ui.screens.locker.DeleteConfirmationDialog
+import com.example.lockerin.presentation.ui.screens.user.UserConfirmationDialog
 import com.example.lockerin.presentation.ui.theme.BeigeClaro
 import com.example.lockerin.presentation.ui.theme.Primary
 import com.example.lockerin.presentation.viewmodel.lockers.LockersViewModel
@@ -77,6 +87,14 @@ fun ListLockersScreen(
     val userState by userViewModel.user.collectAsState()
     val user = userViewModel.getUserById(userId.toString())
     userViewModel.getUserById(userID)
+
+    val context= LocalContext.current
+    var showDialogConection by remember { mutableStateOf(false) }
+    if (showDialogConection){
+        NoConexionDialog(
+            onDismiss = { showDialogConection = false }
+        )
+    }
 
     // Recopilamos la lista de lockers disponibles
     val lockers by lockerViewModel.lockers.collectAsState()
@@ -123,7 +141,11 @@ fun ListLockersScreen(
                     // Botón flotante para añadir un nuevo casillero
                     Button(
                         onClick = {
-                            navController.navigate(Screen.AddLocker.createRoute(userID))
+                            if (NetworkUtils.isInternetAvailable(context)) {
+                                navController.navigate(Screen.AddLocker.createRoute(userID))
+                            } else {
+                                showDialogConection = true
+                            }
                         },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Primary,
@@ -162,6 +184,16 @@ fun LockersCard(
         "Small" -> R.drawable.personal_bag
         "Medium" -> R.drawable.luggage
         else -> R.drawable.trolley
+    }
+
+
+    val context= LocalContext.current
+    var showDialog by remember { mutableStateOf(false) }
+    var showDialogConection by remember { mutableStateOf(false) }
+    if (showDialogConection){
+        NoConexionDialog(
+            onDismiss = { showDialogConection = false }
+        )
     }
 
     Card(
@@ -218,12 +250,17 @@ fun LockersCard(
                     modifier = Modifier
                         .size(40.dp)
                         .clickable {
-                            navController.navigate(
-                                Screen.EditLocker.createRoute(
-                                    user.userID,
-                                    locker.lockerID
+                            if (NetworkUtils.isInternetAvailable(context)) {
+                                navController.navigate(
+                                    Screen.EditLocker.createRoute(
+                                        user.userID,
+                                        locker.lockerID
+                                    )
                                 )
-                            )
+                            } else {
+                                showDialogConection = true
+                            }
+
                         },
                     contentDescription = "Editar",
                     tint = Color.Black
@@ -235,12 +272,50 @@ fun LockersCard(
                     modifier = Modifier
                         .size(40.dp)
                         .clickable {
-                            lockerViewModel.deleteLocker(locker)
+                            if (locker.status==true && NetworkUtils.isInternetAvailable(context) ){
+                                lockerViewModel.deleteLocker(locker)
+                            }else{
+                                showDialog =true
+                            }
                         },
                     contentDescription = "Eliminar",
                     tint = Color.Black
                 )
             }
         }
+        if (showDialog) {
+            DeleteConfirmationDialog (
+                onDismissRequest = { showDialog = false }
+            )
+        }
     }
+}
+
+@Composable
+fun DeleteConfirmationDialog(
+    onDismissRequest: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        containerColor = BeigeClaro,
+        title = {
+            Text(
+                text = "No se puede eliminar di no esta libre",
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
+                fontSize = 20.sp,
+                color = Color.Black
+            )
+        },
+        confirmButton = {
+            Button(
+                onClick = onDismissRequest,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = Primary)
+            ) {
+                Text("Cerrar", color = White)
+            }
+        },
+        dismissButton = null
+    )
 }

@@ -37,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.White
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -46,9 +47,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.lockerin.R
+import com.example.lockerin.data.utils.NetworkUtils
 import com.example.lockerin.domain.model.Tarjeta
 import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.components.DrawerMenu
+import com.example.lockerin.presentation.ui.components.NoConexionDialog
 import com.example.lockerin.presentation.ui.theme.BeigeClaro
 import com.example.lockerin.presentation.ui.theme.Primary
 import com.example.lockerin.presentation.viewmodel.payment.CardsViewModel
@@ -68,6 +71,14 @@ fun CardsScreen(
     val userState by userViewModel.user.collectAsState()
     val user = userViewModel.getUserById(userId.toString())
     val cardsState by cardsViewModel.cards.collectAsState()
+
+    val context= LocalContext.current
+    var showDialogConection by remember { mutableStateOf(false) }
+    if (showDialogConection){
+        NoConexionDialog(
+            onDismiss = { showDialogConection = false }
+        )
+    }
 
     // Efecto para establecer el ID del usuario en el ViewModel de tarjetas cuando la pantalla se lanza
     LaunchedEffect(userId.toString()) {
@@ -109,7 +120,11 @@ fun CardsScreen(
                         .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp))
                         .padding(16.dp)
                         .clickable {
-                            navController.navigate(Screen.AddCard.createRoute(userId.toString()))
+                            if (NetworkUtils.isInternetAvailable(context)) {
+                                navController.navigate(Screen.AddCard.createRoute(userId.toString()))
+                            } else {
+                                showDialogConection = true
+                            }
                         }
                 ) {
                     Text(
@@ -146,6 +161,15 @@ fun CardsCard(
     }
     // Estado para controlar la visibilidad del diálogo de confirmación de eliminación
     var showDialog by remember { mutableStateOf(false) }
+
+    val context= LocalContext.current
+    var showDialogConection by remember { mutableStateOf(false) }
+    if (showDialogConection){
+        NoConexionDialog(
+            onDismiss = { showDialogConection = false }
+        )
+    }
+
 
     Card(
         modifier = Modifier
@@ -213,8 +237,13 @@ fun CardsCard(
                 if (showDialog) {
                     ConfirmDeleteCardDialog(
                         onConfirmation = {
-                            cardsViewModel.removeCard(tarjeta)
-                            showDialog = false
+                            if (NetworkUtils.isInternetAvailable(context)) {
+                                cardsViewModel.removeCard(tarjeta)
+                                showDialog = false
+                            } else {
+                                showDialogConection = true
+                            }
+
                         },
                         onDismissRequest = {
                             showDialog = false

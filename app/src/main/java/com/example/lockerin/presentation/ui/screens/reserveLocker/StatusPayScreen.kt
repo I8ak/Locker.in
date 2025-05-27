@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.example.lockerin.data.utils.NetworkUtils
 import com.example.lockerin.presentation.ui.theme.BeigeClaro
 import com.example.lockerin.presentation.ui.theme.myGreenColor
 import com.example.lockerin.presentation.viewmodel.payment.CardsViewModel
@@ -54,6 +55,7 @@ import java.util.Date
 import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.components.InfoRow
 import com.example.lockerin.presentation.ui.components.LoadingScreen
+import com.example.lockerin.presentation.ui.components.NoConexionDialog
 import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
 import java.util.Locale
@@ -98,6 +100,14 @@ fun StatusPayScreen(
         navController.navigate(Screen.Home.route) {
             popUpTo(Screen.Home.route) { inclusive = true }
         }
+    }
+
+    val context= LocalContext.current
+    var showDialogConection by remember { mutableStateOf(false) }
+    if (showDialogConection){
+        NoConexionDialog(
+            onDismiss = { showDialogConection = false }
+        )
     }
 
     // Recopila el estado del pago y la tarjeta del ViewModel.
@@ -149,7 +159,13 @@ fun StatusPayScreen(
                     },
                     navigationIcon = {
                         IconButton(
-                            onClick = { navController.navigate(Screen.Home.route) }
+                            onClick = {
+                                if (NetworkUtils.isInternetAvailable(context)) {
+                                    navController.navigate(Screen.Home.route)
+                                } else {
+                                    showDialogConection = true
+                                }
+                            }
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.ArrowBack,

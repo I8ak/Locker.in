@@ -28,17 +28,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.example.lockerin.domain.model.Locker
+import com.example.lockerin.data.utils.NetworkUtils
 import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.components.DrawerMenu
 import com.example.lockerin.presentation.ui.components.InfoRow
 import com.example.lockerin.presentation.ui.components.LoadingScreen
+import com.example.lockerin.presentation.ui.components.NoConexionDialog
 import com.example.lockerin.presentation.ui.theme.Primary
 import com.example.lockerin.presentation.viewmodel.lockers.LockersViewModel
 import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
@@ -62,6 +63,14 @@ fun DetailsScreen(
     val userState by userViewModel.user.collectAsState()
     val lockersViewModel: LockersViewModel = koinViewModel()
     val locker by lockersViewModel.selectedLocker.collectAsState()
+
+    val context= LocalContext.current
+    var showDialogConection by remember { mutableStateOf(false) }
+    if (showDialogConection){
+        NoConexionDialog(
+            onDismiss = { showDialogConection = false }
+        )
+    }
 
     var isLoading by remember { mutableStateOf(true) }
 
@@ -117,15 +126,19 @@ fun DetailsScreen(
                         Row {
                             Button(
                                 onClick = {
-                                    navController.navigate(
-                                        Screen.Payment.createRoute(
-                                            userID,
-                                            lockerID,
-                                            startDate,
-                                            endDate,
-                                            priceToDouble.toString()
+                                    if (NetworkUtils.isInternetAvailable(context)) {
+                                        navController.navigate(
+                                            Screen.Payment.createRoute(
+                                                userID,
+                                                lockerID,
+                                                startDate,
+                                                endDate,
+                                                priceToDouble.toString()
+                                            )
                                         )
-                                    )
+                                    } else {
+                                        showDialogConection = true
+                                    }
                                 },
                                 colors = ButtonDefaults.buttonColors(containerColor = Primary)
                             ) {

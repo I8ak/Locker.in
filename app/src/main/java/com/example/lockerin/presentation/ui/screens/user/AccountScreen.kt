@@ -5,6 +5,8 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.rememberScrollableState
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,9 +15,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.Lock
@@ -44,6 +48,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.White
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -55,9 +60,11 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import com.example.lockerin.data.utils.NetworkUtils
 import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.components.DrawerMenu
 import com.example.lockerin.presentation.ui.components.LoadingScreen
+import com.example.lockerin.presentation.ui.components.NoConexionDialog
 import com.example.lockerin.presentation.ui.theme.BeigeClaro
 import com.example.lockerin.presentation.ui.theme.Primary
 import com.example.lockerin.presentation.viewmodel.lockers.LockersViewModel
@@ -124,6 +131,7 @@ fun AccountScreen(
                         .fillMaxWidth()
                         .padding(it)
                         .padding(16.dp)
+                        .verticalScroll(rememberScrollState())
                 ) {
                     Spacer(modifier = Modifier.padding(8.dp))
                     // Muestra el nombre de usuario
@@ -216,6 +224,15 @@ fun ChangePass(authViewModel: AuthViewModel) {
     val newPasswordFocusRequester = remember { FocusRequester() }
     val confirmPasswordFocusRequester = remember { FocusRequester() }
 
+    val context= LocalContext.current
+    var showDialogConection by remember { mutableStateOf(false) }
+    if (showDialogConection){
+        NoConexionDialog(
+            onDismiss = { showDialogConection = false }
+        )
+    }
+
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -225,6 +242,7 @@ fun ChangePass(authViewModel: AuthViewModel) {
             .clickable {
                 isSelected = !isSelected
             }
+
     ) {
         Text(
             text = "Cambiar contraseña",
@@ -387,28 +405,32 @@ fun ChangePass(authViewModel: AuthViewModel) {
             ) {
                 Button(
                     onClick = {
-                        if (oldPassword.isEmpty() || newPassw.isEmpty() || confirmPass.isEmpty()) {
-                            dialogText = "Todos los campos deben estar llenos."
-                            showDialog = true
-                        } else if (newPassw.length < 6) {
-                            dialogText = "La nueva contraseña debe tener al menos 6 caracteres."
-                            showDialog = true
-                        } else if (!passwordsMatch) {
-                            dialogText = "Las contraseñas no coinciden."
-                            showDialog = true
-                        } else {
-                            authViewModel.updatePassword(oldPassword, newPassw) { success, errorMessage ->
-                                if (success) {
-                                    oldPassword = ""
-                                    newPassw = ""
-                                    confirmPass = ""
-                                    dialogText = "Contraseña cambiada exitosamente."
-                                    isSelected = false
-                                } else {
-                                    dialogText = errorMessage ?: "Error al cambiar la contraseña."
-                                }
+                        if (NetworkUtils.isInternetAvailable(context)) {
+                            if (oldPassword.isEmpty() || newPassw.isEmpty() || confirmPass.isEmpty()) {
+                                dialogText = "Todos los campos deben estar llenos."
                                 showDialog = true
+                            } else if (newPassw.length < 6) {
+                                dialogText = "La nueva contraseña debe tener al menos 6 caracteres."
+                                showDialog = true
+                            } else if (!passwordsMatch) {
+                                dialogText = "Las contraseñas no coinciden."
+                                showDialog = true
+                            } else {
+                                authViewModel.updatePassword(oldPassword, newPassw) { success, errorMessage ->
+                                    if (success) {
+                                        oldPassword = ""
+                                        newPassw = ""
+                                        confirmPass = ""
+                                        dialogText = "Contraseña cambiada exitosamente."
+                                        isSelected = false
+                                    } else {
+                                        dialogText = errorMessage ?: "Error al cambiar la contraseña."
+                                    }
+                                    showDialog = true
+                                }
                             }
+                        } else {
+                            showDialogConection = true
                         }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Primary),
@@ -438,6 +460,16 @@ fun DeleteAcount(
     var showDialog by remember { mutableStateOf(false) }
     var deleteErrorMessage by remember { mutableStateOf<String?>(null) }
 
+
+    var showDialogConection by remember { mutableStateOf(false) }
+    if (showDialogConection) {
+        NoConexionDialog(
+            onDismiss = { showDialogConection = false }
+        )
+    }
+
+    val context= LocalContext.current
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -463,29 +495,36 @@ fun DeleteAcount(
         if (showDialog) {
             ConfirmDeleteAccountDialog(
                 onConfirmation = {
-                    // Primero intenta borrar los datos del usuario de la base de datos
-                    userViewModel.deleteAccount(userId) { success, errorMessage ->
-                        if (success) {
-                            Log.d("DeleteAccount", "Datos de usuario eliminados de la base de datos.")
-                            // Si se borran los datos, intenta borrar la cuenta de autenticación
-                            authViewModel.deleteUser { success2, errorMessage2 ->
-                                if (success2) {
-                                    Log.d("DeleteAccount", "Cuenta de autenticación eliminada.")
-                                    // Si se borra la cuenta de autenticación, cierra la sesión y navega
-                                    authViewModel.signOut(lockersViewModel = lockersViewModel)
-                                    navController.navigate(Screen.Login.route) {
-                                        popUpTo(Screen.Login.route) { inclusive = true }
+                    if (NetworkUtils.isInternetAvailable(context)) {
+                        // Primero intenta borrar los datos del usuario de la base de datos
+                        userViewModel.deleteAccount(userId) { success, errorMessage ->
+                            if (success) {
+                                Log.d("DeleteAccount", "Datos de usuario eliminados de la base de datos.")
+                                // Si se borran los datos, intenta borrar la cuenta de autenticación
+                                authViewModel.deleteUser { success2, errorMessage2 ->
+                                    if (success2) {
+                                        Log.d("DeleteAccount", "Cuenta de autenticación eliminada.")
+                                        // Si se borra la cuenta de autenticación, cierra la sesión y navega
+                                        authViewModel.signOut(lockersViewModel = lockersViewModel)
+
+                                        navController.navigate(Screen.Login.route) {
+                                            popUpTo(Screen.Login.route) { inclusive = true }
+                                        }
+                                    } else {
+                                        deleteErrorMessage = errorMessage2 ?: "Error al eliminar la cuenta de autenticación."
+                                        Log.e("DeleteAccount", "Error al eliminar la cuenta de autenticación: $deleteErrorMessage")
                                     }
-                                } else {
-                                    deleteErrorMessage = errorMessage2 ?: "Error al eliminar la cuenta de autenticación."
-                                    Log.e("DeleteAccount", "Error al eliminar la cuenta de autenticación: $deleteErrorMessage")
                                 }
+                            } else {
+                                deleteErrorMessage = errorMessage ?: "Error al eliminar los datos del usuario de la base de datos."
+                                Log.e("DeleteAccount", "Error al eliminar datos de usuario de la base de datos: $deleteErrorMessage")
                             }
-                        } else {
-                            deleteErrorMessage = errorMessage ?: "Error al eliminar los datos del usuario de la base de datos."
-                            Log.e("DeleteAccount", "Error al eliminar datos de usuario de la base de datos: $deleteErrorMessage")
                         }
+                    } else {
+                        showDialogConection = true
                     }
+
+
                 },
                 onDismissRequest = {
                     showDialog = false
@@ -600,6 +639,13 @@ fun Cards(
     userID: String,
     navController: NavHostController
 ) {
+    val context= LocalContext.current
+    var showDialogConection by remember { mutableStateOf(false) }
+    if (showDialogConection) {
+        NoConexionDialog(
+            onDismiss = { showDialogConection = false }
+        )
+    }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -607,7 +653,11 @@ fun Cards(
             .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp))
             .padding(16.dp)
             .clickable {
-                navController.navigate(Screen.Cards.createRoute(userID))
+                if (NetworkUtils.isInternetAvailable(context)) {
+                    navController.navigate(Screen.Cards.createRoute(userID))
+                } else {
+                    showDialogConection = true
+                }
             }
     ) {
         Text(
@@ -620,10 +670,7 @@ fun Cards(
         Icon(
             imageVector = Icons.Default.CreditCard,
             contentDescription = "Tarjetas",
-            tint = Color.Black,
-            modifier = Modifier.clickable {
-                navController.navigate(Screen.Cards.createRoute(userID))
-            }
+            tint = Color.Black
         )
     }
 }
@@ -633,6 +680,13 @@ fun AvatarChoose(
     userID: String,
     navController: NavHostController
 ) {
+    val context= LocalContext.current
+    var showDialogConection by remember { mutableStateOf(false) }
+    if (showDialogConection){
+        NoConexionDialog(
+            onDismiss = { showDialogConection = false }
+        )
+    }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -640,7 +694,11 @@ fun AvatarChoose(
             .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp))
             .padding(16.dp)
             .clickable {
-                navController.navigate(Screen.ChooseAvatar.createRoute(userID))
+                if (NetworkUtils.isInternetAvailable(context)) {
+                    navController.navigate(Screen.ChooseAvatar.createRoute(userID))
+                } else {
+                    showDialogConection = true
+                }
             }
     ) {
         Text(

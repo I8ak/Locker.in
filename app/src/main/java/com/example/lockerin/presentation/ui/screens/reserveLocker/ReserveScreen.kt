@@ -66,7 +66,9 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.ui.text.font.FontWeight
+import com.example.lockerin.data.utils.NetworkUtils
 import com.example.lockerin.presentation.navigation.Screen
+import com.example.lockerin.presentation.ui.components.NoConexionDialog
 import com.example.lockerin.presentation.ui.theme.Primary
 import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
 import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
@@ -302,39 +304,19 @@ fun ReserveScreen(
     )
 }
 
-/**
- * Calcula la duración entre dos objetos `LocalDateTime` en horas.
- *
- * @param startDate El objeto `LocalDateTime` de inicio.
- * @param endDate El objeto `LocalDateTime` de fin.
- * @return La duración en horas como un `Double`.
- */
 @RequiresApi(Build.VERSION_CODES.O)
 fun calculateDuration(startDate: LocalDateTime, endDate: LocalDateTime): Double {
     val duration = Duration.between(startDate, endDate)
     return duration.toMinutes().toDouble() / 60
 }
 
-/**
- * Formatea un objeto `LocalDateTime` a una cadena de texto en formato "dd-MM-yyyy HH:mm".
- *
- * @param date El objeto `LocalDateTime` a formatear.
- * @return La cadena de texto formateada.
- */
 @RequiresApi(Build.VERSION_CODES.O)
 fun formatDateTime(date: LocalDateTime): String {
     val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
     return date.format(formatter)
 }
 
-/**
- * Composable para seleccionar una fecha.
- *
- * @param selectedDate La fecha actualmente seleccionada.
- * @param onDateSelected La función de callback que se invoca cuando se selecciona una fecha.
- * @param isError Indica si hay un error en la selección de la fecha.
- * @param modifier El `Modifier` para aplicar a este composable.
- */
+
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -408,14 +390,7 @@ fun DateSelector(
     }
 }
 
-/**
- * Composable para seleccionar una hora.
- *
- * @param selectedTime La hora actualmente seleccionada.
- * @param onTimeSelected La función de callback que se invoca cuando se selecciona una hora.
- * @param isError Indica si hay un error en la selección de la hora.
- * @param modifier El `Modifier` para aplicar a este composable.
- */
+
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun TimeSelector(
@@ -462,9 +437,9 @@ fun TimeSelector(
                     onTimeSelected(LocalTime.of(hour, minute))
                     showPicker = false
                 },
-                selectedTime?.hour ?: LocalTime.now().hour, // Establece la hora actual por defecto
-                selectedTime?.minute ?: LocalTime.now().minute, // Establece los minutos actuales por defecto
-                true // Formato de 24 horas
+                selectedTime?.hour ?: LocalTime.now().hour,
+                selectedTime?.minute ?: LocalTime.now().minute,
+                true
             )
         }
 
@@ -474,19 +449,7 @@ fun TimeSelector(
     }
 }
 
-/**
- * Composable para mostrar una tarjeta de casillero.
- *
- * @param userID El ID del usuario.
- * @param locker El objeto `Locker` a mostrar.
- * @param startDate La fecha de inicio de la reserva.
- * @param endDate La fecha de fin de la reserva.
- * @param rentalViewModel El `RentalViewModel` para verificar la disponibilidad del casillero.
- * @param navController El `NavHostController` para la navegación.
- * @param duration La duración de la reserva en horas.
- * @param startDateString La fecha de inicio de la reserva como cadena formateada.
- * @param endDateString La fecha de fin de la reserva como cadena formateada.
- */
+
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun LockersCard(
@@ -507,6 +470,15 @@ fun LockersCard(
         else -> R.drawable.trolley
     }
 
+    val context= LocalContext.current
+    var showDialogConection by remember { mutableStateOf(false) }
+    if (showDialogConection){
+        NoConexionDialog(
+            onDismiss = { showDialogConection = false }
+        )
+    }
+
+
     // Recopila el estado de disponibilidad del casillero del ViewModel.
     val lockerAvailabilityMap by rentalViewModel.lockerAvailability.collectAsState()
     val isAvailable = lockerAvailabilityMap[locker.lockerID] ?: false
@@ -524,17 +496,23 @@ fun LockersCard(
             .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp))
             .clickable {
                 // Navega a la pantalla de detalles solo si el casillero está disponible.
-                if (isAvailable) {
-                    navController.navigate(
-                        Screen.Details.createRoute(
-                            userID,
-                            locker.lockerID,
-                            startDateString,
-                            endDateString,
-                            (duration * locker.pricePerHour).toString()
+                if (NetworkUtils.isInternetAvailable(context)) {
+                    if (isAvailable) {
+                        navController.navigate(
+                            Screen.Details.createRoute(
+                                userID,
+                                locker.lockerID,
+                                startDateString,
+                                endDateString,
+                                (duration * locker.pricePerHour).toString()
+                            )
                         )
-                    )
+                    }
+                } else {
+                    showDialogConection = true
                 }
+
+
             },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(

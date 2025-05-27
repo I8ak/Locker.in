@@ -62,6 +62,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.lockerin.R
+import com.example.lockerin.data.utils.NetworkUtils
 import com.example.lockerin.domain.model.HistoricRental
 import com.example.lockerin.domain.model.Locker
 import com.example.lockerin.domain.model.Payment
@@ -69,6 +70,7 @@ import com.example.lockerin.domain.model.Rental
 import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.components.DrawerMenu
 import com.example.lockerin.presentation.ui.components.LoadingScreen
+import com.example.lockerin.presentation.ui.components.NoConexionDialog
 import com.example.lockerin.presentation.ui.theme.BeigeClaro
 import com.example.lockerin.presentation.ui.theme.Primary
 import com.example.lockerin.presentation.ui.theme.Secondary
@@ -110,6 +112,7 @@ fun ReservedLockersScreen(
     // Recopila el estado del usuario actual.
     val userState by usersViewModel.user.collectAsState()
 
+
     // Recopila los estados de los alquileres, casilleros, pagos e historial.
     val rentalState by rentalViewModel.rentals.collectAsState()
     val lockers by lockersViewModel.lockers.collectAsState()
@@ -124,6 +127,7 @@ fun ReservedLockersScreen(
         paymentViewModel.setUserId(userID)
         historicalRentalViewModel.setUserId(userID)
         historicalRentalViewModel.countHistoricRentals(userID)
+        usersViewModel.getUserById(userID)
     }
 
     // Estado para controlar la pantalla de carga.
@@ -225,13 +229,7 @@ fun ReservedLockersScreen(
     }
 }
 
-/**
- * Composable para mostrar la información de una reserva activa en una tarjeta.
- *
- * @param locker El casillero reservado.
- * @param rental La información del alquiler.
- * @param payment La información del pago.
- */
+
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun CardReserved(
@@ -252,6 +250,12 @@ fun CardReserved(
     }
 
     val context = LocalContext.current
+    var showDialogConection by remember { mutableStateOf(false) }
+    if (showDialogConection){
+        NoConexionDialog(
+            onDismiss = { showDialogConection = false }
+        )
+    }
 
     // Efecto para obtener la información de la tarjeta de crédito.
     LaunchedEffect(payment?.cardID) {
@@ -305,11 +309,15 @@ fun CardReserved(
                             color = Color.Black,
                             textDecoration = TextDecoration.Underline,
                             modifier = Modifier.clickable {
-                                val addressUri =
-                                    "geo:0,0?q=${locker?.latitude},${locker?.longitude}(${locker?.location})".toUri()
-                                val mapIntent = Intent(Intent.ACTION_VIEW, addressUri)
-                                mapIntent.setPackage("com.google.android.apps.maps")
-                                startActivity(context, mapIntent, null)
+                                if (NetworkUtils.isInternetAvailable(context)) {
+                                    val addressUri =
+                                        "geo:0,0?q=${locker?.latitude},${locker?.longitude}(${locker?.location})".toUri()
+                                    val mapIntent = Intent(Intent.ACTION_VIEW, addressUri)
+                                    mapIntent.setPackage("com.google.android.apps.maps")
+                                    startActivity(context, mapIntent, null)
+                                } else {
+                                    showDialogConection = true
+                                }
                             }
                         )
                         Spacer(modifier = Modifier.size(4.dp))
@@ -324,7 +332,11 @@ fun CardReserved(
                             Button(
                                 onClick = {
                                     rental?.let {
-                                        rentalViewModel.finalizeSpecificRental(it, false)
+                                        if (NetworkUtils.isInternetAvailable(context)) {
+                                            rentalViewModel.finalizeSpecificRental(it, false)
+                                        } else {
+                                            showDialogConection = true
+                                        }
                                     }
                                 },
                                 colors = ButtonDefaults.buttonColors(containerColor = Primary),
@@ -342,7 +354,12 @@ fun CardReserved(
                             Button(
                                 onClick = {
                                     rental?.let {
-                                        rentalViewModel.finalizeSpecificRental(it, true)
+                                        if (NetworkUtils.isInternetAvailable(context)) {
+                                            rentalViewModel.finalizeSpecificRental(it, true)
+                                        } else {
+                                            showDialogConection = true
+                                        }
+
                                     }
                                 },
                                 colors = ButtonDefaults.buttonColors(containerColor = Primary),
@@ -364,12 +381,7 @@ fun CardReserved(
     }
 }
 
-/**
- * Convierte un objeto Date a una cadena de texto formateada.
- *
- * @param endDate El objeto Date a convertir.
- * @return La cadena de texto formateada.
- */
+
 @RequiresApi(Build.VERSION_CODES.O)
 fun convertDateToString(endDate: Date?): String {
     val instant: Instant = endDate?.toInstant() ?: Date().toInstant()
@@ -378,11 +390,7 @@ fun convertDateToString(endDate: Date?): String {
     return localDateTime.format(formatter)
 }
 
-/**
- * Composable para mostrar una cuenta regresiva hasta una fecha específica.
- *
- * @param endDate La fecha de fin para la cuenta regresiva.
- */
+
 @Composable
 fun CountDown(endDate: Date?) {
     var timeLeftString by remember { mutableStateOf("Calculando...") }
@@ -422,13 +430,7 @@ fun CountDown(endDate: Date?) {
     Text(text = "Finaliza en $timeLeftString", color = Color.Black, fontSize = 20.sp)
 }
 
-/**
- * Composable para mostrar la información de un alquiler histórico en una tarjeta.
- *
- * @param historicRental La información del alquiler histórico.
- * @param lockersViewModel El ViewModel para gestionar la información de los casilleros.
- * @param historicalRentalViewModel El ViewModel para gestionar la información de los alquileres históricos.
- */
+
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun CardHistoricRents(
@@ -547,13 +549,7 @@ fun CardHistoricRents(
     }
 }
 
-/**
- * Composable para el diálogo de valoración del casillero.
- *
- * @param showDialog Estado para controlar la visualización del diálogo.
- * @param onDismiss Función para cerrar el diálogo.
- * @param onSubmit Función para enviar la valoración.
- */
+
 @Composable
 fun RatingDialog(
     showDialog: Boolean,
@@ -618,13 +614,7 @@ fun RatingDialog(
     }
 }
 
-/**
- * Composable para el icono desplegable que muestra estadísticas del historial de reservas.
- *
- * @param total El total de reservas en el historial.
- * @param payed El número de reservas pagadas.
- * @param canceled El número de reservas canceladas.
- */
+
 @Composable
 fun IconDesplegable(total: Int, payed: Int, canceled: Int) {
     var isExpanded by remember { mutableStateOf(false) }

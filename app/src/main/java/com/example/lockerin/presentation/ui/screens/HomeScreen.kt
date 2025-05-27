@@ -1,6 +1,7 @@
 package com.example.lockerin.presentation.ui.screens
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
@@ -47,7 +48,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import com.example.lockerin.data.utils.NetworkUtils
 import com.example.lockerin.presentation.ui.components.LoadingScreen
+import com.example.lockerin.presentation.ui.components.NoConexionDialog
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
@@ -68,6 +72,8 @@ fun HomeScreen(
     val scope = rememberCoroutineScope()
     var backPressedOnce by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(true) }
+
+    val context = LocalContext.current
 
     // Manejo del botón de retroceso
     BackHandler {
@@ -146,7 +152,8 @@ fun HomeScreen(
                                 nombre = "Madrid",
                                 cantidad = cantidadMadrid,
                                 imagen = R.drawable.madrid,
-                                navController = navController
+                                navController = navController,
+                                context = context
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             CiudadCard(
@@ -154,7 +161,8 @@ fun HomeScreen(
                                 nombre = "Barcelona",
                                 cantidad = cantidadBarcelona,
                                 imagen = R.drawable.barcelona,
-                                navController = navController
+                                navController = navController,
+                                context = context
                             )
                         }
                         Spacer(modifier = Modifier.weight(2f))
@@ -174,6 +182,14 @@ fun Reservas(
     val rentalViewModel: RentalViewModel = koinViewModel()
     val rentalCount by rentalViewModel.rentalCount.collectAsState()
 
+    val context= LocalContext.current
+    var showDialogConection by remember { mutableStateOf(false) }
+    if (showDialogConection){
+        NoConexionDialog(
+            onDismiss = { showDialogConection = false }
+        )
+    }
+
     LaunchedEffect(userID) {
         rentalViewModel.countRentals(userID)
     }
@@ -186,7 +202,11 @@ fun Reservas(
             .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp))
             .padding(6.dp)
             .clickable {
-                navController.navigate(Screen.ResrvedLockers.createRoute(userID))
+                if (NetworkUtils.isInternetAvailable(context)) {
+                    navController.navigate(Screen.ResrvedLockers.createRoute(userID))
+                } else {
+                    showDialogConection = true
+                }
             },
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -218,8 +238,15 @@ fun CiudadCard(
     nombre: String,
     cantidad: Int,
     imagen: Int,
-    navController: NavHostController
+    navController: NavHostController,
+    context: Context
 ) {
+    var showDialog by remember { mutableStateOf(false) }
+    if (showDialog) {
+        NoConexionDialog(
+            onDismiss = { showDialog = false }
+        )
+    }
     Row(
         modifier = Modifier
             .background(BeigeClaro)
@@ -227,7 +254,16 @@ fun CiudadCard(
             .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp))
             .padding(12.dp)
             .clickable {
-                navController.navigate(Screen.Reserve.createRoute(userID = userId, city = nombre))
+                if (NetworkUtils.isInternetAvailable(context)) {
+                    navController.navigate(
+                        Screen.Reserve.createRoute(
+                            userID = userId,
+                            city = nombre
+                        )
+                    )
+                } else {
+                    showDialog = true
+                }
             },
         verticalAlignment = Alignment.CenterVertically
     ) {

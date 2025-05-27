@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import com.example.lockerin.data.utils.NetworkUtils
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -68,6 +69,7 @@ import androidx.navigation.NavHostController
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.lockerin.presentation.navigation.Screen
+import com.example.lockerin.presentation.ui.components.NoConexionDialog
 import com.example.lockerin.presentation.ui.theme.BeigeClaro
 import com.example.lockerin.presentation.ui.theme.Primary
 import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
@@ -98,6 +100,15 @@ fun RegisterScreen(
     val emailFocusRequester = remember { FocusRequester() }
     val passwordFocusRequester = remember { FocusRequester() }
     val confirmPasswordFocusRequester = remember { FocusRequester() }
+
+    var showDialogConection by remember { mutableStateOf(false) }
+    if (showDialogConection){
+        NoConexionDialog(
+            onDismiss = { showDialogConection = false }
+        )
+    }
+
+    val context= LocalContext.current
 
     // Diseño de la interfaz de usuario
     Scaffold(
@@ -389,10 +400,14 @@ fun RegisterScreen(
                                     userRole
                                 ) { success, errorMessage ->
                                     if (success) {
-                                        navController.navigate(Screen.Home.route) {
-                                            popUpTo(Screen.Register.route) {
-                                                inclusive = true
+                                        if (NetworkUtils.isInternetAvailable(context)) {
+                                            navController.navigate(Screen.Home.route) {
+                                                popUpTo(Screen.Register.route) {
+                                                    inclusive = true
+                                                }
                                             }
+                                        } else {
+                                            showDialogConection  = true
                                         }
                                     } else {
                                         scope.launch {
@@ -456,8 +471,12 @@ fun RegisterScreen(
                         color = Primary,
                         textDecoration = TextDecoration.Underline,
                         modifier = Modifier.clickable {
-                            navController.navigate(Screen.Login.route) {
-                                popUpTo(0)
+                            if (NetworkUtils.isInternetAvailable(context)) {
+                                navController.navigate(Screen.Login.route) {
+                                    popUpTo(0)
+                                }
+                            } else {
+                                showDialogConection = true
                             }
                         }
                     )

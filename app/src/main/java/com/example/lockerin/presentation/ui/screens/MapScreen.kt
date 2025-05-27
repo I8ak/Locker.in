@@ -11,21 +11,30 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.lockerin.presentation.navigation.Screen
+import com.example.lockerin.presentation.viewmodel.users.AuthViewModel
+import com.example.lockerin.presentation.viewmodel.users.UsersViewModel
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun MapScreen(navController: NavHostController) {
+fun MapScreen(
+    navController: NavHostController,
+    authViewModel: AuthViewModel= viewModel(),
+    usersViewModel: UsersViewModel= koinViewModel()
+) {
     // Manejo del botón de retroceso para volver a la pantalla de inicio
     BackHandler {
         navController.navigate(Screen.Home.route) {
             popUpTo(Screen.Home.route) { inclusive = true }
         }
     }
+    val userId= authViewModel.currentUserId
 
     val context = LocalContext.current
     var userLocation by remember { mutableStateOf<LatLng?>(null) }
@@ -43,6 +52,7 @@ fun MapScreen(navController: NavHostController) {
 
     // Efecto lanzado al iniciar el Composable para verificar y solicitar permisos de ubicación
     LaunchedEffect(Unit) {
+        usersViewModel.getUserById(userId.toString())
         val granted = ContextCompat.checkSelfPermission(
             context, Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED

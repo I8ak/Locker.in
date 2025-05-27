@@ -40,6 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -49,12 +50,14 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.lockerin.R
+import com.example.lockerin.data.utils.NetworkUtils
 import com.example.lockerin.domain.model.Payment
 import com.example.lockerin.domain.model.Rental
 import com.example.lockerin.domain.model.Tarjeta
 import com.example.lockerin.presentation.navigation.Screen
 import com.example.lockerin.presentation.ui.components.DrawerMenu
 import com.example.lockerin.presentation.ui.components.LoadingScreen
+import com.example.lockerin.presentation.ui.components.NoConexionDialog
 import com.example.lockerin.presentation.ui.theme.Primary
 import com.example.lockerin.presentation.viewmodel.lockers.LockersViewModel
 import com.example.lockerin.presentation.viewmodel.payment.CardsViewModel
@@ -124,6 +127,14 @@ fun PaymentScreen(
         isLoading = false
     }
 
+    val context = LocalContext.current
+    var showDialogConection by remember { mutableStateOf(false) }
+    if (showDialogConection) {
+        NoConexionDialog(
+            onDismiss = { showDialogConection = false }
+        )
+    }
+
     // Muestra la pantalla de carga si isLoading es verdadero.
     if (isLoading) {
         LoadingScreen(isLoading)
@@ -178,8 +189,11 @@ fun PaymentScreen(
                             .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp))
                             .padding(16.dp)
                             .clickable {
-                                // Navega a la pantalla para añadir una nueva tarjeta.
-                                navController.navigate(Screen.AddCard.createRoute(userID))
+                                if (NetworkUtils.isInternetAvailable(context)) {
+                                    navController.navigate(Screen.AddCard.createRoute(userID))
+                                } else {
+                                    showDialogConection = true
+                                }
                             },
                     ) {
                         Text(
@@ -234,52 +248,59 @@ fun PaymentScreen(
                             // El botón de pagar está habilitado solo si se ha seleccionado una tarjeta.
                             enabled = selectedCardId != null,
                             onClick = {
-                                // Genera un ID de alquiler aleatorio.
-                                val rentalIDRandom = generarNumeroSeisDigitos().toString()
-                                val currebntCardId = selectedCardId
-                                // Crea un objeto Rental con los datos del alquiler.
-                                val rental = Rental(
-                                    rentalID = rentalIDRandom,
-                                    userID = userID,
-                                    lockerID = lockerID,
-                                    startDate = transformDate(startDate),
-                                    endDate = transformDate(endDate),
-                                )
-                                // Genera un nuevo ID de pago.
-                                val paymentID = FirebaseFirestore.getInstance().collection("payments").document().id
-                                // Crea un objeto Payment con los detalles del pago.
-                                val payment = Payment(
-                                    paymentID = paymentID,
-                                    userID = userID,
-                                    rentalID = rental.rentalID,
-                                    cardID = currebntCardId.toString(),
-                                    amount = totalPrice.toDouble(),
-                                    status = true,
-                                )
-                                // Si el pago es exitoso, actualiza el estado del casillero y añade el alquiler.
-                                if (payment.status == true) {
-                                    lockersViewModel.setStatus(lockerID, false)
-                                    rentalViewModel.addRental(rental)
-                                }
-                                // Añade el registro de pago.
-                                paymentViewModel.addPayment(payment)
-
-                                // Logs para depuración sobre los objetos creados.
-                                Log.d("Rental", "Alquiler agregado: $rental")
-                                Log.d("Payment", "Pago agregado: $payment")
-
-                                // Navega a la pantalla de estado de pago, pasando los IDs relevantes.
-                                navController.navigate(
-                                    Screen.StatusPay.createRoute(
-                                        userID,
-                                        currebntCardId.toString(),
-                                        payment.paymentID, rentalIDRandom
+                                if (NetworkUtils.isInternetAvailable(context)) {
+                                    // Genera un ID de alquiler aleatorio.
+                                    val rentalIDRandom = generarNumeroSeisDigitos().toString()
+                                    val currebntCardId = selectedCardId
+                                    // Crea un objeto Rental con los datos del alquiler.
+                                    val rental = Rental(
+                                        rentalID = rentalIDRandom,
+                                        userID = userID,
+                                        lockerID = lockerID,
+                                        startDate = transformDate(startDate),
+                                        endDate = transformDate(endDate),
                                     )
-                                ) {
-                                    popUpTo(Screen.Payment.route) {
-                                        inclusive = true
+                                    // Genera un nuevo ID de pago.
+                                    val paymentID =
+                                        FirebaseFirestore.getInstance().collection("payments")
+                                            .document().id
+                                    // Crea un objeto Payment con los detalles del pago.
+                                    val payment = Payment(
+                                        paymentID = paymentID,
+                                        userID = userID,
+                                        rentalID = rental.rentalID,
+                                        cardID = currebntCardId.toString(),
+                                        amount = totalPrice.toDouble(),
+                                        status = true,
+                                    )
+                                    // Si el pago es exitoso, actualiza el estado del casillero y añade el alquiler.
+                                    if (payment.status == true) {
+                                        lockersViewModel.setStatus(lockerID, false)
+                                        rentalViewModel.addRental(rental)
                                     }
+                                    // Añade el registro de pago.
+                                    paymentViewModel.addPayment(payment)
+
+                                    // Logs para depuración sobre los objetos creados.
+                                    Log.d("Rental", "Alquiler agregado: $rental")
+                                    Log.d("Payment", "Pago agregado: $payment")
+
+                                    // Navega a la pantalla de estado de pago, pasando los IDs relevantes.
+                                    navController.navigate(
+                                        Screen.StatusPay.createRoute(
+                                            userID,
+                                            currebntCardId.toString(),
+                                            payment.paymentID, rentalIDRandom
+                                        )
+                                    ) {
+                                        popUpTo(Screen.Payment.route) {
+                                            inclusive = true
+                                        }
+                                    }
+                                } else {
+                                    showDialogConection = true
                                 }
+
                             },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = Primary,
@@ -292,13 +313,20 @@ fun PaymentScreen(
                         Spacer(modifier = Modifier.width(16.dp))
                         Button(
                             onClick = {
-                                // Navega de vuelta a la pantalla de inicio al cancelar.
-                                navController.navigate(Screen.Home.route)
+                                if (NetworkUtils.isInternetAvailable(context)) {
+                                    navController.navigate(Screen.Home.route)
+                                } else {
+                                    showDialogConection = true
+                                }
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = Primary),
                             modifier = Modifier.width(130.dp)
                         ) {
-                            Text(text = "Cancelar", fontWeight = FontWeight.Bold, color = Color.White)
+                            Text(
+                                text = "Cancelar",
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
                         }
                     }
                 }
@@ -307,21 +335,12 @@ fun PaymentScreen(
     }
 }
 
-/**
- * Genera un número aleatorio de seis dígitos.
- * Este número se usa como ID de alquiler.
- * @return Un número entero aleatorio entre 100000 y 999999 (inclusive).
- */
+
 fun generarNumeroSeisDigitos(): Int {
     return Random.nextInt(100000, 1000000)
 }
 
-/**
- * Transforma una cadena de fecha a un objeto `Date`.
- * El formato de la cadena de entrada es "dd-MM-yyyy HH:mm".
- * @param date La cadena de fecha a transformar.
- * @return El objeto `Date` correspondiente a la cadena de fecha.
- */
+
 @RequiresApi(Build.VERSION_CODES.O)
 fun transformDate(date: String): Date {
     val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
@@ -330,13 +349,7 @@ fun transformDate(date: String): Date {
     return Date.from(instant)
 }
 
-/**
- * Composable que muestra la tarjeta de crédito del usuario con un botón de radio para seleccionarla.
- *
- * @param tarjeta El objeto `Tarjeta` que contiene los detalles de la tarjeta.
- * @param isSelected Indica si esta tarjeta está actualmente seleccionada.
- * @param onCardSelected Callback que se invoca cuando el usuario selecciona la tarjeta.
- */
+
 @Composable
 fun CardsCard(
     tarjeta: Tarjeta,
