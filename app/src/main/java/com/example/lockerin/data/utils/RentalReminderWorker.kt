@@ -3,6 +3,7 @@ package com.example.lockerin.data.utils
 import android.Manifest
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import androidx.work.CoroutineWorker
@@ -30,9 +31,14 @@ class RentalReminderWorker(
 
         val now = LocalDateTime.now()
         val in10Minutes = now.plusMinutes(10)
-
+        Log.d("MainActivityNOtificatios", "⏱ Rentals encontrados: ${rentals.size}")
         rentals.forEach { rental ->
+            Log.d("MainActivityNOtificatios", "🔍 Rental: ${rental.endDate}")
             val endTime = rental.endDate?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalDateTime()
+            Log.d("RentalReminderWorker", "⏰ now: $now")
+            Log.d("RentalReminderWorker", "⏰ in10Minutes: $in10Minutes")
+            Log.d("RentalReminderWorker", "⏰ endTime: $endTime")
+
             if (endTime != null &&
                 endTime.isAfter(now) &&
                 endTime.isBefore(in10Minutes)) {

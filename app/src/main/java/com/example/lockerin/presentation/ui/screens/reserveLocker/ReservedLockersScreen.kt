@@ -100,7 +100,8 @@ fun ReservedLockersScreen(
     rentalViewModel: RentalViewModel = koinViewModel(),
     paymentViewModel: PaymentViewModel = koinViewModel(),
     usersViewModel: UsersViewModel = koinViewModel(),
-    historicalRentalViewModel: HistoricalRentalViewModel = koinViewModel()
+    historicalRentalViewModel: HistoricalRentalViewModel = koinViewModel(),
+    authViewModel: AuthViewModel = viewModel()
 ) {
     // Maneja el botón de retroceso para navegar a la pantalla de inicio.
     BackHandler {
@@ -110,7 +111,10 @@ fun ReservedLockersScreen(
     }
 
     // Recopila el estado del usuario actual.
+    val userId = authViewModel.currentUserId
     val userState by usersViewModel.user.collectAsState()
+    usersViewModel.getUserById(userId.toString())
+
 
 
     // Recopila los estados de los alquileres, casilleros, pagos e historial.
