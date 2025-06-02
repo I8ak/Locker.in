@@ -396,7 +396,6 @@ fun GoogleSignInButton(launcher: ManagedActivityResultLauncher<Intent, androidx.
                     .build()
 
                 val googleSignInClient = GoogleSignIn.getClient(context, gso)
-                launcher.launch(googleSignInClient.signInIntent)
 
                 googleSignInClient.signOut().addOnCompleteListener {
                     val signInIntent = googleSignInClient.signInIntent
@@ -405,7 +404,6 @@ fun GoogleSignInButton(launcher: ManagedActivityResultLauncher<Intent, androidx.
             } else {
                 showDialogConection = true
             }
-
         },
         modifier = Modifier
             .fillMaxWidth()

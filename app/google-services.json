@@ -14,11 +14,19 @@
       },
       "oauth_client": [
         {
-          "client_id": "6498666863-ob1rav9amcmnb30t436o4i7jiiq65bft.apps.googleusercontent.com",
+          "client_id": "6498666863-ik10i4g8542m9s9vj7al8p4j8b0n6fgr.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.example.lockerin",
-            "certificate_hash": "0a461ade9aee7b63f1ff5015eb6949b88d9ffa31"
+            "certificate_hash": "9adcad98f26720c725b1ec7e1ab2b4851cee0e9f"
+          }
+        },
+        {
+          "client_id": "6498666863-p66u23hkh3hrfpg53dufbehl6h7mpmsd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.lockerin",
+            "certificate_hash": "f45846d67a64d24134ed19ebdbc1ffee253e8c42"
           }
         },
         {
