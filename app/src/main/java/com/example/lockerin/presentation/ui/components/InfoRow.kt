@@ -34,7 +34,8 @@ fun InfoRow(label: String, value: String) {
                 .background(Color.LightGray)
                 .padding(8.dp)
                 .height(60.dp)
-                .weight(1f),
+                .weight(1f)
+                .verticalScroll(rememberScrollState()),
             fontSize = 20.sp,
             color = Color.Black
         )
