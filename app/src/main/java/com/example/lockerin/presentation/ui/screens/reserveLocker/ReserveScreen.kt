@@ -511,8 +511,6 @@ fun LockersCard(
                 } else {
                     showDialogConection = true
                 }
-
-
             },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(

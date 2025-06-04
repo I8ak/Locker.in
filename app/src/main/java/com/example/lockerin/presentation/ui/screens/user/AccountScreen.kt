@@ -197,7 +197,13 @@ fun AccountScreen(
                     Spacer(modifier = Modifier.padding(8.dp))
                     ChangePass(authViewModel)
                     Spacer(modifier = Modifier.padding(8.dp))
-                    DeleteAcount(authViewModel, navController, userViewModel, lockersViewModel, userId.toString())
+                    DeleteAcount(
+                        authViewModel,
+                        navController,
+                        userViewModel,
+                        lockersViewModel,
+                        userId.toString()
+                    )
                     Spacer(modifier = Modifier.padding(8.dp))
                     Cards(userId.toString(), navController)
                     Spacer(modifier = Modifier.padding(8.dp))
@@ -224,9 +230,9 @@ fun ChangePass(authViewModel: AuthViewModel) {
     val newPasswordFocusRequester = remember { FocusRequester() }
     val confirmPasswordFocusRequester = remember { FocusRequester() }
 
-    val context= LocalContext.current
+    val context = LocalContext.current
     var showDialogConection by remember { mutableStateOf(false) }
-    if (showDialogConection){
+    if (showDialogConection) {
         NoConexionDialog(
             onDismiss = { showDialogConection = false }
         )
@@ -416,7 +422,10 @@ fun ChangePass(authViewModel: AuthViewModel) {
                                 dialogText = "Las contraseñas no coinciden."
                                 showDialog = true
                             } else {
-                                authViewModel.updatePassword(oldPassword, newPassw) { success, errorMessage ->
+                                authViewModel.updatePassword(
+                                    oldPassword,
+                                    newPassw
+                                ) { success, errorMessage ->
                                     if (success) {
                                         oldPassword = ""
                                         newPassw = ""
@@ -424,7 +433,8 @@ fun ChangePass(authViewModel: AuthViewModel) {
                                         dialogText = "Contraseña cambiada exitosamente."
                                         isSelected = false
                                     } else {
-                                        dialogText = errorMessage ?: "Error al cambiar la contraseña."
+                                        dialogText =
+                                            errorMessage ?: "Error al cambiar la contraseña."
                                     }
                                     showDialog = true
                                 }
@@ -468,7 +478,7 @@ fun DeleteAcount(
         )
     }
 
-    val context= LocalContext.current
+    val context = LocalContext.current
 
     Row(
         modifier = Modifier
@@ -499,7 +509,10 @@ fun DeleteAcount(
                         // Primero intenta borrar los datos del usuario de la base de datos
                         userViewModel.deleteAccount(userId) { success, errorMessage ->
                             if (success) {
-                                Log.d("DeleteAccount", "Datos de usuario eliminados de la base de datos.")
+                                Log.d(
+                                    "DeleteAccount",
+                                    "Datos de usuario eliminados de la base de datos."
+                                )
                                 // Si se borran los datos, intenta borrar la cuenta de autenticación
                                 authViewModel.deleteUser { success2, errorMessage2 ->
                                     if (success2) {
@@ -511,13 +524,21 @@ fun DeleteAcount(
                                             popUpTo(Screen.Login.route) { inclusive = true }
                                         }
                                     } else {
-                                        deleteErrorMessage = errorMessage2 ?: "Error al eliminar la cuenta de autenticación."
-                                        Log.e("DeleteAccount", "Error al eliminar la cuenta de autenticación: $deleteErrorMessage")
+                                        deleteErrorMessage = errorMessage2
+                                            ?: "Error al eliminar la cuenta de autenticación."
+                                        Log.e(
+                                            "DeleteAccount",
+                                            "Error al eliminar la cuenta de autenticación: $deleteErrorMessage"
+                                        )
                                     }
                                 }
                             } else {
-                                deleteErrorMessage = errorMessage ?: "Error al eliminar los datos del usuario de la base de datos."
-                                Log.e("DeleteAccount", "Error al eliminar datos de usuario de la base de datos: $deleteErrorMessage")
+                                deleteErrorMessage = errorMessage
+                                    ?: "Error al eliminar los datos del usuario de la base de datos."
+                                Log.e(
+                                    "DeleteAccount",
+                                    "Error al eliminar datos de usuario de la base de datos: $deleteErrorMessage"
+                                )
                             }
                         }
                     } else {
@@ -571,7 +592,9 @@ fun ConfirmDeleteAccountDialog(
                         text = "Error: $it",
                         color = Color.Red,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
                     )
                 }
             }
@@ -586,14 +609,18 @@ fun ConfirmDeleteAccountDialog(
                     onClick = {
                         onConfirmation()
                     },
-                    modifier = Modifier.weight(1f).padding(end = 4.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 4.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Primary)
                 ) {
                     Text("Sí", color = White)
                 }
                 Button(
                     onClick = onDismissRequest,
-                    modifier = Modifier.weight(1f).padding(start = 4.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 4.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Primary)
                 ) {
                     Text("No", color = White)
@@ -639,7 +666,7 @@ fun Cards(
     userID: String,
     navController: NavHostController
 ) {
-    val context= LocalContext.current
+    val context = LocalContext.current
     var showDialogConection by remember { mutableStateOf(false) }
     if (showDialogConection) {
         NoConexionDialog(
@@ -680,9 +707,9 @@ fun AvatarChoose(
     userID: String,
     navController: NavHostController
 ) {
-    val context= LocalContext.current
+    val context = LocalContext.current
     var showDialogConection by remember { mutableStateOf(false) }
-    if (showDialogConection){
+    if (showDialogConection) {
         NoConexionDialog(
             onDismiss = { showDialogConection = false }
         )

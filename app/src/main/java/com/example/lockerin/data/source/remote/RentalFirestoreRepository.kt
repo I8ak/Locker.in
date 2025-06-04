@@ -1,14 +1,11 @@
 package com.example.lockerin.data.source.remote
 
-import android.system.Os.close
 import com.example.lockerin.domain.model.Rental
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
-import java.time.LocalDate
-import kotlinx.coroutines.channels.awaitClose
 import java.util.Date
 
 

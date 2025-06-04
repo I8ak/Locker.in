@@ -4,6 +4,7 @@ import android.content.Intent
 import android.util.Log
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -97,7 +98,7 @@ fun LoginScreen(
     val emailFocusRequester = remember { FocusRequester() }
     val passwordFocusRequester = remember { FocusRequester() }
 
-    val context= LocalContext.current
+    val context = LocalContext.current
 
     // Launcher para el resultado de la actividad de Google Sign-In
     val launcher =
@@ -132,14 +133,13 @@ fun LoginScreen(
     Surface(
         modifier = Modifier
             .fillMaxSize()
-            .statusBarsPadding(), color = BeigeClaro
+            .statusBarsPadding()
+            .verticalScroll(rememberScrollState()), color = BeigeClaro
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.SpaceBetween,
+                .padding(16.dp),
         ) {
             // Sección superior: Logo
             Column(
@@ -151,7 +151,9 @@ fun LoginScreen(
                 Image(
                     painter = painterResource(id = R.drawable.locker_in_logo),
                     contentDescription = "Logo",
-                    modifier = Modifier.size(300.dp)
+                    modifier = Modifier
+                        .fillMaxWidth(0.7f)
+                        .height(200.dp)
                 )
             }
 
@@ -159,7 +161,8 @@ fun LoginScreen(
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .offset(y = (-90).dp),
+                    .offset(y = (-90).dp)
+                    .padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
@@ -259,7 +262,7 @@ fun LoginScreen(
                     color = Color.Black,
                     modifier = Modifier.clickable {
                         if (NetworkUtils.isInternetAvailable(context)) {
-                        navController.navigate(Screen.EmailResetPass.route)
+                            navController.navigate(Screen.EmailResetPass.route)
                         } else {
                             showDialogConection = true
                         }
@@ -304,7 +307,8 @@ fun LoginScreen(
                         Icon(
                             imageVector = Icons.Default.ArrowForward,
                             contentDescription = "Icono de flecha",
-                            tint = White
+                            tint = White,
+                            modifier = Modifier.size(24.dp)
                         )
                     }
                 }
@@ -330,7 +334,7 @@ fun LoginScreen(
                         color = Primary,
                         textDecoration = TextDecoration.Underline,
                         modifier = Modifier.clickable {
-                                navController.navigate(Screen.Register.route)
+                            navController.navigate(Screen.Register.route)
                         }
                     )
                 }
@@ -377,11 +381,11 @@ fun UserConfirmationDialog(
 }
 
 @Composable
-fun GoogleSignInButton(launcher: ManagedActivityResultLauncher<Intent, androidx.activity.result.ActivityResult>) {
+fun GoogleSignInButton(launcher: ManagedActivityResultLauncher<Intent, ActivityResult>) {
     val context = LocalContext.current
 
     var showDialogConection by remember { mutableStateOf(false) }
-    if (showDialogConection){
+    if (showDialogConection) {
         NoConexionDialog(
             onDismiss = { showDialogConection = false }
         )
