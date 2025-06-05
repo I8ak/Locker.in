@@ -66,7 +66,7 @@ fun AddLockerScreen(
     navController: NavHostController,
     userViewModel: UsersViewModel = koinViewModel(),
     lockerViewModel: LockersViewModel = koinViewModel(),
-    authViewModel: AuthViewModel=koinViewModel()
+    authViewModel: AuthViewModel = koinViewModel()
 ) {
     // ViewModel y estados de usuario
     userViewModel.getUserById(userID)
@@ -101,9 +101,9 @@ fun AddLockerScreen(
     val latitudeFocusRequest = remember { FocusRequester() }
 
 
-    val context= LocalContext.current
+    val context = LocalContext.current
     var showDialogConection by remember { mutableStateOf(false) }
-    if (showDialogConection){
+    if (showDialogConection) {
         NoConexionDialog(
             onDismiss = { showDialogConection = false }
         )
@@ -402,12 +402,20 @@ fun AddLockerScreen(
                                         latitude = latitude,
                                         longitude = longitude,
                                     )
-                                    lockerViewModel.addLocker(newLocker) {
+                                    lockerViewModel.addLocker(newLocker) { exists ->
                                         coroutineScope.launch {
-                                            snackbarHostState.showSnackbar("El ID del locker ya existe.")
+                                            if (exists) {
+                                                snackbarHostState.showSnackbar("El ID del locker ya existe.")
+                                            } else {
+                                                navController.navigate(
+                                                    Screen.ListLockers.createRoute(
+                                                        userID
+                                                    )
+                                                )
+                                            }
                                         }
                                     }
-                                    navController.navigate(Screen.ListLockers.createRoute(userID))
+//                                    navController.navigate(Screen.ListLockers.createRoute(userID))
                                 } else {
                                     showDialogConection = true
                                 }

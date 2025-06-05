@@ -58,13 +58,14 @@ class LockersViewModel(
 
 
 
-    fun addLocker(locker: Locker, onIdAlreadyExists: () -> Unit) {
+    fun addLocker(locker: Locker, onIdAlreadyExists: (id:Boolean) -> Unit) {
         viewModelScope.launch {
             val existingLocker = getLockerByIdUseCase(locker.lockerID)
             if (existingLocker != null) {
-                onIdAlreadyExists()
+                onIdAlreadyExists(true)
             } else {
                 addLockerUseCase(locker)
+                onIdAlreadyExists(false)
 
             }
         }
