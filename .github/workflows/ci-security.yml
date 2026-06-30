@@ -21,7 +21,10 @@ jobs:
 
       # 1. Compilación: Si falla, no tiene sentido escanear
       - name: Build con Gradle
-        run: ./gradlew assembleDebug
+          run: ./gradlew assembleDebug
+          env:
+            # GitHub inyecta esto desde los Secrets que configuramos
+            ORG_GRADLE_PROJECT_GOOGLE_MAPS_KEY: ${{ secrets.GOOGLE_MAPS_KEY }}
 
       # 2. SAST: Análisis de código estático con Semgrep
       - name: SAST Scan (Semgrep)
@@ -30,13 +33,16 @@ jobs:
           config: p/android
           generate-sarif: "true"
 
-      # 3. SCA: Auditoría de dependencias
+      # 3. SCA: Auditoría de dependencias (Corregido)
       - name: SCA Scan (Dependency-Check)
         uses: dependency-check/Dependency-Check_Action@main
         with:
           project: 'LockerIn'
           path: '.'
           format: 'HTML'
+          args: >
+            --noupdate
+            --disableAssembly
 
       # 4. Subir reportes como artefactos (para que puedas verlos luego)
       - name: Subir reportes de seguridad

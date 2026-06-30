@@ -17,6 +17,9 @@ android {
         versionName = "1.2.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        val mapsKey = project.findProperty("GOOGLE_MAPS_KEY")?.toString() ?: ""
+        manifestPlaceholders["GOOGLE_MAPS_KEY"] = mapsKey
+        buildConfigField("String", "GOOGLE_MAPS_KEY", "\"$mapsKey\"")
     }
 
     buildTypes {
