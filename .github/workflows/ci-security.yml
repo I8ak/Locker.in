@@ -21,10 +21,9 @@ jobs:
 
       # 1. Compilación: Si falla, no tiene sentido escanear
       - name: Build con Gradle
-          run: ./gradlew assembleDebug
-          env:
-            # GitHub inyecta esto desde los Secrets que configuramos
-            ORG_GRADLE_PROJECT_GOOGLE_MAPS_KEY: ${{ secrets.GOOGLE_MAPS_KEY }}
+        run: ./gradlew assembleDebug
+        env:
+          ORG_GRADLE_PROJECT_GOOGLE_MAPS_KEY: ${{ secrets.GOOGLE_MAPS_KEY }}
 
       # 2. SAST: Análisis de código estático con Semgrep
       - name: SAST Scan (Semgrep)
