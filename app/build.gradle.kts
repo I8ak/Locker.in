@@ -9,6 +9,10 @@ android {
     namespace = "com.example.lockerin"
     compileSdk = 35
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     defaultConfig {
         applicationId = "com.example.lockerin"
         minSdk = 24
