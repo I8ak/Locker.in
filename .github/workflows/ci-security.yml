@@ -39,8 +39,8 @@ jobs:
           project: 'LockerIn'
           path: '.'
           format: 'HTML'
-          args: >
-            --disableAssembly
+          # Esto le dice a la acción que corra como script de shell, no como contenedor
+          enable_docker: false
 
       # 4. Subir reportes como artefactos (para que puedas verlos luego)
       - name: Subir reportes de seguridad
