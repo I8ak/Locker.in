@@ -40,7 +40,6 @@ jobs:
           path: '.'
           format: 'HTML'
           args: >
-            --noupdate
             --disableAssembly
 
       # 4. Subir reportes como artefactos (para que puedas verlos luego)
