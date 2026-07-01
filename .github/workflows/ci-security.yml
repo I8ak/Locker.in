@@ -29,8 +29,7 @@ jobs:
       - name: SAST Scan (Semgrep)
         uses: returntocorp/semgrep-action@v1
         with:
-          config: p/android
-          generate-sarif: "true"
+          config: auto
 
       # 3. SCA: Auditoría de dependencias (Corregido)
       - name: SCA Scan (Dependency-Check)
@@ -41,6 +40,7 @@ jobs:
           format: 'HTML'
           # Esto le dice a la acción que corra como script de shell, no como contenedor
           enable_docker: false
+          args: --disableAssembly
 
       # 4. Subir reportes como artefactos (para que puedas verlos luego)
       - name: Subir reportes de seguridad
