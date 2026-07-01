@@ -33,14 +33,10 @@ jobs:
 
       # 3. SCA: Auditoría de dependencias (Corregido)
       - name: SCA Scan (Dependency-Check)
-        uses: dependency-check/Dependency-Check_Action@main
-        with:
-          project: 'LockerIn'
-          path: '.'
-          format: 'HTML'
-          # Esto le dice a la acción que corra como script de shell, no como contenedor
-          enable_docker: false
-          args: --disableAssembly
+        run: |
+          curl -LO https://github.com/jeremylong/DependencyCheck/releases/download/v10.0.3/dependency-check-10.0.3-release.zip
+          unzip dependency-check-10.0.3-release.zip
+          ./dependency-check/bin/dependency-check.sh --project "LockerIn" --scan . --format HTML --out reports --disableAssembly
 
       # 4. Subir reportes como artefactos (para que puedas verlos luego)
       - name: Subir reportes de seguridad
