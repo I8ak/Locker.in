@@ -31,13 +31,16 @@ jobs:
         with:
           config: auto
 
-      # 3. SCA: Auditoría de dependencias (Corregido)
-      - name: SCA Scan (Dependency-Check)
-        run: |
-          curl -LO https://github.com/jeremylong/DependencyCheck/releases/download/v10.0.3/dependency-check-10.0.3-release.zip
-          unzip dependency-check-10.0.3-release.zip
-          ./dependency-check/bin/dependency-check.sh --project "LockerIn" --scan . --format HTML --out reports --disableAssembly --noupdate
-
+      # 3. SCA: Auditoría de dependencias con Trivy (Más rápido y moderno)
+      - name: SCA Scan (Trivy)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'table'
+          exit-code: '0' # Cambia a '1' si quieres que el pipeline falle si encuentra vulnerabilidades
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
       # 4. Subir reportes como artefactos (para que puedas verlos luego)
       - name: Subir reportes de seguridad
         uses: actions/upload-artifact@v4
