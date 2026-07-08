@@ -27,11 +27,9 @@ jobs:
 
       # 2. SAST: Análisis de código estático con Semgrep
       - name: SAST Scan (Semgrep)
-        uses: returntocorp/semgrep-action@v1
-        with:
-          config: auto
-          generate-sarif: "true"
-
+        run: |
+          pip install semgrep
+          semgrep scan --config auto --sarif --output semgrep.sarif
       # 3. SCA: Auditoría de dependencias con Trivy (Más rápido y moderno)
       - name: SCA Scan (Trivy)
         uses: aquasecurity/trivy-action@master
