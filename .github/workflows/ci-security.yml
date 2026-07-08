@@ -30,6 +30,7 @@ jobs:
         uses: returntocorp/semgrep-action@v1
         with:
           config: auto
+          generate-sarif: "true"
 
       # 3. SCA: Auditoría de dependencias con Trivy (Más rápido y moderno)
       - name: SCA Scan (Trivy)
@@ -38,6 +39,7 @@ jobs:
           scan-type: 'fs'
           scan-ref: '.'
           format: 'table'
+          output: 'trivy-results.txt'
           exit-code: '0' # Cambia a '1' si quieres que el pipeline falle si encuentra vulnerabilidades
           ignore-unfixed: true
           severity: 'CRITICAL,HIGH'
@@ -47,5 +49,6 @@ jobs:
         with:
           name: reportes-seguridad
           path: |
-            dependency-check-report.html
-            semgrep-results.sarif
+            semgrep.sarif
+            trivy-results.txt
+          if-no-files-found: warn
