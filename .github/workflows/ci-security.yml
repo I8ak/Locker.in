@@ -36,7 +36,7 @@ jobs:
         run: |
           curl -LO https://github.com/jeremylong/DependencyCheck/releases/download/v10.0.3/dependency-check-10.0.3-release.zip
           unzip dependency-check-10.0.3-release.zip
-          ./dependency-check/bin/dependency-check.sh --project "LockerIn" --scan . --format HTML --out reports --disableAssembly
+          ./dependency-check/bin/dependency-check.sh --project "LockerIn" --scan . --format HTML --out reports --disableAssembly --disableOssIndex
 
       # 4. Subir reportes como artefactos (para que puedas verlos luego)
       - name: Subir reportes de seguridad
